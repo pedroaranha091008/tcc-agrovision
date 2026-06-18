@@ -1,13 +1,118 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "mysql"
+}
+
+enum StatusTalhao {
+  ativo
+  inativo
+  em_analise
+}
+
+enum TipoAnalise {
+  NDVI
+  RGB
+  termico
+  multispectral
+  outro
+}
+
+enum NivelRisco {
+  baixo
+  medio
+  alto
+  critico
+}
+
+model Usuario {
+  id_usuario    String   @id @default(uuid()) @db.Char(36)
+  nome          String   @db.VarChar(150)
+  email         String   @unique @db.VarChar(255)
+  senha_hash    String   @db.VarChar(255)
+  telefone      String?  @db.VarChar(20)
+  data_criacao  DateTime @default(now())
+  atualizado_em DateTime @updatedAt
+
+  propriedades Propriedade[]
+
+  @@map("usuarios")
+}
+
+model Propriedade {
+  id_propriedade      String   @id @default(uuid()) @db.Char(36)
+  id_usuario          String   @db.Char(36)
+  nome_fazenda        String   @db.VarChar(200)
+  estado              String   @db.Char(2)
+  cidade              String   @db.VarChar(150)
+  area_total_hectares Decimal? @db.Decimal(10, 2)
+  criado_em           DateTime @default(now())
+  atualizado_em       DateTime @updatedAt
+
+  usuario Usuario  @relation(fields: [id_usuario], references: [id_usuario])
+  talhoes Talhao[]
+
+  @@index([id_usuario])
+  @@map("propriedades")
+}
+
+model Talhao {
+  id_talhao      String       @id @default(uuid()) @db.Char(36)
+  id_propriedade String       @db.Char(36)
+  nome_talhao    String       @db.VarChar(150)
+  cultura        String?      @db.VarChar(100)
+  area_hectares  Decimal?     @db.Decimal(10, 2)
+  latitude       Decimal?     @db.Decimal(10, 7)
+  longitude      Decimal?     @db.Decimal(10, 7)
+  geojson        Json?
+  status         StatusTalhao @default(ativo)
+  criado_em      DateTime     @default(now())
+  atualizado_em  DateTime     @updatedAt
+
+  propriedade Propriedade @relation(fields: [id_propriedade], references: [id_propriedade])
+  voos        Voo[]
+
+  @@index([id_propriedade])
+  @@map("talhoes")
+}
+
+model Voo {
+  id_voo          String   @id @default(uuid()) @db.Char(36)
+  id_talhao       String   @db.Char(36)
+  data_voo        DateTime
+  altitude_metros Decimal? @db.Decimal(6, 1)
+  modelo_drone    String?  @db.VarChar(100)
+  operador        String?  @db.VarChar(150)
+  observacoes     String?  @db.Text
+  criado_em       DateTime @default(now())
+
+  talhao   Talhao    @relation(fields: [id_talhao], references: [id_talhao])
+  analises Analise[]
+
+  @@index([id_talhao])
+  @@index([data_voo])
+  @@map("voos")
+}
+
+model Analise {
+  id_analise              String      @id @default(uuid()) @db.Char(36)
+  id_voo                  String      @db.Char(36)
+  tipo_analise            TipoAnalise
+  nivel_risco             NivelRisco?
+  percentual_area_afetada Decimal?    @db.Decimal(5, 2)
+  resultado               String?     @db.Text
+  url_arquivo             String?     @db.VarChar(500)
+  data_analise            DateTime    @default(now())
+  atualizado_em           DateTime    @updatedAt
+
+  voo Voo @relation(fields: [id_voo], references: [id_voo])
+
+  @@index([id_voo])
+  @@index([tipo_analise])
+  @@index([nivel_risco])
+  @@map("analises")
 }
