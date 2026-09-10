@@ -6,7 +6,7 @@ Este planejamento transforma as funcionalidades essenciais e opcionais do `specs
 
 ### O que já está pronto
 
-- Projeto React 18 com Vite, TypeScript e Tailwind CSS.
+- Bundle exportado do Figma Make: React 18 + Vite 6 + Tailwind CSS 4, arquivos `.tsx`.
 - Landing page institucional responsiva.
 - Telas visuais de login e cadastro.
 - Dashboard com cards, mapa ilustrativo, gráficos e tabela.
@@ -16,6 +16,7 @@ Este planejamento transforma as funcionalidades essenciais e opcionais do `specs
 
 ### O que falta
 
+- Base executável: `tsconfig`, dependência `typescript`, `react`/`react-dom` como dependências reais (hoje só em `peerDependencies` opcionais), scripts de `build`/`typecheck`/`preview`. Sem isso o projeto não instala nem roda.
 - Separação do `App.tsx` em páginas, layouts, componentes e módulos.
 - Roteamento real por URL e proteção de páginas autenticadas.
 - Cliente HTTP e configuração da URL da API.
@@ -69,6 +70,16 @@ Manter TypeScript e reorganizar o código por responsabilidade:
 - Manter sessão de forma segura conforme o mecanismo final do backend; dados sensíveis não devem ser gravados livremente em `localStorage`.
 
 ## 3. Fases de implementação
+
+### Fase 0 — Base executável
+
+- Adicionar `react` e `react-dom` (18.3.1) como dependências reais; remover o bloco `peerDependencies`/`peerDependenciesMeta` que os marca como opcionais.
+- Adicionar `typescript` e `@types/react`, `@types/react-dom`; criar `tsconfig.json` e `tsconfig.node.json` compatíveis com Vite (bundler, `strict`, `jsx: react-jsx`, alias `@/*`).
+- Ajustar `package.json`: nome do projeto, scripts `dev`, `build` (`tsc -b && vite build`), `preview`, `typecheck` (`tsc --noEmit`).
+- Criar `.env.example` e `.env` locais com `VITE_API_URL` (e `VITE_API_MOCK` opcional).
+- Garantir `npm install`, `npm run dev`, `npm run build` e `npm run typecheck` funcionando sobre a UI atual, sem alterar telas.
+
+**Critério de conclusão:** clone limpo instala, sobe o dev server e gera build de produção sem erro de tipos.
 
 ### Fase 1 — Reorganização e roteamento
 
@@ -168,6 +179,7 @@ Manter TypeScript e reorganizar o código por responsabilidade:
 
 ## 4. Ordem de entrega e dependências
 
+0. Base executável.
 1. Reorganização e roteamento.
 2. Cliente HTTP e autenticação.
 3. Propriedades, talhões e voos.
@@ -178,6 +190,8 @@ Manter TypeScript e reorganizar o código por responsabilidade:
 8. Testes finais, acessibilidade e documentação.
 
 A integração deve avançar por contratos fechados: autenticação depende da fase 2 do backend; gestão agrícola depende da fase 3; upload depende da fase 4; dashboard, histórico e relatórios dependem das fases 5 e 6. Durante o desenvolvimento visual, respostas simuladas devem ficar isoladas no ambiente de testes e não no código de produção.
+
+O backend (já implementado) só sobe com um banco MySQL/MariaDB. Enquanto ele não estiver no ar, o cliente HTTP pode operar em modo simulado via `VITE_API_MOCK=true`, com as respostas falsas isoladas em `src/services/mock/` e nunca no caminho de produção. Os tipos em `src/types/` seguem o contrato real do backend: campos em snake_case/português, envelopes `{ data, meta }` e `{ error: { code, message, details } }`, e `Authorization: Bearer <access_token>`.
 
 ## 5. Plano de testes e aceite
 
