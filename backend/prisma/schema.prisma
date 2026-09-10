@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -29,18 +28,50 @@ enum NivelRisco {
   critico
 }
 
+enum ProvedorAuth {
+  local
+  google
+}
+
+enum StatusProcessamento {
+  pendente
+  em_processamento
+  concluido
+  falhou
+}
+
 model Usuario {
-  id_usuario    String   @id @default(uuid()) @db.Char(36)
-  nome          String   @db.VarChar(150)
-  email         String   @unique @db.VarChar(255)
-  senha_hash    String   @db.VarChar(255)
-  telefone      String?  @db.VarChar(20)
-  data_criacao  DateTime @default(now())
-  atualizado_em DateTime @updatedAt
+  id_usuario       String       @id @default(uuid()) @db.Char(36)
+  nome             String       @db.VarChar(150)
+  email            String       @unique @db.VarChar(255)
+  senha_hash       String?      @db.VarChar(255)
+  telefone         String?      @db.VarChar(20)
+  provedor_auth    ProvedorAuth @default(local)
+  google_sub       String?      @unique @db.VarChar(255)
+  email_verificado Boolean      @default(false)
+  criado_em        DateTime     @default(now()) @map("data_criacao")
+  atualizado_em    DateTime     @updatedAt
 
   propriedades Propriedade[]
+  sessoes      Sessao[]
 
   @@map("usuarios")
+}
+
+model Sessao {
+  id_sessao   String    @id @default(uuid()) @db.Char(36)
+  id_usuario  String    @db.Char(36)
+  token_hash  String    @unique @db.Char(64)
+  user_agent  String?   @db.VarChar(255)
+  ip          String?   @db.VarChar(64)
+  expira_em   DateTime
+  revogado_em DateTime?
+  criado_em   DateTime  @default(now())
+
+  usuario Usuario @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+
+  @@index([id_usuario])
+  @@map("sessoes")
 }
 
 model Propriedade {
@@ -81,38 +112,72 @@ model Talhao {
 }
 
 model Voo {
-  id_voo          String   @id @default(uuid()) @db.Char(36)
-  id_talhao       String   @db.Char(36)
-  data_voo        DateTime
-  altitude_metros Decimal? @db.Decimal(6, 1)
-  modelo_drone    String?  @db.VarChar(100)
-  operador        String?  @db.VarChar(150)
-  observacoes     String?  @db.Text
-  criado_em       DateTime @default(now())
+  id_voo               String              @id @default(uuid()) @db.Char(36)
+  id_talhao            String              @db.Char(36)
+  data_voo             DateTime
+  altitude_metros      Decimal?            @db.Decimal(6, 1)
+  modelo_drone         String?             @db.VarChar(100)
+  operador             String?             @db.VarChar(150)
+  observacoes          String?             @db.Text
+  status_processamento StatusProcessamento @default(pendente)
+  criado_em            DateTime            @default(now())
 
-  talhao   Talhao    @relation(fields: [id_talhao], references: [id_talhao])
+  talhao   Talhao      @relation(fields: [id_talhao], references: [id_talhao])
   analises Analise[]
+  imagens  ImagemVoo[]
 
   @@index([id_talhao])
   @@index([data_voo])
   @@map("voos")
 }
 
+model ImagemVoo {
+  id_imagem       String   @id @default(uuid()) @db.Char(36)
+  id_voo          String   @db.Char(36)
+  nome_original   String   @db.VarChar(255)
+  nome_armazenado String   @db.VarChar(255)
+  mime_type       String   @db.VarChar(100)
+  tamanho_bytes   Int
+  caminho         String   @db.VarChar(500)
+  criado_em       DateTime @default(now())
+
+  voo Voo @relation(fields: [id_voo], references: [id_voo], onDelete: Cascade)
+
+  @@index([id_voo])
+  @@map("imagens_voo")
+}
+
 model Analise {
-  id_analise              String      @id @default(uuid()) @db.Char(36)
-  id_voo                  String      @db.Char(36)
+  id_analise              String              @id @default(uuid()) @db.Char(36)
+  id_voo                  String              @db.Char(36)
   tipo_analise            TipoAnalise
   nivel_risco             NivelRisco?
-  percentual_area_afetada Decimal?    @db.Decimal(5, 2)
-  resultado               String?     @db.Text
-  url_arquivo             String?     @db.VarChar(500)
-  data_analise            DateTime    @default(now())
-  atualizado_em           DateTime    @updatedAt
+  percentual_area_afetada Decimal?            @db.Decimal(5, 2)
+  resultado               String?             @db.Text
+  url_arquivo             String?             @db.VarChar(500)
+  status                  StatusProcessamento @default(concluido)
+  data_analise            DateTime            @default(now())
+  atualizado_em           DateTime            @updatedAt
 
-  voo Voo @relation(fields: [id_voo], references: [id_voo])
+  voo        Voo         @relation(fields: [id_voo], references: [id_voo])
+  relatorios Relatorio[]
 
   @@index([id_voo])
   @@index([tipo_analise])
   @@index([nivel_risco])
   @@map("analises")
+}
+
+model Relatorio {
+  id_relatorio  String   @id @default(uuid()) @db.Char(36)
+  id_analise    String   @db.Char(36)
+  caminho_pdf   String   @db.VarChar(500)
+  versao_regras String   @db.VarChar(20)
+  recomendacao  String   @db.Text
+  gerado_em     DateTime @default(now())
+
+  analise Analise @relation(fields: [id_analise], references: [id_analise], onDelete: Cascade)
+
+  @@index([id_analise])
+  @@map("relatorios")
 }

@@ -1,0 +1,308 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-09-10T00:00:00.000Z",
+  "__export_source": "agrovision.backend",
+  "resources": [
+    {
+      "_id": "wrk_agrovision",
+      "_type": "workspace",
+      "name": "AgroVision API",
+      "description": "Colecao de rotas do backend do AgroVision (API /api/v1)."
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_agrovision",
+      "name": "Base",
+      "data": {
+        "base_url": "http://localhost:3000",
+        "access_token": "",
+        "refresh_token": "",
+        "id_propriedade": "",
+        "id_talhao": "",
+        "id_voo": "",
+        "id_analise": "",
+        "id_relatorio": "",
+        "id_imagem": ""
+      },
+      "metaSortKey": 1
+    },
+    {
+      "_id": "env_local",
+      "_type": "environment",
+      "parentId": "env_base",
+      "name": "Local",
+      "data": { "base_url": "http://localhost:3000" },
+      "metaSortKey": 2
+    },
+
+    { "_id": "fld_status", "_type": "request_group", "parentId": "wrk_agrovision", "name": "00 - Status", "metaSortKey": -100 },
+    {
+      "_id": "req_root", "_type": "request", "parentId": "fld_status", "name": "GET / (disponibilidade)",
+      "method": "GET", "url": "{{ _.base_url }}/", "metaSortKey": -100
+    },
+    {
+      "_id": "req_health", "_type": "request", "parentId": "fld_status", "name": "GET /api/v1/health",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/health", "metaSortKey": -99
+    },
+
+    { "_id": "fld_auth", "_type": "request_group", "parentId": "wrk_agrovision", "name": "01 - Auth", "metaSortKey": -90 },
+    {
+      "_id": "req_registro", "_type": "request", "parentId": "fld_auth", "name": "POST /auth/registro",
+      "method": "POST", "url": "{{ _.base_url }}/api/v1/auth/registro",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"nome\": \"Maria Agricultora\",\n  \"email\": \"maria@exemplo.com\",\n  \"senha\": \"senhaForte123\",\n  \"telefone\": \"+55 19 99999-0000\"\n}" },
+      "metaSortKey": -90
+    },
+    {
+      "_id": "req_login", "_type": "request", "parentId": "fld_auth", "name": "POST /auth/login",
+      "method": "POST", "url": "{{ _.base_url }}/api/v1/auth/login",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"email\": \"maria@exemplo.com\",\n  \"senha\": \"senhaForte123\"\n}" },
+      "description": "Copie data.access_token e data.refresh_token para o ambiente Base.",
+      "metaSortKey": -89
+    },
+    {
+      "_id": "req_google", "_type": "request", "parentId": "fld_auth", "name": "POST /auth/google",
+      "method": "POST", "url": "{{ _.base_url }}/api/v1/auth/google",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"id_token\": \"<ID_TOKEN_DO_GOOGLE>\"\n}" },
+      "metaSortKey": -88
+    },
+    {
+      "_id": "req_refresh", "_type": "request", "parentId": "fld_auth", "name": "POST /auth/refresh",
+      "method": "POST", "url": "{{ _.base_url }}/api/v1/auth/refresh",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"refresh_token\": \"{{ _.refresh_token }}\"\n}" },
+      "metaSortKey": -87
+    },
+    {
+      "_id": "req_logout", "_type": "request", "parentId": "fld_auth", "name": "POST /auth/logout",
+      "method": "POST", "url": "{{ _.base_url }}/api/v1/auth/logout",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"refresh_token\": \"{{ _.refresh_token }}\"\n}" },
+      "metaSortKey": -86
+    },
+
+    { "_id": "fld_usuarios", "_type": "request_group", "parentId": "wrk_agrovision", "name": "02 - Usuarios", "metaSortKey": -80 },
+    {
+      "_id": "req_me", "_type": "request", "parentId": "fld_usuarios", "name": "GET /usuarios/me",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/usuarios/me",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -80
+    },
+    {
+      "_id": "req_me_patch", "_type": "request", "parentId": "fld_usuarios", "name": "PATCH /usuarios/me",
+      "method": "PATCH", "url": "{{ _.base_url }}/api/v1/usuarios/me",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"nome\": \"Maria A. Agricultora\",\n  \"telefone\": \"+55 19 98888-0000\"\n}" },
+      "metaSortKey": -79
+    },
+
+    { "_id": "fld_prop", "_type": "request_group", "parentId": "wrk_agrovision", "name": "03 - Propriedades", "metaSortKey": -70 },
+    {
+      "_id": "req_prop_list", "_type": "request", "parentId": "fld_prop", "name": "GET /propriedades",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/propriedades?pagina=1&por_pagina=20",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -70
+    },
+    {
+      "_id": "req_prop_create", "_type": "request", "parentId": "fld_prop", "name": "POST /propriedades",
+      "method": "POST", "url": "{{ _.base_url }}/api/v1/propriedades",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"nome_fazenda\": \"Fazenda Santa Clara\",\n  \"estado\": \"SP\",\n  \"cidade\": \"Ribeirao Preto\",\n  \"area_total_hectares\": 320.5\n}" },
+      "metaSortKey": -69
+    },
+    {
+      "_id": "req_prop_get", "_type": "request", "parentId": "fld_prop", "name": "GET /propriedades/:id",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/propriedades/{{ _.id_propriedade }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -68
+    },
+    {
+      "_id": "req_prop_patch", "_type": "request", "parentId": "fld_prop", "name": "PATCH /propriedades/:id",
+      "method": "PATCH", "url": "{{ _.base_url }}/api/v1/propriedades/{{ _.id_propriedade }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"cidade\": \"Sertaozinho\"\n}" },
+      "metaSortKey": -67
+    },
+    {
+      "_id": "req_prop_del", "_type": "request", "parentId": "fld_prop", "name": "DELETE /propriedades/:id",
+      "method": "DELETE", "url": "{{ _.base_url }}/api/v1/propriedades/{{ _.id_propriedade }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -66
+    },
+
+    { "_id": "fld_talhoes", "_type": "request_group", "parentId": "wrk_agrovision", "name": "04 - Talhoes", "metaSortKey": -60 },
+    {
+      "_id": "req_talhao_list", "_type": "request", "parentId": "fld_talhoes", "name": "GET /talhoes",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/talhoes?id_propriedade={{ _.id_propriedade }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -60
+    },
+    {
+      "_id": "req_talhao_create", "_type": "request", "parentId": "fld_talhoes", "name": "POST /talhoes",
+      "method": "POST", "url": "{{ _.base_url }}/api/v1/talhoes",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"id_propriedade\": \"{{ _.id_propriedade }}\",\n  \"nome_talhao\": \"Talhao Norte\",\n  \"cultura\": \"soja\",\n  \"area_hectares\": 42.7,\n  \"latitude\": -21.1767,\n  \"longitude\": -47.8208,\n  \"geojson\": { \"type\": \"Polygon\", \"coordinates\": [] }\n}" },
+      "metaSortKey": -59
+    },
+    {
+      "_id": "req_talhao_get", "_type": "request", "parentId": "fld_talhoes", "name": "GET /talhoes/:id",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/talhoes/{{ _.id_talhao }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -58
+    },
+    {
+      "_id": "req_talhao_patch", "_type": "request", "parentId": "fld_talhoes", "name": "PATCH /talhoes/:id",
+      "method": "PATCH", "url": "{{ _.base_url }}/api/v1/talhoes/{{ _.id_talhao }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"status\": \"em_analise\"\n}" },
+      "metaSortKey": -57
+    },
+    {
+      "_id": "req_talhao_del", "_type": "request", "parentId": "fld_talhoes", "name": "DELETE /talhoes/:id",
+      "method": "DELETE", "url": "{{ _.base_url }}/api/v1/talhoes/{{ _.id_talhao }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -56
+    },
+
+    { "_id": "fld_voos", "_type": "request_group", "parentId": "wrk_agrovision", "name": "05 - Voos", "metaSortKey": -50 },
+    {
+      "_id": "req_voo_list", "_type": "request", "parentId": "fld_voos", "name": "GET /voos",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/voos?id_talhao={{ _.id_talhao }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -50
+    },
+    {
+      "_id": "req_voo_create", "_type": "request", "parentId": "fld_voos", "name": "POST /voos",
+      "method": "POST", "url": "{{ _.base_url }}/api/v1/voos",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"id_talhao\": \"{{ _.id_talhao }}\",\n  \"data_voo\": \"2026-02-15\",\n  \"altitude_metros\": 120,\n  \"modelo_drone\": \"DJI Mavic 3 Multispectral\",\n  \"operador\": \"Joao Piloto\"\n}" },
+      "metaSortKey": -49
+    },
+    {
+      "_id": "req_voo_get", "_type": "request", "parentId": "fld_voos", "name": "GET /voos/:id",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/voos/{{ _.id_voo }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -48
+    },
+    {
+      "_id": "req_voo_patch", "_type": "request", "parentId": "fld_voos", "name": "PATCH /voos/:id",
+      "method": "PATCH", "url": "{{ _.base_url }}/api/v1/voos/{{ _.id_voo }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"status_processamento\": \"concluido\"\n}" },
+      "metaSortKey": -47
+    },
+    {
+      "_id": "req_voo_del", "_type": "request", "parentId": "fld_voos", "name": "DELETE /voos/:id",
+      "method": "DELETE", "url": "{{ _.base_url }}/api/v1/voos/{{ _.id_voo }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -46
+    },
+    {
+      "_id": "req_voo_img_list", "_type": "request", "parentId": "fld_voos", "name": "GET /voos/:id/imagens",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/voos/{{ _.id_voo }}/imagens",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -45
+    },
+    {
+      "_id": "req_voo_img_post", "_type": "request", "parentId": "fld_voos", "name": "POST /voos/:id/imagens (multipart)",
+      "method": "POST", "url": "{{ _.base_url }}/api/v1/voos/{{ _.id_voo }}/imagens",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" },
+      "body": { "mimeType": "multipart/form-data", "params": [
+        { "name": "imagens", "type": "file", "fileName": "" },
+        { "name": "imagens", "type": "file", "fileName": "" }
+      ] },
+      "description": "Selecione um ou mais arquivos JPEG/PNG/TIFF no campo 'imagens'.",
+      "metaSortKey": -44
+    },
+    {
+      "_id": "req_voo_img_del", "_type": "request", "parentId": "fld_voos", "name": "DELETE /voos/:id/imagens/:idImagem",
+      "method": "DELETE", "url": "{{ _.base_url }}/api/v1/voos/{{ _.id_voo }}/imagens/{{ _.id_imagem }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -43
+    },
+
+    { "_id": "fld_analises", "_type": "request_group", "parentId": "wrk_agrovision", "name": "06 - Analises", "metaSortKey": -40 },
+    {
+      "_id": "req_ana_list", "_type": "request", "parentId": "fld_analises", "name": "GET /analises",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/analises?id_voo={{ _.id_voo }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -40
+    },
+    {
+      "_id": "req_ana_create", "_type": "request", "parentId": "fld_analises", "name": "POST /analises",
+      "method": "POST", "url": "{{ _.base_url }}/api/v1/analises",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"id_voo\": \"{{ _.id_voo }}\",\n  \"tipo_analise\": \"NDVI\",\n  \"nivel_risco\": \"alto\",\n  \"percentual_area_afetada\": 23.4,\n  \"resultado\": \"Perda de vigor na porcao norte do talhao.\",\n  \"status\": \"concluido\"\n}" },
+      "metaSortKey": -39
+    },
+    {
+      "_id": "req_ana_get", "_type": "request", "parentId": "fld_analises", "name": "GET /analises/:id",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/analises/{{ _.id_analise }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -38
+    },
+    {
+      "_id": "req_ana_patch", "_type": "request", "parentId": "fld_analises", "name": "PATCH /analises/:id",
+      "method": "PATCH", "url": "{{ _.base_url }}/api/v1/analises/{{ _.id_analise }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"nivel_risco\": \"critico\"\n}" },
+      "metaSortKey": -37
+    },
+    {
+      "_id": "req_ana_del", "_type": "request", "parentId": "fld_analises", "name": "DELETE /analises/:id",
+      "method": "DELETE", "url": "{{ _.base_url }}/api/v1/analises/{{ _.id_analise }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -36
+    },
+
+    { "_id": "fld_dash", "_type": "request_group", "parentId": "wrk_agrovision", "name": "07 - Dashboard e Monitoramentos", "metaSortKey": -30 },
+    {
+      "_id": "req_dash", "_type": "request", "parentId": "fld_dash", "name": "GET /dashboard",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/dashboard",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -30
+    },
+    {
+      "_id": "req_dash_filtro", "_type": "request", "parentId": "fld_dash", "name": "GET /dashboard (filtrado)",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/dashboard?id_propriedade={{ _.id_propriedade }}&data_inicio=2026-01-01&data_fim=2026-12-31",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -29
+    },
+    {
+      "_id": "req_monit", "_type": "request", "parentId": "fld_dash", "name": "GET /monitoramentos",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/monitoramentos?pagina=1&por_pagina=20",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -28
+    },
+    {
+      "_id": "req_monit_filtro", "_type": "request", "parentId": "fld_dash", "name": "GET /monitoramentos (filtros)",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/monitoramentos?tipo_analise=NDVI&id_talhao={{ _.id_talhao }}&data_inicio=2026-01-01&data_fim=2026-12-31",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -27
+    },
+
+    { "_id": "fld_rel", "_type": "request_group", "parentId": "wrk_agrovision", "name": "08 - Relatorios", "metaSortKey": -20 },
+    {
+      "_id": "req_rel_list", "_type": "request", "parentId": "fld_rel", "name": "GET /relatorios",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/relatorios",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -20
+    },
+    {
+      "_id": "req_rel_gerar", "_type": "request", "parentId": "fld_rel", "name": "POST /relatorios (gerar)",
+      "method": "POST", "url": "{{ _.base_url }}/api/v1/relatorios",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"id_analise\": \"{{ _.id_analise }}\"\n}" },
+      "metaSortKey": -19
+    },
+    {
+      "_id": "req_rel_get", "_type": "request", "parentId": "fld_rel", "name": "GET /relatorios/:id",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/relatorios/{{ _.id_relatorio }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -18
+    },
+    {
+      "_id": "req_rel_download", "_type": "request", "parentId": "fld_rel", "name": "GET /relatorios/:id/download",
+      "method": "GET", "url": "{{ _.base_url }}/api/v1/relatorios/{{ _.id_relatorio }}/download",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -17
+    },
+    {
+      "_id": "req_rel_del", "_type": "request", "parentId": "fld_rel", "name": "DELETE /relatorios/:id",
+      "method": "DELETE", "url": "{{ _.base_url }}/api/v1/relatorios/{{ _.id_relatorio }}",
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" }, "metaSortKey": -16
+    }
+  ]
+}

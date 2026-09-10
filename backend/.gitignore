@@ -3,3 +3,10 @@
 /generated/prisma
 
 .env
+
+# Arquivos gerados em runtime
+/uploads
+/relatorios
+
+# Saida de testes/cobertura
+/coverage
