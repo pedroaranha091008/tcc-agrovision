@@ -2,7 +2,9 @@ import type { ApiEnvelope, PaginacaoMeta } from "@/types/api";
 import type { ListaQuery, Propriedade, PropriedadePayload } from "@/types/dominio";
 import { http } from "./http";
 
-function qs(params: ListaQuery = {}): string {
+type ParamsConsulta = Record<string, string | number | undefined | null>;
+
+function qs(params: ListaQuery | ParamsConsulta = {}): string {
   const sp = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== null && v !== "") sp.set(k, String(v));

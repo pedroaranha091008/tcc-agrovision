@@ -1,8 +1,16 @@
 import type { ApiEnvelope } from "@/types/api";
+import type { ImagemVoo } from "@/types/dominio";
 import { ApiError } from "../erros";
 import { mockDb, paraUsuarioPublico } from "./db";
 import { abrirSessao, idDoToken, usuarioAutenticado, type Ctx } from "./base";
-import { rotasDominio } from "./rotasDominio";
+import { rotasDominio, acharVoo, acharAnalise } from "./rotasDominio";
+import { agora, dominio } from "./dominioStore";
+import {
+  UPLOAD_ALLOWED_MIME,
+  UPLOAD_MAX_FILE_MB,
+  UPLOAD_MAX_FILES,
+  extensaoValida,
+} from "@/features/voos/uploadConfig";
 
 /**
  * Adaptador do modo mock (VITE_API_MOCK=true). Implementa auth/perfil aqui e
@@ -120,4 +128,94 @@ export async function mockRequest<T>(metodo: string, caminho: string, ctx: Ctx):
     return (rota.handler as Handler)(ctx, m.groups ?? {}, query) as ApiEnvelope<T>;
   }
   throw new ApiError("NAO_ENCONTRADO", `Mock sem rota para ${metodo} ${semQuery}`, 404);
+}
+
+const REGEX_UPLOAD = /^\/voos\/(?<id>[^/]+)\/imagens$/;
+
+/**
+ * Simula o upload multipart com progresso incremental por arquivo,
+ * respeitando os mesmos limites documentados no backend (UPLOAD_*).
+ */
+export async function mockUpload<T>(
+  caminho: string,
+  formData: FormData,
+  onProgresso?: (p: number) => void,
+  signal?: AbortSignal,
+): Promise<ApiEnvelope<T>> {
+  const m = caminho.match(REGEX_UPLOAD);
+  if (!m?.groups) throw new ApiError("NAO_ENCONTRADO", `Mock sem rota de upload para ${caminho}`, 404);
+
+  const usuario = usuarioAutenticado();
+  const voo = acharVoo(m.groups.id, usuario.id_usuario);
+
+  const arquivos = formData.getAll("imagens").filter((v): v is File => v instanceof File);
+  if (arquivos.length === 0) {
+    throw new ApiError("REQUISICAO_INVALIDA", "Envie ao menos uma imagem no campo 'imagens'", 400);
+  }
+  if (arquivos.length > UPLOAD_MAX_FILES) {
+    throw new ApiError("REQUISICAO_INVALIDA", `Máximo de ${UPLOAD_MAX_FILES} arquivos por envio`, 400);
+  }
+  for (const f of arquivos) {
+    if (!UPLOAD_ALLOWED_MIME.includes(f.type) || !extensaoValida(f.name)) {
+      throw new ApiError("TIPO_NAO_SUPORTADO", `Arquivo "${f.name}" tem tipo não permitido`, 415);
+    }
+    if (f.size > UPLOAD_MAX_FILE_MB * 1024 * 1024) {
+      throw new ApiError("ARQUIVO_GRANDE", `Arquivo "${f.name}" excede ${UPLOAD_MAX_FILE_MB} MB`, 413);
+    }
+  }
+
+  const novas: ImagemVoo[] = [];
+  for (let i = 0; i < arquivos.length; i++) {
+    const f = arquivos[i];
+    for (let p = 20; p <= 100; p += 20) {
+      if (signal?.aborted) throw new DOMException("Upload cancelado", "AbortError");
+      await new Promise((r) => setTimeout(r, 90));
+      const percentualGlobal = Math.round(((i + p / 100) / arquivos.length) * 100);
+      onProgresso?.(percentualGlobal);
+    }
+    novas.push({
+      id_imagem: crypto.randomUUID(),
+      id_voo: voo.id_voo,
+      nome_original: f.name,
+      nome_armazenado: `${Date.now()}-${f.name}`,
+      mime_type: f.type,
+      tamanho_bytes: f.size,
+      caminho: URL.createObjectURL(f),
+      criado_em: agora(),
+    });
+  }
+
+  dominio.imagens.push(...novas);
+  return { data: novas as unknown as T };
+}
+
+const REGEX_DOWNLOAD = /^\/relatorios\/(?<id>[^/]+)\/download$/;
+
+/**
+ * Gera um PDF de demonstracao no navegador (via canvas) para o modo mock,
+ * ja que nao ha backend real produzindo o arquivo.
+ */
+export async function mockDownload(caminho: string): Promise<Blob> {
+  const m = caminho.match(REGEX_DOWNLOAD);
+  if (!m?.groups) throw new ApiError("NAO_ENCONTRADO", `Mock sem rota de download para ${caminho}`, 404);
+
+  const usuario = usuarioAutenticado();
+  const relatorio = dominio.relatorios.find((r) => r.id_relatorio === m.groups!.id);
+  if (!relatorio) throw new ApiError("NAO_ENCONTRADO", "Relatório não encontrado", 404);
+  acharAnalise(relatorio.id_analise, usuario.id_usuario);
+
+  await new Promise((r) => setTimeout(r, 400));
+
+  const texto = [
+    "AgroVision - Relatorio de Analise (demonstracao/mock)",
+    `Relatorio: ${relatorio.id_relatorio}`,
+    `Analise: ${relatorio.id_analise}`,
+    `Versao das regras: ${relatorio.versao_regras}`,
+    `Gerado em: ${relatorio.gerado_em}`,
+    "",
+    "Recomendacao:",
+    relatorio.recomendacao,
+  ].join("\n");
+
+  return new Blob([texto], { type: "application/pdf" });
 }

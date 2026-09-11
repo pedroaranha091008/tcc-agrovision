@@ -10,6 +10,9 @@ import { PropriedadesListPage } from "@/pages/propriedades/PropriedadesListPage"
 import { PropriedadeDetailPage } from "@/pages/propriedades/PropriedadeDetailPage";
 import { TalhaoDetailPage } from "@/pages/talhoes/TalhaoDetailPage";
 import { VooDetailPage } from "@/pages/voos/VooDetailPage";
+import { AnalisesHistoricoPage } from "@/pages/analises/AnalisesHistoricoPage";
+import { AnaliseDetailPage } from "@/pages/analises/AnaliseDetailPage";
+import { RelatoriosListPage } from "@/pages/relatorios/RelatoriosListPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
 export default function App() {
@@ -48,6 +51,9 @@ export default function App() {
         <Route path="/propriedades/:id" element={<PropriedadeDetailPage />} />
         <Route path="/talhoes/:id" element={<TalhaoDetailPage />} />
         <Route path="/voos/:id" element={<VooDetailPage />} />
+        <Route path="/analises" element={<AnalisesHistoricoPage />} />
+        <Route path="/analises/:id" element={<AnaliseDetailPage />} />
+        <Route path="/relatorios" element={<RelatoriosListPage />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

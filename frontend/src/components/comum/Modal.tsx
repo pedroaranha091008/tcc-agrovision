@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { X } from "lucide-react";
 
@@ -10,16 +10,50 @@ interface Props {
   larguraMax?: string;
 }
 
-/** Modal simples com overlay, fechamento por Esc e clique fora. */
+const SELETOR_FOCAVEL =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/**
+ * Modal com overlay, fechamento por Esc/clique fora, foco movido para dentro
+ * ao abrir, ciclo de Tab preso ao conteudo (focus trap) e foco devolvido ao
+ * elemento que abriu o modal quando ele fecha.
+ */
 export function Modal({ aberto, titulo, onFechar, children, larguraMax = "max-w-lg" }: Props) {
+  const painelRef = useRef<HTMLDivElement>(null);
+  const gatilhoAnteriorRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
     if (!aberto) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onFechar();
+
+    gatilhoAnteriorRef.current = document.activeElement as HTMLElement | null;
+    const primeiro = painelRef.current?.querySelector<HTMLElement>(SELETOR_FOCAVEL);
+    (primeiro ?? painelRef.current)?.focus();
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onFechar();
+        return;
+      }
+      if (e.key !== "Tab" || !painelRef.current) return;
+      const focaveis = painelRef.current.querySelectorAll<HTMLElement>(SELETOR_FOCAVEL);
+      if (focaveis.length === 0) return;
+      const primeiro = focaveis[0];
+      const ultimo = focaveis[focaveis.length - 1];
+      if (e.shiftKey && document.activeElement === primeiro) {
+        e.preventDefault();
+        ultimo.focus();
+      } else if (!e.shiftKey && document.activeElement === ultimo) {
+        e.preventDefault();
+        primeiro.focus();
+      }
+    };
+
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
+      gatilhoAnteriorRef.current?.focus();
     };
   }, [aberto, onFechar]);
 
@@ -32,10 +66,12 @@ export function Modal({ aberto, titulo, onFechar, children, larguraMax = "max-w-
       role="presentation"
     >
       <div
+        ref={painelRef}
         role="dialog"
         aria-modal="true"
         aria-label={titulo}
-        className={`w-full ${larguraMax} bg-white rounded-2xl shadow-2xl border border-border max-h-[90vh] overflow-y-auto`}
+        tabIndex={-1}
+        className={`w-full ${larguraMax} bg-white rounded-2xl shadow-2xl border border-border max-h-[90vh] overflow-y-auto outline-none`}
         onClick={(e) => e.stopPropagation()}
         style={{ fontFamily: "Inter, sans-serif" }}
       >

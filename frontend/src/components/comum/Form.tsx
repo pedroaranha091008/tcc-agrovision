@@ -1,14 +1,24 @@
-import type {
-  ButtonHTMLAttributes,
-  InputHTMLAttributes,
-  ReactNode,
-  SelectHTMLAttributes,
-  TextareaHTMLAttributes,
+import {
+  cloneElement,
+  isValidElement,
+  useId,
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactElement,
+  type ReactNode,
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
 } from "react";
 
 const baseInput =
   "w-full px-4 py-2.5 rounded-xl border bg-white text-[#212121] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent transition-all text-sm";
 
+/**
+ * Rotulo associado ao controle (label htmlFor + id, aria-invalid,
+ * aria-describedby para dica/erro). O controle filho (Input/Select/Textarea)
+ * so precisa declarar o proprio "erro" visual; o id e a ligacao com o rotulo
+ * sao resolvidos aqui.
+ */
 export function Campo({
   label,
   erro,
@@ -20,15 +30,34 @@ export function Campo({
   dica?: string;
   children: ReactNode;
 }) {
+  const idGerado = useId();
+  const controle = isValidElement(children) ? (children as ReactElement<{ id?: string }>) : null;
+  const controlId = controle?.props.id ?? idGerado;
+  const descricaoId = erro ? `${controlId}-erro` : dica ? `${controlId}-dica` : undefined;
+
   return (
     <div>
-      <label className="block text-sm font-medium text-[#212121] mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>
+      <label
+        htmlFor={controlId}
+        className="block text-sm font-medium text-[#212121] mb-1.5"
+        style={{ fontFamily: "Inter, sans-serif" }}
+      >
         {label}
       </label>
-      {children}
-      {dica && !erro && <p className="mt-1 text-xs text-[#4a5568]">{dica}</p>}
+      {controle
+        ? cloneElement(controle, {
+            id: controlId,
+            "aria-invalid": erro ? true : undefined,
+            "aria-describedby": descricaoId,
+          } as Record<string, unknown>)
+        : children}
+      {dica && !erro && (
+        <p id={descricaoId} className="mt-1 text-xs text-[#4a5568]">
+          {dica}
+        </p>
+      )}
       {erro && (
-        <p className="mt-1 text-xs text-red-600" role="alert">
+        <p id={descricaoId} className="mt-1 text-xs text-red-600" role="alert">
           {erro}
         </p>
       )}

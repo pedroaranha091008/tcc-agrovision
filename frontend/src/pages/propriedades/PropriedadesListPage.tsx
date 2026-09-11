@@ -77,14 +77,22 @@ export function PropriedadesListPage() {
           }}
         >
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4a5568]" />
+          <label htmlFor="busca-propriedade" className="sr-only">
+            Buscar por nome da fazenda
+          </label>
           <input
+            id="busca-propriedade"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             placeholder="Buscar por nome da fazenda..."
             className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-border text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent"
           />
         </form>
+        <label htmlFor="filtro-estado" className="sr-only">
+          Filtrar por estado
+        </label>
         <Select
+          id="filtro-estado"
           value={estado}
           onChange={(e) => {
             setPagina(1);
