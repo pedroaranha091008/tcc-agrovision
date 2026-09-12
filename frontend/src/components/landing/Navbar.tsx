@@ -37,13 +37,13 @@ export function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? "bg-white/95 backdrop-blur-md shadow-lg shadow-black/5 border-b border-border"
-          : "bg-transparent"
+          ? "bg-white/60 backdrop-blur-xl backdrop-saturate-150 shadow-[0_1px_24px_rgba(0,0,0,0.06)] border-b border-black/[0.06]"
+          : "bg-gradient-to-b from-black/25 via-black/5 to-transparent backdrop-blur-[2px]"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-18 py-4">
+      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-2.5 group">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1B5E20] to-[#66BB6A] flex items-center justify-center shadow-md group-hover:shadow-green-500/30 transition-shadow">
             <Leaf className="w-5 h-5 text-white" />
@@ -59,10 +59,10 @@ export function Navbar() {
             <button
               key={id}
               onClick={() => irParaSecao(id)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-white/10 ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 scrolled
-                  ? "text-[#212121] hover:text-[#1B5E20] hover:bg-[#E8F5E9]"
-                  : "text-white/90 hover:text-white"
+                  ? "text-[#212121] hover:text-[#1B5E20] hover:bg-[#1B5E20]/[0.06]"
+                  : "text-white/90 hover:text-white hover:bg-white/10"
               }`}
               style={{ fontFamily: "Inter, sans-serif" }}
             >
@@ -73,7 +73,7 @@ export function Navbar() {
             to="/login"
             className={`ml-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
               scrolled
-                ? "text-[#1B5E20] border border-[#1B5E20]/30 hover:bg-[#E8F5E9]"
+                ? "text-[#1B5E20] border border-[#1B5E20]/25 hover:bg-[#1B5E20]/[0.06]"
                 : "text-white border border-white/30 hover:bg-white/10"
             }`}
             style={{ fontFamily: "Inter, sans-serif" }}
@@ -92,14 +92,14 @@ export function Navbar() {
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"}
-          className={`md:hidden p-2 rounded-lg ${scrolled ? "text-[#212121]" : "text-white"}`}
+          className={`md:hidden p-2 rounded-lg transition-colors ${scrolled ? "text-[#212121]" : "text-white"}`}
         >
           {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden bg-white border-t border-border px-6 py-4 flex flex-col gap-2">
+        <div className="md:hidden bg-white/85 backdrop-blur-xl border-t border-black/[0.06] px-6 py-4 flex flex-col gap-2">
           {SECOES.filter((s) => s.id !== "dashboard-preview").map(({ label, id }) => (
             <button
               key={id}
