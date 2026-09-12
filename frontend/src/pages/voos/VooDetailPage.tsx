@@ -86,12 +86,12 @@ export function VooDetailPage() {
       />
 
       {erroAcao && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
+        <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
           {erroAcao}
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-border p-5 mb-6" style={{ fontFamily: "Inter, sans-serif" }}>
+      <div className="bg-white rounded-lg border border-border p-5 mb-6" style={{ fontFamily: "Inter, sans-serif" }}>
         <dl className="grid sm:grid-cols-3 gap-4 text-sm">
           <div>
             <dt className="text-xs text-[#4a5568] uppercase tracking-wide">Data do voo</dt>

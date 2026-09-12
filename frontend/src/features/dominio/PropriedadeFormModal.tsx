@@ -55,7 +55,7 @@ export function PropriedadeFormModal({ aberto, inicial, onFechar, onSalvar }: Pr
     <Modal aberto={aberto} titulo={editar ? "Editar propriedade" : "Nova propriedade"} onFechar={onFechar}>
       <form onSubmit={submeter} className="space-y-4">
         {erroApi && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
+          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
             {erroApi}
           </div>
         )}

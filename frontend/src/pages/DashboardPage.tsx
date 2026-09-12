@@ -100,7 +100,7 @@ export function DashboardPage() {
                 resumo.refetch();
                 talhoes.refetch();
               }}
-              className="p-2.5 rounded-xl border border-border hover:bg-[#F8F9FA] text-[#4a5568] transition-colors"
+              className="p-2.5 rounded-md border border-border hover:bg-[#F8F9FA] text-[#4a5568] transition-colors"
               aria-label="Atualizar dados"
               title="Atualizar"
             >
@@ -108,7 +108,7 @@ export function DashboardPage() {
             </button>
             <Link
               to="/propriedades"
-              className="flex items-center gap-2 bg-[#1B5E20] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#2E7D32] transition-all"
+              className="flex items-center gap-2 bg-[#1B5E20] text-white px-4 py-2.5 rounded-md text-sm font-semibold hover:bg-[#2E7D32] transition-all"
             >
               <Plus className="w-4 h-4" /> Nova propriedade
             </Link>
@@ -145,7 +145,7 @@ export function DashboardPage() {
             type="date"
             value={dataInicio}
             onChange={(e) => atualizarFiltro("data_inicio", e.target.value)}
-            className="px-3 py-2.5 rounded-xl border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A]"
+            className="px-3 py-2.5 rounded-md border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A]"
           />
         </div>
         <div>
@@ -157,7 +157,7 @@ export function DashboardPage() {
             type="date"
             value={dataFim}
             onChange={(e) => atualizarFiltro("data_fim", e.target.value)}
-            className="px-3 py-2.5 rounded-xl border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A]"
+            className="px-3 py-2.5 rounded-md border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A]"
           />
         </div>
         {(idPropriedade || dataInicio || dataFim) && (
@@ -177,7 +177,7 @@ export function DashboardPage() {
           acao={
             <Link
               to="/propriedades"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#1B5E20] text-white text-sm font-semibold hover:bg-[#2E7D32] transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-md bg-[#1B5E20] text-white text-sm font-semibold hover:bg-[#2E7D32] transition-colors"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               <Plus className="w-4 h-4" /> Nova propriedade
@@ -219,8 +219,8 @@ export function DashboardPage() {
                 bg: "bg-red-50",
               },
             ].map(({ icon: Icon, label, value, color, bg }) => (
-              <div key={label} className="bg-white rounded-2xl p-5 border border-border hover:border-[#A5D6A7] hover:shadow-md transition-all">
-                <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center mb-3`}>
+              <div key={label} className="bg-white rounded-lg p-5 border border-border hover:border-[#A5D6A7] hover:shadow-md transition-all">
+                <div className={`w-10 h-10 rounded-md ${bg} flex items-center justify-center mb-3`}>
                   <Icon className={`w-5 h-5 ${color}`} />
                 </div>
                 <div className="text-2xl font-bold text-[#212121] mb-0.5" style={{ fontFamily: "Poppins, sans-serif" }}>
@@ -232,7 +232,7 @@ export function DashboardPage() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6 mb-6">
-            <div className="lg:col-span-2 bg-white rounded-2xl border border-border p-5">
+            <div className="lg:col-span-2 bg-white rounded-lg border border-border p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-[#212121]" style={{ fontFamily: "Poppins, sans-serif" }}>
                   Voos e análises por mês
@@ -264,7 +264,7 @@ export function DashboardPage() {
               )}
             </div>
 
-            <div className="bg-white rounded-2xl border border-border p-5">
+            <div className="bg-white rounded-lg border border-border p-5">
               <h3 className="font-bold text-[#212121] mb-3" style={{ fontFamily: "Poppins, sans-serif" }}>
                 Distribuição de risco
               </h3>
@@ -319,7 +319,7 @@ export function DashboardPage() {
                       <Link
                         key={t.id_talhao}
                         to={`/talhoes/${t.id_talhao}`}
-                        className="bg-white rounded-2xl border border-border p-4 hover:border-[#A5D6A7] hover:shadow-md transition-all"
+                        className="bg-white rounded-lg border border-border p-4 hover:border-[#A5D6A7] hover:shadow-md transition-all"
                       >
                         <div className="flex items-start justify-between">
                           <span className="font-semibold text-[#212121]" style={{ fontFamily: "Poppins, sans-serif" }}>
@@ -342,7 +342,7 @@ export function DashboardPage() {
               )}
             </div>
 
-            <div className="bg-white rounded-2xl border border-border p-5">
+            <div className="bg-white rounded-lg border border-border p-5">
               <h3 className="font-bold text-[#212121] mb-3" style={{ fontFamily: "Poppins, sans-serif" }}>
                 Análises por tipo
               </h3>

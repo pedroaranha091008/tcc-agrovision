@@ -49,7 +49,7 @@ export function AnaliseDetailPage() {
         ]}
       />
 
-      <div className="bg-white rounded-2xl border border-border p-5 mb-6" style={{ fontFamily: "Inter, sans-serif" }}>
+      <div className="bg-white rounded-lg border border-border p-5 mb-6" style={{ fontFamily: "Inter, sans-serif" }}>
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <RiscoBadge nivel={a.nivel_risco} />
           <StatusProcessamentoBadge status={a.status} />

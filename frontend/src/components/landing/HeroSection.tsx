@@ -147,15 +147,18 @@ export function HeroSection() {
         {/* fase 1: heading/CTA originais da Hero */}
         <div ref={introRef} className="relative z-10 max-w-7xl mx-auto px-6 pt-24 pb-16 w-full">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 mb-8">
+            <div className="inline-flex items-center gap-2.5 mb-8">
               <span className="w-2 h-2 rounded-full bg-[#66BB6A] animate-pulse" />
-              <span className="text-white/90 text-sm font-medium" style={{ fontFamily: "Inter, sans-serif" }}>
+              <span
+                className="text-white/80 text-xs font-bold uppercase tracking-[0.18em]"
+                style={{ fontFamily: "Inter, sans-serif" }}
+              >
                 Tecnologia de Precisão para o Agro
               </span>
             </div>
 
             <h1
-              className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.05] mb-6"
+              className="text-6xl md:text-7xl lg:text-[5.5rem] font-black text-white leading-[0.95] mb-6 tracking-tight"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               Mapeamento
@@ -175,7 +178,7 @@ export function HeroSection() {
             <div className="flex flex-col sm:flex-row gap-4 mb-16">
               <button
                 onClick={() => scrollToId("contato")}
-                className="group px-8 py-4 bg-[#66BB6A] hover:bg-[#81C784] text-[#1B5E20] font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-xl shadow-green-900/30 hover:-translate-y-1 hover:shadow-green-900/40"
+                className="group px-8 py-4 bg-[#66BB6A] text-[#0a2e0c] font-bold rounded-md flex items-center justify-center gap-2 transition-all shadow-[4px_4px_0_0_#164a19] hover:shadow-[2px_2px_0_0_#164a19] hover:translate-x-[2px] hover:translate-y-[2px]"
                 style={{ fontFamily: "Poppins, sans-serif" }}
               >
                 Solicitar Orçamento
@@ -183,7 +186,7 @@ export function HeroSection() {
               </button>
               <Link
                 to="/dashboard"
-                className="group px-8 py-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white font-semibold rounded-xl border border-white/30 flex items-center justify-center gap-2 transition-all hover:-translate-y-1"
+                className="group px-8 py-4 bg-transparent hover:bg-white/10 text-white font-semibold rounded-md border-2 border-white/40 flex items-center justify-center gap-2 transition-all"
                 style={{ fontFamily: "Poppins, sans-serif" }}
               >
                 <Play className="w-5 h-5" />
@@ -191,15 +194,10 @@ export function HeroSection() {
               </Link>
             </div>
 
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-6">
               {destaques.map(({ icon: Icon, value, label }) => (
-                <div
-                  key={label}
-                  className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-5 py-3 hover:bg-white/15 transition-all hover:-translate-y-0.5 cursor-default"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-[#66BB6A]/20 border border-[#66BB6A]/30 flex items-center justify-center">
-                    <Icon className="w-5 h-5 text-[#A5D6A7]" />
-                  </div>
+                <div key={label} className="flex items-center gap-3 border-l-2 border-[#66BB6A]/50 pl-3">
+                  <Icon className="w-5 h-5 text-[#66BB6A] flex-shrink-0" />
                   <div>
                     <div className="text-xl font-bold text-white" style={{ fontFamily: "Poppins, sans-serif" }}>
                       {value}
@@ -222,7 +220,7 @@ export function HeroSection() {
         {callouts.map(({ icon: Icon, titulo, texto, posicao }) => (
           <div
             key={titulo}
-            className={`agv-callout absolute z-20 hidden md:block w-64 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 ${posicao}`}
+            className={`agv-callout absolute z-20 hidden md:block w-64 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-4 ${posicao}`}
             style={{ fontFamily: "Inter, sans-serif" }}
           >
             <div className="w-9 h-9 rounded-lg bg-[#66BB6A]/20 border border-[#66BB6A]/30 flex items-center justify-center mb-2">

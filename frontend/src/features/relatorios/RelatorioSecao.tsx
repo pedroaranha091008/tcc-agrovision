@@ -58,19 +58,19 @@ export function RelatorioSecao({ analise }: { analise: Analise }) {
   if (q.error) return <EstadoErro erro={q.error} onTentarNovamente={q.refetch} />;
 
   return (
-    <div className="rounded-2xl border border-border bg-white p-5" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div className="rounded-lg border border-border bg-white p-5" style={{ fontFamily: "Inter, sans-serif" }}>
       <h2 className="font-bold text-[#212121] flex items-center gap-2 mb-3" style={{ fontFamily: "Poppins, sans-serif" }}>
         <FileText className="w-4 h-4" /> Relatório e recomendação
       </h2>
 
       {erro && (
-        <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
+        <div className="mb-3 rounded-md border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
           {erro}
         </div>
       )}
 
       {!relatorio && !completa && (
-        <div className="flex items-start gap-2 text-sm text-[#4a5568] bg-[#F8F9FA] rounded-xl p-4">
+        <div className="flex items-start gap-2 text-sm text-[#4a5568] bg-[#F8F9FA] rounded-md p-4">
           <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <span>
             É preciso que a análise esteja <strong>concluída</strong>, com <strong>nível de risco</strong> e{" "}
@@ -80,7 +80,7 @@ export function RelatorioSecao({ analise }: { analise: Analise }) {
       )}
 
       {!relatorio && completa && (
-        <div className="flex items-center justify-between gap-3 bg-[#F8F9FA] rounded-xl p-4">
+        <div className="flex items-center justify-between gap-3 bg-[#F8F9FA] rounded-md p-4">
           <p className="text-sm text-[#4a5568]">Nenhum relatório gerado ainda para esta análise.</p>
           <BotaoPrimario onClick={gerar} carregando={gerando}>
             Gerar relatório

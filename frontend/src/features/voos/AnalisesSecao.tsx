@@ -59,7 +59,7 @@ export function AnalisesSecao({
       </div>
 
       {erro && (
-        <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
+        <div className="mb-3 rounded-md border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
           {erro}
         </div>
       )}
@@ -79,7 +79,7 @@ export function AnalisesSecao({
       {itens.length > 0 && (
         <ul className="space-y-3">
           {itens.map((a) => (
-            <li key={a.id_analise} className="bg-white rounded-2xl border border-border p-4">
+            <li key={a.id_analise} className="bg-white rounded-lg border border-border p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs bg-[#E8F5E9] text-[#1B5E20] px-2.5 py-1 rounded-full font-medium">

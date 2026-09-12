@@ -1,5 +1,6 @@
-import { ArrowRight, Leaf } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { scrollToId } from "@/lib/scroll";
+import { Kicker } from "./Kicker";
 
 const numeros = [
   { value: "500+", label: "Clientes ativos" },
@@ -14,14 +15,9 @@ export function AboutSection() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
-            <div
-              className="inline-flex items-center gap-2 bg-[#E8F5E9] text-[#2E7D32] rounded-full px-4 py-1.5 mb-6 text-sm font-medium"
-              style={{ fontFamily: "Inter, sans-serif" }}
-            >
-              <Leaf className="w-4 h-4" /> Sobre a AgroVision
-            </div>
+            <Kicker>Sobre a AgroVision</Kicker>
             <h2
-              className="text-4xl md:text-5xl font-bold text-[#212121] leading-tight mb-6"
+              className="text-5xl md:text-6xl font-black text-[#212121] leading-[0.95] mb-6 tracking-tight"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               Tecnologia aeroespacial a serviço do campo
@@ -42,7 +38,7 @@ export function AboutSection() {
               {numeros.map(({ value, label }) => (
                 <div
                   key={label}
-                  className="border border-[#E8F5E9] rounded-2xl p-5 hover:border-[#66BB6A] transition-colors"
+                  className="border-2 border-[#212121]/10 rounded-md p-5 hover:border-[#1B5E20] transition-colors"
                 >
                   <div className="text-3xl font-bold text-[#1B5E20]" style={{ fontFamily: "Poppins, sans-serif" }}>
                     {value}
@@ -56,7 +52,7 @@ export function AboutSection() {
 
             <button
               onClick={() => scrollToId("contato")}
-              className="inline-flex items-center gap-2 bg-[#1B5E20] text-white px-7 py-3.5 rounded-xl font-semibold hover:bg-[#2E7D32] transition-all hover:-translate-y-0.5 shadow-lg shadow-green-900/20"
+              className="inline-flex items-center gap-2 bg-[#1B5E20] text-white px-7 py-3.5 rounded-md font-semibold transition-all shadow-[4px_4px_0_0_#A5D6A7] hover:shadow-[2px_2px_0_0_#A5D6A7] hover:translate-x-[2px] hover:translate-y-[2px]"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               Fale Conosco <ArrowRight className="w-5 h-5" />
@@ -64,7 +60,7 @@ export function AboutSection() {
           </div>
 
           <div className="relative">
-            <div className="rounded-3xl overflow-hidden shadow-2xl shadow-green-900/15 border border-[#E8F5E9]">
+            <div className="rounded-md overflow-hidden border-2 border-[#212121]">
               <div className="bg-[#1B5E20] px-5 py-3 flex items-center gap-2">
                 <div className="flex gap-1.5">
                   <span className="w-3 h-3 rounded-full bg-red-400" />
@@ -116,14 +112,13 @@ export function AboutSection() {
                 <div className="text-sm text-[#4a5568]" style={{ fontFamily: "Inter, sans-serif" }}>
                   320 ha mapeados · Índice NDVI: 0.82
                 </div>
-                <span className="bg-[#E8F5E9] text-[#2E7D32] text-xs font-semibold px-3 py-1 rounded-full">
+                <span className="bg-[#E8F5E9] text-[#2E7D32] text-xs font-semibold px-3 py-1 rounded-md">
                   Atualizado hoje
                 </span>
               </div>
             </div>
 
-            <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-[#E8F5E9] -z-10" />
-            <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-[#E8F5E9] -z-10" />
+            <div className="absolute -bottom-5 -left-5 w-full h-full border-2 border-[#1B5E20] rounded-md -z-10" />
           </div>
         </div>
       </div>

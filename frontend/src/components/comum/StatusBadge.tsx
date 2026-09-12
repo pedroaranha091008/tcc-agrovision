@@ -16,7 +16,10 @@ const processamento: Record<StatusProcessamento, { txt: string; cls: string }> =
 
 function Base({ txt, cls }: { txt: string; cls: string }) {
   return (
-    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${cls}`} style={{ fontFamily: "Inter, sans-serif" }}>
+    <span
+      className={`text-xs px-2.5 py-1 rounded-md font-bold uppercase tracking-wide ${cls}`}
+      style={{ fontFamily: "Inter, sans-serif" }}
+    >
       {txt}
     </span>
   );
@@ -45,7 +48,7 @@ export function RiscoBadge({ nivel }: { nivel: NivelRisco | null }) {
   const { txt, cls, Icon } = risco[nivel];
   return (
     <span
-      className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${cls}`}
+      className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md font-bold uppercase tracking-wide ${cls}`}
       style={{ fontFamily: "Inter, sans-serif" }}
     >
       <Icon className="w-3.5 h-3.5" />

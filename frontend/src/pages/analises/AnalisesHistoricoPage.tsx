@@ -148,7 +148,7 @@ export function AnalisesHistoricoPage() {
             type="date"
             value={dataInicio}
             onChange={(e) => set("data_inicio", e.target.value)}
-            className="px-3 py-2.5 rounded-xl border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A]"
+            className="px-3 py-2.5 rounded-md border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A]"
           />
         </div>
         <div>
@@ -160,7 +160,7 @@ export function AnalisesHistoricoPage() {
             type="date"
             value={dataFim}
             onChange={(e) => set("data_fim", e.target.value)}
-            className="px-3 py-2.5 rounded-xl border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A]"
+            className="px-3 py-2.5 rounded-md border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A]"
           />
         </div>
       </div>
@@ -188,7 +188,7 @@ export function AnalisesHistoricoPage() {
           ) : (
             <>
               {/* Tabela (telas maiores) */}
-              <div className="hidden sm:block bg-white rounded-2xl border border-border overflow-hidden">
+              <div className="hidden sm:block bg-white rounded-lg border border-border overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm" style={{ fontFamily: "Inter, sans-serif" }}>
                     <thead>
@@ -235,7 +235,7 @@ export function AnalisesHistoricoPage() {
                   <li key={item.id_analise}>
                     <Link
                       to={`/analises/${item.id_analise}`}
-                      className="block bg-white rounded-2xl border border-border p-4"
+                      className="block bg-white rounded-lg border border-border p-4"
                       style={{ fontFamily: "Inter, sans-serif" }}
                     >
                       <div className="flex items-center justify-between mb-1">

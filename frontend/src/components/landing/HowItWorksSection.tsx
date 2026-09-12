@@ -1,4 +1,5 @@
-import { Calendar, CheckCircle, Download, Map, Upload } from "lucide-react";
+import { Calendar, Download, Map, Upload } from "lucide-react";
+import { Kicker } from "./Kicker";
 
 const steps = [
   {
@@ -32,36 +33,36 @@ export function HowItWorksSection() {
     <section className="py-28 bg-white">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <div
-            className="inline-flex items-center gap-2 bg-[#E8F5E9] text-[#2E7D32] rounded-full px-4 py-1.5 mb-4 text-sm font-medium"
-            style={{ fontFamily: "Inter, sans-serif" }}
-          >
-            <CheckCircle className="w-4 h-4" /> Como Funciona
+          <div className="flex justify-center">
+            <Kicker>Como Funciona</Kicker>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-[#212121] mb-4" style={{ fontFamily: "Poppins, sans-serif" }}>
+          <h2
+            className="text-5xl md:text-6xl font-black text-[#212121] mb-4 tracking-tight"
+            style={{ fontFamily: "Poppins, sans-serif" }}
+          >
             Processo simples,
             <span className="text-[#1B5E20]"> resultados excepcionais</span>
           </h2>
         </div>
 
         <div className="relative">
-          <div className="hidden lg:block absolute top-20 left-[12.5%] right-[12.5%] h-0.5 bg-gradient-to-r from-[#E8F5E9] via-[#66BB6A] to-[#E8F5E9]" />
+          <div className="hidden lg:block absolute top-20 left-[12.5%] right-[12.5%] h-0.5 bg-[#212121]/10" />
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((step, i) => (
               <div key={step.num} className="relative text-center group">
                 <div className="relative mb-6 flex justify-center">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#1B5E20] to-[#2E7D32] flex items-center justify-center shadow-xl shadow-green-900/20 group-hover:shadow-green-900/30 group-hover:-translate-y-1 transition-all">
+                  <div className="w-20 h-20 rounded-md bg-[#1B5E20] flex items-center justify-center transition-transform group-hover:-translate-y-1">
                     <step.icon className="w-9 h-9 text-white" />
                   </div>
                   <span
-                    className="absolute -top-3 -right-3 w-7 h-7 rounded-full bg-[#66BB6A] text-white text-xs font-bold flex items-center justify-center"
+                    className="absolute -top-3 -right-3 w-7 h-7 rounded-full bg-[#66BB6A] text-[#0a2e0c] text-xs font-bold flex items-center justify-center border-2 border-white"
                     style={{ fontFamily: "Poppins, sans-serif" }}
                   >
                     {i + 1}
                   </span>
                 </div>
-                <div className="text-4xl font-bold text-[#E8F5E9] mb-1" style={{ fontFamily: "Oswald, sans-serif" }}>
+                <div className="text-4xl font-bold text-[#212121]/10 mb-1" style={{ fontFamily: "Oswald, sans-serif" }}>
                   {step.num}
                 </div>
                 <h3 className="text-lg font-bold text-[#212121] mb-3" style={{ fontFamily: "Poppins, sans-serif" }}>

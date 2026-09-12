@@ -41,7 +41,7 @@ export function RelatoriosListPage() {
       <PageHeader titulo="Relatórios" descricao="Relatórios em PDF gerados a partir das análises concluídas" />
 
       {erro && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
+        <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
           {erro}
         </div>
       )}
@@ -64,7 +64,7 @@ export function RelatoriosListPage() {
           ) : (
             <div className="grid sm:grid-cols-2 gap-4">
               {q.data.itens.map((r) => (
-                <div key={r.id_relatorio} className="bg-white rounded-2xl border border-border p-4">
+                <div key={r.id_relatorio} className="bg-white rounded-lg border border-border p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="font-semibold text-[#212121]" style={{ fontFamily: "Poppins, sans-serif" }}>

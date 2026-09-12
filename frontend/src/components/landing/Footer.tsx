@@ -10,8 +10,8 @@ export function Footer() {
         <div className="grid md:grid-cols-4 gap-10 mb-12">
           <div className="md:col-span-2">
             <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1B5E20] to-[#66BB6A] flex items-center justify-center">
-                <Leaf className="w-5 h-5 text-white" />
+              <div className="w-9 h-9 rounded-md bg-[#66BB6A] flex items-center justify-center">
+                <Leaf className="w-5 h-5 text-[#0a2e0c]" />
               </div>
               <span className="font-bold text-xl" style={{ fontFamily: "Poppins, sans-serif" }}>
                 Agro<span className="text-[#66BB6A]">Vision</span>
@@ -28,7 +28,7 @@ export function Footer() {
               {redes.map((Icon, i) => (
                 <button
                   key={i}
-                  className="w-9 h-9 rounded-xl bg-white/10 hover:bg-[#66BB6A] flex items-center justify-center transition-all hover:-translate-y-0.5"
+                  className="w-9 h-9 rounded-md bg-white/10 hover:bg-[#66BB6A] flex items-center justify-center transition-all hover:-translate-y-0.5"
                 >
                   <Icon className="w-4 h-4 text-white" />
                 </button>

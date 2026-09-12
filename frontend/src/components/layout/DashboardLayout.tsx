@@ -71,7 +71,7 @@ export function DashboardLayout() {
                 to={to}
                 end={exato}
                 className={({ isActive }) =>
-                  `w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium ${
+                  `w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all text-sm font-medium ${
                     isActive ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/10"
                   }`
                 }
@@ -84,7 +84,7 @@ export function DashboardLayout() {
                 key={to}
                 aria-disabled
                 title="Disponível em breve"
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/35 cursor-not-allowed select-none"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-white/35 cursor-not-allowed select-none"
               >
                 <Icon className="w-5 h-5 flex-shrink-0" />
                 {sidebarOpen && (
@@ -101,7 +101,7 @@ export function DashboardLayout() {
         <div className="p-3 border-t border-white/10">
           <button
             onClick={sair}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all text-sm font-medium"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-white/60 hover:text-white hover:bg-white/10 transition-all text-sm font-medium"
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
             {sidebarOpen && <span>Sair</span>}
@@ -127,7 +127,7 @@ export function DashboardLayout() {
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
             </button>
             <div className="flex items-center gap-2.5 pl-3 border-l border-border">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1B5E20] to-[#66BB6A] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-[#1B5E20] flex items-center justify-center">
                 <span className="text-white text-sm font-bold">{inicial}</span>
               </div>
               <div className="hidden sm:block">

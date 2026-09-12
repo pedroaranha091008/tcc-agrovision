@@ -45,7 +45,7 @@ export function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1B5E20] to-[#66BB6A] flex items-center justify-center shadow-md group-hover:shadow-green-500/30 transition-shadow">
+          <div className="w-9 h-9 rounded-md bg-[#1B5E20] flex items-center justify-center transition-transform group-hover:-rotate-6">
             <Leaf className="w-5 h-5 text-white" />
           </div>
           <span className="font-bold text-xl tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>
@@ -82,7 +82,7 @@ export function Navbar() {
           </Link>
           <button
             onClick={() => irParaSecao("contato")}
-            className="ml-2 px-5 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-[#1B5E20] to-[#2E7D32] text-white hover:from-[#2E7D32] hover:to-[#388E3C] transition-all shadow-md hover:shadow-green-900/30 hover:-translate-y-0.5"
+            className="ml-2 px-5 py-2 rounded-md text-sm font-semibold bg-[#1B5E20] text-white transition-all shadow-[3px_3px_0_0_#66BB6A] hover:shadow-[1px_1px_0_0_#66BB6A] hover:translate-x-[2px] hover:translate-y-[2px]"
             style={{ fontFamily: "Inter, sans-serif" }}
           >
             Solicitar Orçamento
