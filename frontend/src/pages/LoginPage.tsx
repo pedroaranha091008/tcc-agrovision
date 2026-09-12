@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { AlertCircle, Leaf, LogIn } from "lucide-react";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -37,15 +37,18 @@ export function LoginPage() {
     }
   };
 
-  const handleGoogle = async (idToken: string) => {
-    setErro(null);
-    try {
-      await loginGoogle(idToken);
-      navigate(destino, { replace: true });
-    } catch (err) {
-      setErro(mensagemDoErro(err));
-    }
-  };
+  const handleGoogle = useCallback(
+    async (idToken: string) => {
+      setErro(null);
+      try {
+        await loginGoogle(idToken);
+        navigate(destino, { replace: true });
+      } catch (err) {
+        setErro(mensagemDoErro(err));
+      }
+    },
+    [loginGoogle, navigate, destino],
+  );
 
   return (
     <div className="min-h-screen flex">

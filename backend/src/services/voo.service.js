@@ -1,6 +1,7 @@
 import { prisma } from "../config/prisma.js";
 import { erros } from "../utils/AppError.js";
 import { lerPaginacao, meta } from "../utils/paginacao.js";
+import { fimDoDia } from "../utils/data.js";
 
 const ORDENAVEIS = ["criado_em", "data_voo", "status_processamento"];
 
@@ -24,7 +25,7 @@ export async function listar(idUsuario, consulta) {
   if (consulta.data_inicio || consulta.data_fim) {
     where.data_voo = {};
     if (consulta.data_inicio) where.data_voo.gte = consulta.data_inicio;
-    if (consulta.data_fim) where.data_voo.lte = consulta.data_fim;
+    if (consulta.data_fim) where.data_voo.lte = fimDoDia(consulta.data_fim);
   }
 
   const [itens, total] = await Promise.all([

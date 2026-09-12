@@ -67,7 +67,12 @@ export async function renovarSessao(): Promise<boolean> {
     session.definir(data.access_token, data.refresh_token);
     return true;
   } catch {
-    session.limpar();
+    // So limpa se o refresh token que falhou ainda for o que esta guardado.
+    // Duas renovacoes concorrentes (duas abas, ou StrictMode) podem correr
+    // ao mesmo tempo: a que perde nao pode apagar o token novo que a
+    // vencedora acabou de gravar, ou a aba vencedora fica sem refresh token
+    // na proxima vez que precisar renovar, mesmo tendo funcionado agora.
+    if (session.getRefreshToken() === refresh) session.limpar();
     return false;
   }
 }

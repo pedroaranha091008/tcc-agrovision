@@ -18,6 +18,15 @@ describe("formatar", () => {
     expect(data("nao-e-data")).toBe("—");
   });
 
+  it("nao desloca o dia num fuso horario negativo (ex.: Brasil, UTC-3)", () => {
+    // data_voo/filtros de data chegam como meia-noite UTC do dia escolhido
+    // (de um <input type="date">); formatar em horario local do navegador
+    // mostraria "14/03" para um usuario em UTC-3 escolhendo "15/03".
+    expect(data("2026-03-15T00:00:00.000Z")).toBe("15/03/2026");
+    // e mantem o mesmo dia mesmo com um horario mais avançado no fim do dia
+    expect(data("2026-03-15T23:00:00.000Z")).toBe("15/03/2026");
+  });
+
   it("paraInputDate extrai yyyy-mm-dd", () => {
     expect(paraInputDate("2026-03-15T12:00:00.000Z")).toBe("2026-03-15");
     expect(paraInputDate(null)).toBe("");

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { AlertCircle, Building2, Leaf, Tractor } from "lucide-react";
+import { AlertCircle, Leaf } from "lucide-react";
 import { useAuth } from "@/features/auth/AuthContext";
 import { GoogleLoginButton } from "@/features/auth/GoogleLoginButton";
 import { mensagemDoErro } from "@/services/erros";
@@ -18,18 +18,12 @@ const campos = [
   },
 ] as const;
 
-const tipos = [
-  { value: "produtor", label: "Produtor", icon: Tractor },
-  { value: "agronomo", label: "Agrônomo", icon: Leaf },
-  { value: "empresa", label: "Empresa", icon: Building2 },
-];
-
-type FormState = { nome: string; email: string; senha: string; confirmar: string; tipo: string };
+type FormState = { nome: string; email: string; senha: string; confirmar: string };
 
 export function RegisterPage() {
   const navigate = useNavigate();
   const { registrar, loginGoogle } = useAuth();
-  const [form, setForm] = useState<FormState>({ nome: "", email: "", senha: "", confirmar: "", tipo: "produtor" });
+  const [form, setForm] = useState<FormState>({ nome: "", email: "", senha: "", confirmar: "" });
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -57,15 +51,18 @@ export function RegisterPage() {
     }
   };
 
-  const handleGoogle = async (idToken: string) => {
-    setErro(null);
-    try {
-      await loginGoogle(idToken);
-      navigate("/dashboard", { replace: true });
-    } catch (err) {
-      setErro(mensagemDoErro(err));
-    }
-  };
+  const handleGoogle = useCallback(
+    async (idToken: string) => {
+      setErro(null);
+      try {
+        await loginGoogle(idToken);
+        navigate("/dashboard", { replace: true });
+      } catch (err) {
+        setErro(mensagemDoErro(err));
+      }
+    },
+    [loginGoogle, navigate],
+  );
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA] py-12 px-6">
@@ -136,31 +133,6 @@ export function RegisterPage() {
                 />
               </div>
             ))}
-
-            <div>
-              <span className="block text-sm font-medium text-[#212121] mb-2" style={{ fontFamily: "Inter, sans-serif" }}>
-                Tipo de usuário
-              </span>
-              <div className="grid grid-cols-3 gap-2">
-                {tipos.map(({ value, label, icon: Icon }) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setForm({ ...form, tipo: value })}
-                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all ${
-                      form.tipo === value
-                        ? "border-[#1B5E20] bg-[#E8F5E9] text-[#1B5E20]"
-                        : "border-border text-[#4a5568] hover:border-[#A5D6A7]"
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span className="text-xs font-medium" style={{ fontFamily: "Inter, sans-serif" }}>
-                      {label}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
 
             <button
               type="submit"

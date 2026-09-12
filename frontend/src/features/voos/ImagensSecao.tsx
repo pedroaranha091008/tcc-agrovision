@@ -60,22 +60,35 @@ export function ImagensSecao({
     const arquivos = Array.from(lista);
     if (arquivos.length === 0) return;
 
-    if (itens.length + fila.filter((f) => f.status !== "erro").length + arquivos.length > UPLOAD_MAX_FILES) {
-      setErroLista(`No máximo ${UPLOAD_MAX_FILES} imagens por voo.`);
-    } else {
-      setErroLista(null);
-    }
+    // Vagas restantes = limite - (imagens ja salvas + as que ja estao na
+    // fila e nao falharam). O excesso e listado com erro em vez de
+    // simplesmente ser enviado mesmo assim.
+    const jaContam = itens.length + fila.filter((f) => f.status !== "erro").length;
+    const vagas = Math.max(0, UPLOAD_MAX_FILES - jaContam);
+    const aEnviar = arquivos.slice(0, vagas);
+    const excedentes = arquivos.slice(vagas);
 
-    const novos: ItemFila[] = arquivos.map((arquivo) => {
-      const erro = validarArquivo(arquivo);
-      return {
+    setErroLista(excedentes.length > 0 ? `No máximo ${UPLOAD_MAX_FILES} imagens por voo.` : null);
+
+    const novos: ItemFila[] = [
+      ...aEnviar.map((arquivo) => {
+        const erro = validarArquivo(arquivo);
+        return {
+          id: crypto.randomUUID(),
+          arquivo,
+          progresso: 0,
+          status: (erro ? "erro" : "enviando") as ItemFila["status"],
+          erro: erro ?? undefined,
+        };
+      }),
+      ...excedentes.map((arquivo) => ({
         id: crypto.randomUUID(),
         arquivo,
         progresso: 0,
-        status: erro ? "erro" : "enviando",
-        erro: erro ?? undefined,
-      };
-    });
+        status: "erro" as const,
+        erro: `Limite de ${UPLOAD_MAX_FILES} imagens por voo atingido`,
+      })),
+    ];
 
     setFila((f) => [...f, ...novos]);
     for (const item of novos) {
@@ -178,7 +191,7 @@ export function ImagensSecao({
                   <span className="text-red-600 text-xs" role="alert">
                     {item.erro}
                   </span>
-                  {!validarArquivo(item.arquivo) && (
+                  {!validarArquivo(item.arquivo) && !item.erro?.startsWith("Limite de") && (
                     <button
                       onClick={() => void enviarUm(item)}
                       className="p-1.5 rounded-lg hover:bg-[#E8F5E9] text-[#1B5E20]"

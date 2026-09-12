@@ -9,10 +9,21 @@ export function numero(valor: number | null | undefined): string {
   return valor == null ? "—" : nf.format(valor);
 }
 
+const formatoDataUTC = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" });
+
+/**
+ * Formata so a data (sem hora), em UTC.
+ *
+ * Campos "so data" (data_voo, e os filtros "de"/"ate" vindos de
+ * <input type="date">) chegam como meia-noite UTC do dia escolhido. Formatar
+ * em horario local do navegador desloca um dia para tras em qualquer fuso
+ * negativo (todo o Brasil): um voo em "2026-03-15" apareceria como "14/03".
+ * Formatando em UTC, o dia exibido e sempre o dia que foi de fato escolhido.
+ */
 export function data(iso: string | null | undefined): string {
   if (!iso) return "—";
   const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("pt-BR");
+  return Number.isNaN(d.getTime()) ? "—" : formatoDataUTC.format(d);
 }
 
 export function dataHora(iso: string | null | undefined): string {

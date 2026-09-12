@@ -93,22 +93,29 @@ export async function gerar(idUsuario, idAnalise) {
     throw erros.interno("Falha ao gerar o PDF do relatorio");
   }
 
-  const existente = await prisma.relatorio.findFirst({ where: { id_analise: idAnalise } });
-  const dados = {
-    id_analise: idAnalise,
-    caminho_pdf: caminho,
-    versao_regras: VERSAO_REGRAS,
-    recomendacao: recomendacao.texto,
-  };
+  try {
+    const existente = await prisma.relatorio.findFirst({ where: { id_analise: idAnalise } });
+    const dados = {
+      id_analise: idAnalise,
+      caminho_pdf: caminho,
+      versao_regras: VERSAO_REGRAS,
+      recomendacao: recomendacao.texto,
+    };
 
-  const relatorio = existente
-    ? await prisma.relatorio.update({
-        where: { id_relatorio: existente.id_relatorio },
-        data: { caminho_pdf: caminho, versao_regras: VERSAO_REGRAS, recomendacao: recomendacao.texto },
-      })
-    : await prisma.relatorio.create({ data: dados });
+    const relatorio = existente
+      ? await prisma.relatorio.update({
+          where: { id_relatorio: existente.id_relatorio },
+          data: { caminho_pdf: caminho, versao_regras: VERSAO_REGRAS, recomendacao: recomendacao.texto },
+        })
+      : await prisma.relatorio.create({ data: dados });
 
-  return { relatorio, recomendacao };
+    return { relatorio, recomendacao };
+  } catch (e) {
+    // PDF ja escrito em disco mas o registro no banco falhou: remove o
+    // arquivo para nao deixar um PDF orfao sem relatorio correspondente.
+    await removerPdf(caminho);
+    throw e;
+  }
 }
 
 export async function caminhoDownload(idUsuario, idRelatorio) {

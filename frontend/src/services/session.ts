@@ -9,6 +9,7 @@
 const CHAVE_REFRESH = "agrovision.refresh_token";
 
 let accessToken: string | null = null;
+let ouvintesLimpar: Array<() => void> = [];
 
 export const session = {
   getAccessToken(): string | null {
@@ -43,9 +44,23 @@ export const session = {
     } catch {
       /* ignore */
     }
+    for (const ouvinte of ouvintesLimpar) ouvinte();
   },
 
   temSessaoPersistida(): boolean {
     return Boolean(this.getRefreshToken());
+  },
+
+  /**
+   * Chamado sempre que a sessao e limpa (logout, refresh falho, etc.),
+   * mesmo quando isso acontece bem fundo na pilha (ex.: dentro de uma
+   * chamada de http.ts). Sem isso, o AuthContext nunca fica sabendo que a
+   * sessao caiu e a UI continua se mostrando autenticada.
+   */
+  aoLimpar(fn: () => void): () => void {
+    ouvintesLimpar.push(fn);
+    return () => {
+      ouvintesLimpar = ouvintesLimpar.filter((f) => f !== fn);
+    };
   },
 };

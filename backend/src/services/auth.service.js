@@ -2,7 +2,7 @@ import { OAuth2Client } from "google-auth-library";
 import { prisma } from "../config/prisma.js";
 import env from "../config/env.js";
 import { erros } from "../utils/AppError.js";
-import { conferirSenha, gerarHashSenha } from "../utils/hash.js";
+import { HASH_FANTASMA, conferirSenha, gerarHashSenha } from "../utils/hash.js";
 import {
   expiracaoRefresh,
   gerarAccessToken,
@@ -57,8 +57,10 @@ export async function registrar(dados, contexto) {
 
 export async function login(dados, contexto) {
   const usuario = await prisma.usuario.findUnique({ where: { email: dados.email } });
-  const ok = usuario && (await conferirSenha(dados.senha, usuario.senha_hash));
-  if (!ok) throw erros.credenciaisInvalidas();
+  // Compara sempre contra um hash valido (o real ou um "fantasma") para que
+  // email inexistente, conta so-Google e senha errada levem o mesmo tempo.
+  const senhaConfere = await conferirSenha(dados.senha, usuario?.senha_hash ?? HASH_FANTASMA);
+  if (!usuario || !senhaConfere) throw erros.credenciaisInvalidas();
   return abrirSessao(usuario, contexto);
 }
 

@@ -15,6 +15,16 @@ function conflito(msg: string, details?: unknown): never {
   throw new ApiError("CONFLITO", msg, 409, details);
 }
 
+// Filtros "ate" (data_fim) chegam como "2026-02-01" (so a data, de um
+// <input type="date">), mas os registros sao strings ISO completas com hora
+// ("2026-02-01T14:00:00.000Z"). Comparando string a string, um registro feito
+// mais tarde no mesmo dia escolhido e sempre "maior" que a data pura e
+// ficaria de fora de um "<=" — por isso empurramos o limite pro fim do dia
+// antes de comparar (mesmo raciocinio usado no backend real).
+function fimDoDia(dataSomente: string): string {
+  return `${dataSomente}T23:59:59.999Z`;
+}
+
 // ─── Propriedades ────────────────────────────────────────────────────────────
 
 function minhasPropriedades(idUsuario: string): Propriedade[] {
@@ -223,7 +233,7 @@ export const rotasDominio: Array<{
       const fim = q.get("data_fim");
       if (idTalhao) itens = itens.filter((v) => v.id_talhao === idTalhao);
       if (inicio) itens = itens.filter((v) => v.data_voo >= inicio);
-      if (fim) itens = itens.filter((v) => v.data_voo <= fim);
+      if (fim) itens = itens.filter((v) => v.data_voo <= fimDoDia(fim));
       itens = [...itens].sort((a, b) => b.data_voo.localeCompare(a.data_voo));
       return paginar(itens, q);
     },
@@ -283,6 +293,14 @@ export const rotasDominio: Array<{
     handler: (_c, p) => {
       const u = usuarioAutenticado();
       const alvo = acharVoo(p.id, u.id_usuario);
+      // Mesma regra do backend real: nao apagar um voo que ainda tem
+      // analises ou imagens, para nao deixar registros orfaos e inacessiveis.
+      const analises = dominio.analises.filter((a) => a.id_voo === alvo.id_voo).length;
+      if (analises > 0) conflito("Voo possui análises vinculadas", { analises });
+      const imagens = dominio.imagens.filter((i) => i.id_voo === alvo.id_voo).length;
+      if (imagens > 0) {
+        conflito("Voo possui imagens vinculadas; remova as imagens primeiro", { imagens });
+      }
       dominio.voos = dominio.voos.filter((x) => x.id_voo !== alvo.id_voo);
       dominio.salvar("voos");
       return { data: undefined };
@@ -308,6 +326,9 @@ export const rotasDominio: Array<{
       const img = dominio.imagens.find((i) => i.id_imagem === p.idImagem && i.id_voo === p.id);
       if (!img) naoEncontrado("Imagem não encontrada");
       dominio.imagens = dominio.imagens.filter((i) => i.id_imagem !== img.id_imagem);
+      // O mock cria uma blob: URL por imagem enviada (ver mockUpload); sem
+      // revogar, cada envio+exclusao vaza memoria pelo resto da sessao da aba.
+      if (img.caminho.startsWith("blob:")) URL.revokeObjectURL(img.caminho);
       return { data: undefined };
     },
   },
@@ -382,6 +403,10 @@ export const rotasDominio: Array<{
     handler: (_c, p) => {
       const u = usuarioAutenticado();
       const alvo = acharAnalise(p.id, u.id_usuario);
+      // Mesma regra do backend real: um relatorio ja gerado para esta
+      // analise impede a exclusao, em vez de deixa-lo orfao e inacessivel.
+      const relatorios = dominio.relatorios.filter((r) => r.id_analise === alvo.id_analise).length;
+      if (relatorios > 0) conflito("Análise possui relatórios gerados", { relatorios });
       dominio.analises = dominio.analises.filter((x) => x.id_analise !== alvo.id_analise);
       return { data: undefined };
     },
@@ -406,7 +431,7 @@ export const rotasDominio: Array<{
 
       let voos = dominio.voos.filter((v) => idsTalhao.has(v.id_talhao));
       if (dataInicio) voos = voos.filter((v) => v.data_voo >= dataInicio);
-      if (dataFim) voos = voos.filter((v) => v.data_voo <= dataFim);
+      if (dataFim) voos = voos.filter((v) => v.data_voo <= fimDoDia(dataFim));
       const idsVoo = new Set(voos.map((v) => v.id_voo));
 
       const analises = dominio.analises.filter((a) => idsVoo.has(a.id_voo));
@@ -439,7 +464,8 @@ export const rotasDominio: Array<{
             total_voos: voos.length,
             total_analises: analises.length,
             area_monitorada_hectares: areaMonitorada,
-            problemas_detectados: distribuicaoRisco.alto + distribuicaoRisco.critico,
+            problemas_detectados:
+              distribuicaoRisco.medio + distribuicaoRisco.alto + distribuicaoRisco.critico,
             distribuicao_risco: distribuicaoRisco,
             distribuicao_tipo: [...porTipo.entries()].map(([tipo_analise, total]) => ({ tipo_analise, total })),
           },
@@ -490,7 +516,7 @@ export const rotasDominio: Array<{
       const idTalhao = q.get("id_talhao");
       const tipo = q.get("tipo_analise");
       if (dataInicio) itens = itens.filter((i) => i.data_analise >= dataInicio);
-      if (dataFim) itens = itens.filter((i) => i.data_analise <= dataFim);
+      if (dataFim) itens = itens.filter((i) => i.data_analise <= fimDoDia(dataFim));
       if (idPropriedade) itens = itens.filter((i) => i.propriedade.id_propriedade === idPropriedade);
       if (idTalhao) itens = itens.filter((i) => i.talhao.id_talhao === idTalhao);
       if (tipo) itens = itens.filter((i) => i.tipo_analise === tipo);

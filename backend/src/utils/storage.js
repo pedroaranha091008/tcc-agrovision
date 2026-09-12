@@ -16,6 +16,13 @@ async function garantirRaiz() {
   await fs.mkdir(RAIZ, { recursive: true });
 }
 
+// "startsWith(RAIZ)" sozinho aceita um irmao com prefixo igual (RAIZ=/a/uploads
+// tambem "contem" /a/uploads-evil). Exige que o caminho seja a propria raiz
+// ou comece com a raiz seguida do separador de diretorio.
+function dentroDaRaiz(alvo) {
+  return alvo === RAIZ || alvo.startsWith(RAIZ + path.sep);
+}
+
 function nomeSeguro(nomeOriginal) {
   const ext = path.extname(nomeOriginal).toLowerCase().replace(/[^.a-z0-9]/g, "");
   return `${Date.now()}-${crypto.randomBytes(8).toString("hex")}${ext}`;
@@ -38,7 +45,7 @@ export const storage = {
 
   async remover(caminhoRelativo) {
     const alvo = path.resolve(caminhoRelativo);
-    if (!alvo.startsWith(RAIZ)) return; // nunca remove fora da raiz de upload
+    if (!dentroDaRaiz(alvo)) return; // nunca remove fora da raiz de upload
     await fs.rm(alvo, { force: true });
   },
 

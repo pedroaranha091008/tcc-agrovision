@@ -47,6 +47,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => controller.abort();
   }, []);
 
+  // session.limpar() pode ser chamado bem longe daqui (ex.: dentro de
+  // http.ts, quando uma renovacao automatica de sessao falha no meio de uma
+  // requisicao qualquer). Sem essa assinatura, esse "usuario" do contexto
+  // nunca ficava sabendo que a sessao caiu: a UI continuava se mostrando
+  // autenticada, RequireAuth nunca redirecionava para /login, e toda
+  // chamada seguinte repetia o mesmo erro de sessao expirada.
+  useEffect(() => session.aoLimpar(() => setUsuario(null)), []);
+
   const login = useCallback(async (p: LoginPayload) => {
     setUsuario(await authService.login(p));
   }, []);

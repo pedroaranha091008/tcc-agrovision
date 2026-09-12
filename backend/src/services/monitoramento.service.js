@@ -1,5 +1,6 @@
 import { prisma } from "../config/prisma.js";
 import { lerPaginacao, meta } from "../utils/paginacao.js";
+import { fimDoDia } from "../utils/data.js";
 
 /**
  * Historico de monitoramentos: cada linha e uma analise com o voo, o talhao
@@ -17,7 +18,7 @@ export async function historico(idUsuario, consulta) {
   if (consulta.data_inicio || consulta.data_fim) {
     where.data_analise = {};
     if (consulta.data_inicio) where.data_analise.gte = consulta.data_inicio;
-    if (consulta.data_fim) where.data_analise.lte = consulta.data_fim;
+    if (consulta.data_fim) where.data_analise.lte = fimDoDia(consulta.data_fim);
   }
   if (consulta.id_talhao) {
     where.voo.talhao.id_talhao = consulta.id_talhao;

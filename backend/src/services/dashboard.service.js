@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma.js";
+import { fimDoDia } from "../utils/data.js";
 
 /**
  * Indicadores agregados do usuario autenticado.
@@ -14,7 +15,7 @@ export async function indicadores(idUsuario, filtros = {}) {
   if (filtros.data_inicio || filtros.data_fim) {
     filtroVoo.data_voo = {};
     if (filtros.data_inicio) filtroVoo.data_voo.gte = filtros.data_inicio;
-    if (filtros.data_fim) filtroVoo.data_voo.lte = filtros.data_fim;
+    if (filtros.data_fim) filtroVoo.data_voo.lte = fimDoDia(filtros.data_fim);
   }
 
   const filtroAnalise = { voo: filtroVoo };
@@ -57,7 +58,11 @@ export async function indicadores(idUsuario, filtros = {}) {
     distribuicaoRisco[chave] = linha._count._all;
   }
 
-  const analisesComRisco = (distribuicaoRisco.alto ?? 0) + (distribuicaoRisco.critico ?? 0);
+  // "Problemas detectados" conta qualquer analise fora do risco "baixo"
+  // (medio/atencao, alto e critico) — coerente com o que distribuicao_risco
+  // ja mostra, em vez de so alto+critico deixando o "medio" invisivel aqui.
+  const analisesComRisco =
+    (distribuicaoRisco.medio ?? 0) + (distribuicaoRisco.alto ?? 0) + (distribuicaoRisco.critico ?? 0);
 
   return {
     total_propriedades: totalPropriedades,
@@ -90,7 +95,7 @@ export async function series(idUsuario, filtros = {}) {
   if (filtros.data_inicio || filtros.data_fim) {
     where.data_voo = {};
     if (filtros.data_inicio) where.data_voo.gte = filtros.data_inicio;
-    if (filtros.data_fim) where.data_voo.lte = filtros.data_fim;
+    if (filtros.data_fim) where.data_voo.lte = fimDoDia(filtros.data_fim);
   }
 
   const voos = await prisma.voo.findMany({
