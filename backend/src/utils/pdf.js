@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import fs from "node:fs";
 import fsp from "node:fs/promises";
 import path from "node:path";
@@ -5,6 +6,13 @@ import PDFDocument from "pdfkit";
 import env from "../config/env.js";
 
 const RAIZ = path.resolve(env.report.dir);
+
+// "startsWith(RAIZ)" sozinho aceita um irmao com prefixo igual (RAIZ=/a/relatorios
+// tambem "contem" /a/relatorios-evil). Exige que o caminho seja a propria raiz
+// ou comece com a raiz seguida do separador de diretorio.
+function dentroDaRaiz(alvo) {
+  return alvo === RAIZ || alvo.startsWith(RAIZ + path.sep);
+}
 
 function linha(doc, rotulo, valor) {
   doc.font("Helvetica-Bold").text(`${rotulo}: `, { continued: true });
@@ -22,7 +30,10 @@ export async function gerarPdfRelatorio({ propriedade, talhao, voo, analise, rec
   await fsp.mkdir(RAIZ, { recursive: true });
   const nome = `relatorio-${analise.id_analise}.pdf`;
   const destino = path.join(RAIZ, nome);
-  const tmp = `${destino}.tmp`;
+  // sufixo aleatorio: duas geracoes concorrentes da MESMA analise (duplo
+  // clique, requisicao repetida) escrevem em arquivos .tmp distintos em vez
+  // de disputar o mesmo arquivo e corromper o PDF final.
+  const tmp = `${destino}.${crypto.randomBytes(6).toString("hex")}.tmp`;
 
   await new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: "A4", margin: 50 });
@@ -87,7 +98,7 @@ export async function gerarPdfRelatorio({ propriedade, talhao, voo, analise, rec
 
 export async function removerPdf(caminhoRelativo) {
   const alvo = path.resolve(caminhoRelativo);
-  if (!alvo.startsWith(RAIZ)) return;
+  if (!dentroDaRaiz(alvo)) return;
   await fsp.rm(alvo, { force: true });
 }
 

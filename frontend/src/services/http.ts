@@ -113,37 +113,51 @@ export function upload<T>(caminho: string, formData: FormData, opts: OpcoesUploa
     return mockUpload<T>(caminho, formData, onProgresso, signal);
   }
 
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${BASE_URL}${caminho}`);
-    const token = session.getAccessToken();
-    if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-    xhr.responseType = "json";
+  const tentar = (semRetry: boolean): Promise<ApiEnvelope<T>> =>
+    new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `${BASE_URL}${caminho}`);
+      const token = session.getAccessToken();
+      if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      xhr.responseType = "json";
 
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) onProgresso?.(Math.round((e.loaded / e.total) * 100));
-    };
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onProgresso?.(Math.round((e.loaded / e.total) * 100));
+      };
 
-    xhr.onerror = () => reject(ApiError.rede());
-    xhr.onabort = () => reject(new DOMException("Upload cancelado", "AbortError"));
+      xhr.onerror = () => reject(ApiError.rede());
+      xhr.onabort = () => reject(new DOMException("Upload cancelado", "AbortError"));
 
-    xhr.onload = () => {
-      const corpo = xhr.response as ApiEnvelope<T> | ApiErrorBody | undefined;
-      if (xhr.status >= 200 && xhr.status < 300) {
-        resolve((corpo as ApiEnvelope<T>) ?? { data: undefined as T });
-      } else {
-        const err = (corpo as ApiErrorBody | undefined)?.error;
+      xhr.onload = async () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const corpo = xhr.response as ApiEnvelope<T> | undefined;
+          resolve(corpo ?? { data: undefined as T });
+          return;
+        }
+        // Mesmo retry de 401->renovar->tentar de novo que request()/baixarArquivo()
+        // ja fazem; sem isso, um token expirado no meio de um upload falhava
+        // na hora mesmo com um refresh token valido disponivel.
+        if (xhr.status === 401 && !semRetry && tentarRenovarSessao) {
+          const ok = await tentarRenovarSessao();
+          if (ok) {
+            tentar(true).then(resolve, reject);
+            return;
+          }
+        }
+        const corpo = xhr.response as ApiErrorBody | undefined;
+        const err = corpo?.error;
         reject(new ApiError(err?.code ?? `HTTP_${xhr.status}`, err?.message ?? `Erro ${xhr.status}`, xhr.status, err?.details));
+      };
+
+      if (signal) {
+        if (signal.aborted) return xhr.abort();
+        signal.addEventListener("abort", () => xhr.abort(), { once: true });
       }
-    };
 
-    if (signal) {
-      if (signal.aborted) return xhr.abort();
-      signal.addEventListener("abort", () => xhr.abort(), { once: true });
-    }
+      xhr.send(formData);
+    });
 
-    xhr.send(formData);
-  });
+  return tentar(false);
 }
 
 /**
