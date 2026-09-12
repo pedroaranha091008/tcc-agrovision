@@ -1,6 +1,12 @@
+import { useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Link } from "react-router";
 import { ArrowRight, ChevronDown, Clock, Layers, Play, Target } from "lucide-react";
 import { scrollToId } from "@/lib/scroll";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const destaques = [
   { icon: Target, value: "98%", label: "Precisão de mapeamento" },
@@ -9,13 +15,48 @@ const destaques = [
 ];
 
 export function HeroSection() {
+  const secaoRef = useRef<HTMLElement>(null);
+  const imagemRef = useRef<HTMLImageElement>(null);
+  const conteudoRef = useRef<HTMLDivElement>(null);
+
+  // Parallax preso ao scroll (scrub): a imagem de fundo se move mais devagar
+  // que o conteudo, e o conteudo sobe e esmaece conforme a Hero sai de tela.
+  // Desativado para quem prefere menos movimento na tela.
+  useGSAP(
+    () => {
+      const prefereMenosMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (prefereMenosMovimento || !imagemRef.current || !conteudoRef.current) return;
+
+      const gatilho = {
+        trigger: secaoRef.current,
+        start: "top top",
+        end: "bottom top",
+        scrub: true,
+      };
+
+      gsap.fromTo(
+        imagemRef.current,
+        { yPercent: -8 },
+        { yPercent: 8, ease: "none", scrollTrigger: gatilho },
+      );
+      gsap.to(conteudoRef.current, {
+        yPercent: 25,
+        opacity: 0.15,
+        ease: "none",
+        scrollTrigger: gatilho,
+      });
+    },
+    { scope: secaoRef },
+  );
+
   return (
-    <section id="hero" className="relative min-h-screen flex items-center overflow-hidden">
+    <section ref={secaoRef} id="hero" className="relative min-h-screen flex items-center overflow-hidden">
       <div className="absolute inset-0">
         <img
+          ref={imagemRef}
           src="https://images.unsplash.com/photo-1586771107445-d3ca888129ce?w=1600&h=900&fit=crop&auto=format"
           alt="Drone sobrevoando plantação agrícola"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover scale-125 will-change-transform"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-[#1B5E20]/92 via-[#2E7D32]/80 to-[#1B5E20]/90" />
         <div
@@ -36,7 +77,7 @@ export function HeroSection() {
         }}
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-24 pb-16 w-full">
+      <div ref={conteudoRef} className="relative z-10 max-w-7xl mx-auto px-6 pt-24 pb-16 w-full will-change-transform">
         <div className="max-w-3xl">
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 mb-8">
             <span className="w-2 h-2 rounded-full bg-[#66BB6A] animate-pulse" />

@@ -9,6 +9,22 @@ beforeEach(() => {
   localStorage.clear();
 });
 
+// jsdom nao implementa matchMedia; o GSAP ScrollTrigger usa isso so de
+// registrar o plugin (import da HeroSection), mesmo sem nenhum teste
+// simular scroll de verdade.
+if (!window.matchMedia) {
+  window.matchMedia = (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  }) as unknown as MediaQueryList;
+}
+
 // Desmonta o DOM renderizado entre testes (equivalente ao auto-cleanup do
 // Testing Library, que depende de um afterEach global que nao habilitamos).
 afterEach(() => {

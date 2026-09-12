@@ -1,0 +1,55 @@
+/* Animações da ilustração do drone (DroneIllustration/DroneScrollSection).
+   Rodam sozinhas via CSS, independente do scroll — só a posição/escala/
+   rotação do grupo inteiro é controlada pelo GSAP. */
+
+.agv-helice {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: agv-girar 0.18s linear infinite;
+}
+
+@keyframes agv-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.agv-luz {
+  animation: agv-piscar 1.6s ease-in-out infinite;
+}
+
+@keyframes agv-piscar {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+
+.agv-scan-pulse {
+  animation: agv-pulsar 1.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes agv-pulsar {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agv-helice,
+  .agv-luz,
+  .agv-scan-pulse {
+    animation: none;
+  }
+}
