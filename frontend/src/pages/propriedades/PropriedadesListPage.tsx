@@ -85,7 +85,7 @@ export function PropriedadesListPage() {
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             placeholder="Buscar por nome da fazenda..."
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-border text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent"
+            className="w-full pl-9 pr-4 py-2.5 rounded-md bg-white border border-border text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent"
           />
         </form>
         <label htmlFor="filtro-estado" className="sr-only">
@@ -110,7 +110,7 @@ export function PropriedadesListPage() {
       </div>
 
       {erroAcao && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
+        <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
           {erroAcao}
         </div>
       )}
@@ -137,7 +137,7 @@ export function PropriedadesListPage() {
               }
             />
           ) : (
-            <div className="bg-white rounded-2xl border border-border overflow-hidden">
+            <div className="bg-white rounded-lg border border-border overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm" style={{ fontFamily: "Inter, sans-serif" }}>
                   <thead>

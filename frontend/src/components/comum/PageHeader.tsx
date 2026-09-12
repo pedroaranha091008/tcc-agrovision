@@ -44,7 +44,7 @@ export function PageHeader({
       {breadcrumbs && <Breadcrumbs itens={breadcrumbs} />}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-[#212121]" style={{ fontFamily: "Poppins, sans-serif" }}>
+          <h1 className="text-3xl font-black tracking-tight text-[#212121]" style={{ fontFamily: "Poppins, sans-serif" }}>
             {titulo}
           </h1>
           {descricao && (

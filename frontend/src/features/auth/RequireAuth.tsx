@@ -6,7 +6,7 @@ import { useAuth } from "./AuthContext";
 function TelaCarregando() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8F9FA] gap-4">
-      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#1B5E20] to-[#66BB6A] flex items-center justify-center animate-pulse">
+      <div className="w-12 h-12 rounded-lg bg-[#1B5E20] flex items-center justify-center animate-pulse">
         <Leaf className="w-6 h-6 text-white" />
       </div>
       <p className="text-sm text-[#4a5568]" style={{ fontFamily: "Inter, sans-serif" }}>

@@ -71,11 +71,11 @@ export function Modal({ aberto, titulo, onFechar, children, larguraMax = "max-w-
         aria-modal="true"
         aria-label={titulo}
         tabIndex={-1}
-        className={`w-full ${larguraMax} bg-white rounded-2xl shadow-2xl border border-border max-h-[90vh] overflow-y-auto outline-none`}
+        className={`w-full ${larguraMax} bg-white rounded-lg shadow-2xl border border-border max-h-[90vh] overflow-y-auto outline-none`}
         onClick={(e) => e.stopPropagation()}
         style={{ fontFamily: "Inter, sans-serif" }}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 bg-white rounded-t-2xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 bg-white rounded-t-lg">
           <h3 className="font-bold text-[#212121]" style={{ fontFamily: "Poppins, sans-serif" }}>
             {titulo}
           </h3>
@@ -114,14 +114,14 @@ export function ConfirmarExclusao({
       <div className="mt-6 flex justify-end gap-3">
         <button
           onClick={onCancelar}
-          className="px-4 py-2 rounded-xl border border-border text-[#4a5568] text-sm font-medium hover:bg-[#F8F9FA] transition-colors"
+          className="px-4 py-2 rounded-md border border-border text-[#4a5568] text-sm font-medium hover:bg-[#F8F9FA] transition-colors"
         >
           Cancelar
         </button>
         <button
           onClick={onConfirmar}
           disabled={processando}
-          className="px-4 py-2 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-60"
+          className="px-4 py-2 rounded-md bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-60"
         >
           {processando ? "Excluindo..." : "Excluir"}
         </button>

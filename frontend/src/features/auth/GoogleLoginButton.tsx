@@ -87,7 +87,7 @@ export function GoogleLoginButton({ onSuccess, onError }: Props) {
         }
       }}
       title={MOCK ? "Fluxo simulado (modo mock)" : "Configure VITE_GOOGLE_CLIENT_ID para habilitar"}
-      className="w-full flex items-center justify-center gap-3 py-3 px-5 rounded-xl border bg-white border-border hover:bg-[#F8F9FA] transition-all text-[#212121] font-medium text-sm shadow-sm hover:shadow-md hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:cursor-not-allowed"
+      className="w-full flex items-center justify-center gap-3 py-3 px-5 rounded-md border bg-white border-border hover:bg-[#F8F9FA] transition-all text-[#212121] font-medium text-sm shadow-sm hover:shadow-md hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:cursor-not-allowed"
       style={{ fontFamily: "Inter, sans-serif" }}
     >
       <span className="font-bold text-base w-5 text-center">G</span>

@@ -23,7 +23,7 @@ export function FiltrosAtivos({
         <button
           key={f.chave}
           onClick={() => onRemover(f.chave)}
-          className="inline-flex items-center gap-1.5 text-xs bg-[#E8F5E9] text-[#1B5E20] px-2.5 py-1 rounded-full font-medium hover:bg-[#d3ecd4] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs bg-[#E8F5E9] text-[#1B5E20] px-2.5 py-1 rounded-md font-semibold hover:bg-[#d3ecd4] transition-colors"
         >
           {f.rotulo}
           <X className="w-3 h-3" />

@@ -72,7 +72,7 @@ export function LoginPage() {
 
         <div className="relative z-10">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-md bg-white/20 flex items-center justify-center">
               <Leaf className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-xl text-white" style={{ fontFamily: "Poppins, sans-serif" }}>
@@ -93,7 +93,7 @@ export function LoginPage() {
 
           <div className="grid grid-cols-3 gap-4">
             {numeros.map(({ value, label }) => (
-              <div key={label} className="bg-white/10 border border-white/20 rounded-xl p-4 text-center backdrop-blur-sm">
+              <div key={label} className="bg-white/10 border border-white/20 rounded-md p-4 text-center backdrop-blur-sm">
                 <div className="text-2xl font-bold text-[#A5D6A7]" style={{ fontFamily: "Poppins, sans-serif" }}>
                   {value}
                 </div>
@@ -122,7 +122,10 @@ export function LoginPage() {
           </Link>
 
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-[#212121] mb-2" style={{ fontFamily: "Poppins, sans-serif" }}>
+            <h2
+              className="text-4xl font-black text-[#212121] mb-2 tracking-tight"
+              style={{ fontFamily: "Poppins, sans-serif" }}
+            >
               Bem-vindo de volta
             </h2>
             <p className="text-[#4a5568]" style={{ fontFamily: "Inter, sans-serif" }}>
@@ -133,7 +136,7 @@ export function LoginPage() {
           {erro && (
             <div
               role="alert"
-              className="mb-5 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              className="mb-5 flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
               <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -173,7 +176,7 @@ export function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-xl border border-border bg-[#F8F9FA] focus:bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent transition-all text-sm"
+                className="w-full px-4 py-3 rounded-md border border-border bg-[#F8F9FA] focus:bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent transition-all text-sm"
                 style={{ fontFamily: "Inter, sans-serif" }}
               />
             </div>
@@ -202,7 +205,7 @@ export function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-xl border border-border bg-[#F8F9FA] focus:bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent transition-all text-sm"
+                className="w-full px-4 py-3 rounded-md border border-border bg-[#F8F9FA] focus:bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent transition-all text-sm"
                 style={{ fontFamily: "Inter, sans-serif" }}
               />
             </div>
@@ -221,7 +224,7 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-gradient-to-r from-[#1B5E20] to-[#2E7D32] text-white font-bold rounded-xl hover:from-[#2E7D32] hover:to-[#388E3C] transition-all shadow-lg shadow-green-900/20 hover:shadow-green-900/30 hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-70"
+              className="w-full py-3.5 bg-[#1B5E20] text-white font-bold rounded-md transition-all shadow-[4px_4px_0_0_#A5D6A7] hover:shadow-[2px_2px_0_0_#A5D6A7] hover:translate-x-[2px] hover:translate-y-[2px] flex items-center justify-center gap-2 disabled:opacity-70 disabled:hover:shadow-[4px_4px_0_0_#A5D6A7] disabled:hover:translate-x-0 disabled:hover:translate-y-0"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               {loading ? (

@@ -11,7 +11,7 @@ import {
 } from "react";
 
 const baseInput =
-  "w-full px-4 py-2.5 rounded-xl border bg-white text-[#212121] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent transition-all text-sm";
+  "w-full px-4 py-2.5 rounded-md border bg-white text-[#212121] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent transition-all text-sm";
 
 /**
  * Rotulo associado ao controle (label htmlFor + id, aria-invalid,
@@ -100,7 +100,7 @@ export function BotaoPrimario({ children, carregando, disabled, ...props }: Bota
     <button
       {...props}
       disabled={carregando || disabled}
-      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#1B5E20] text-white text-sm font-semibold hover:bg-[#2E7D32] transition-colors disabled:opacity-60"
+      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-md bg-[#1B5E20] text-white text-sm font-semibold transition-all shadow-[2px_2px_0_0_#0a2e0c] hover:shadow-[1px_1px_0_0_#0a2e0c] hover:translate-x-px hover:translate-y-px disabled:opacity-60 disabled:hover:shadow-[2px_2px_0_0_#0a2e0c] disabled:hover:translate-x-0 disabled:hover:translate-y-0"
       style={{ fontFamily: "Poppins, sans-serif" }}
     >
       {carregando && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
@@ -116,7 +116,7 @@ export function BotaoSecundario({
   return (
     <button
       {...props}
-      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border text-[#4a5568] text-sm font-medium hover:bg-[#F8F9FA] transition-colors"
+      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md border border-border text-[#4a5568] text-sm font-medium hover:bg-[#F8F9FA] transition-colors"
       style={{ fontFamily: "Inter, sans-serif" }}
     >
       {children}

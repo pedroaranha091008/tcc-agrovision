@@ -68,7 +68,7 @@ export function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA] py-12 px-6">
       <div className="w-full max-w-md">
         <Link to="/" className="flex items-center gap-2 mx-auto mb-8 justify-center">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1B5E20] to-[#66BB6A] flex items-center justify-center">
+          <div className="w-9 h-9 rounded-md bg-[#1B5E20] flex items-center justify-center">
             <Leaf className="w-5 h-5 text-white" />
           </div>
           <span className="font-bold text-xl text-[#1B5E20]" style={{ fontFamily: "Poppins, sans-serif" }}>
@@ -76,8 +76,8 @@ export function RegisterPage() {
           </span>
         </Link>
 
-        <div className="bg-white rounded-2xl p-8 border border-border shadow-xl shadow-green-900/5">
-          <h2 className="text-2xl font-bold text-[#212121] mb-1" style={{ fontFamily: "Poppins, sans-serif" }}>
+        <div className="bg-white rounded-lg p-8 border-2 border-[#212121]/10">
+          <h2 className="text-3xl font-black text-[#212121] mb-1 tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>
             Criar conta
           </h2>
           <p className="text-[#4a5568] text-sm mb-7" style={{ fontFamily: "Inter, sans-serif" }}>
@@ -87,7 +87,7 @@ export function RegisterPage() {
           {erro && (
             <div
               role="alert"
-              className="mb-5 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              className="mb-5 flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
               <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -128,7 +128,7 @@ export function RegisterPage() {
                   value={form[key]}
                   onChange={(e) => setForm({ ...form, [key]: e.target.value })}
                   required
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-[#F8F9FA] focus:bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent transition-all text-sm"
+                  className="w-full px-4 py-3 rounded-md border border-border bg-[#F8F9FA] focus:bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent transition-all text-sm"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 />
               </div>
@@ -137,7 +137,7 @@ export function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-gradient-to-r from-[#1B5E20] to-[#2E7D32] text-white font-bold rounded-xl hover:from-[#2E7D32] hover:to-[#388E3C] transition-all shadow-lg shadow-green-900/20 hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-70"
+              className="w-full py-3.5 bg-[#1B5E20] text-white font-bold rounded-md transition-all shadow-[4px_4px_0_0_#A5D6A7] hover:shadow-[2px_2px_0_0_#A5D6A7] hover:translate-x-[2px] hover:translate-y-[2px] flex items-center justify-center gap-2 disabled:opacity-70 disabled:hover:shadow-[4px_4px_0_0_#A5D6A7] disabled:hover:translate-x-0 disabled:hover:translate-y-0"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               {loading ? (

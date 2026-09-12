@@ -125,7 +125,7 @@ export function ImagensSecao({
           setArrastando(false);
           adicionarArquivos(e.dataTransfer.files);
         }}
-        className={`rounded-2xl border-2 border-dashed p-6 text-center transition-colors ${
+        className={`rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
           arrastando ? "border-[#66BB6A] bg-[#E8F5E9]" : "border-border bg-white"
         }`}
         style={{ fontFamily: "Inter, sans-serif" }}
@@ -135,7 +135,7 @@ export function ImagensSecao({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="mt-2 px-4 py-2 rounded-xl bg-[#1B5E20] text-white text-sm font-semibold hover:bg-[#2E7D32] transition-colors"
+          className="mt-2 px-4 py-2 rounded-md bg-[#1B5E20] text-white text-sm font-semibold hover:bg-[#2E7D32] transition-colors"
         >
           Selecionar arquivos
         </button>
@@ -156,7 +156,7 @@ export function ImagensSecao({
       </div>
 
       {erroLista && (
-        <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
+        <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
           {erroLista}
         </div>
       )}
@@ -166,7 +166,7 @@ export function ImagensSecao({
           {filaVisivel.map((item) => (
             <li
               key={item.id}
-              className="flex items-center gap-3 bg-white border border-border rounded-xl px-4 py-2.5 text-sm"
+              className="flex items-center gap-3 bg-white border border-border rounded-md px-4 py-2.5 text-sm"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
               <FileImage className="w-4 h-4 text-[#4a5568] flex-shrink-0" />
@@ -221,7 +221,7 @@ export function ImagensSecao({
         {itens.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {itens.map((img) => (
-              <div key={img.id_imagem} className="relative group rounded-xl overflow-hidden border border-border bg-white">
+              <div key={img.id_imagem} className="relative group rounded-md overflow-hidden border border-border bg-white">
                 {img.caminho.startsWith("blob:") ? (
                   <img src={img.caminho} alt={img.nome_original} className="w-full h-28 object-cover" />
                 ) : (

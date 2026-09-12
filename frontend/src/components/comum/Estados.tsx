@@ -17,7 +17,7 @@ export function Carregando({ texto = "Carregando..." }: { texto?: string }) {
 export function EstadoErro({ erro, onTentarNovamente }: { erro: unknown; onTentarNovamente?: () => void }) {
   return (
     <div
-      className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-red-200 bg-red-50 py-14 px-6 text-center"
+      className="flex flex-col items-center justify-center gap-3 rounded-lg border border-red-200 bg-red-50 py-14 px-6 text-center"
       style={{ fontFamily: "Inter, sans-serif" }}
       role="alert"
     >
@@ -26,7 +26,7 @@ export function EstadoErro({ erro, onTentarNovamente }: { erro: unknown; onTenta
       {onTentarNovamente && (
         <button
           onClick={onTentarNovamente}
-          className="mt-1 px-4 py-2 rounded-xl bg-white border border-red-200 text-red-700 text-sm font-medium hover:bg-red-100 transition-colors"
+          className="mt-1 px-4 py-2 rounded-md bg-white border border-red-200 text-red-700 text-sm font-medium hover:bg-red-100 transition-colors"
         >
           Tentar novamente
         </button>
@@ -46,11 +46,11 @@ export function EstadoVazio({
 }) {
   return (
     <div
-      className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-white py-16 px-6 text-center"
+      className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-white py-16 px-6 text-center"
       style={{ fontFamily: "Inter, sans-serif" }}
     >
-      <div className="w-12 h-12 rounded-2xl bg-[#E8F5E9] flex items-center justify-center mb-1">
-        <Inbox className="w-6 h-6 text-[#1B5E20]" />
+      <div className="w-12 h-12 rounded-md bg-[#1B5E20] flex items-center justify-center mb-1">
+        <Inbox className="w-6 h-6 text-white" />
       </div>
       <h3 className="font-semibold text-[#212121]" style={{ fontFamily: "Poppins, sans-serif" }}>
         {titulo}

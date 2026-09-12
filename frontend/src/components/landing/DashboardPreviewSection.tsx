@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { ArrowRight, Calendar, FileText, LayoutDashboard, Map, Settings, Tractor } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
+import { Kicker } from "./Kicker";
 
 // Conteudo ilustrativo da landing page (nao vem da API).
 const previewChart = [
@@ -30,13 +31,13 @@ export function DashboardPreviewSection() {
 
       <div className="max-w-7xl mx-auto px-6 relative">
         <div className="text-center mb-12">
-          <div
-            className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-4 text-sm font-medium text-white/80"
-            style={{ fontFamily: "Inter, sans-serif" }}
-          >
-            <LayoutDashboard className="w-4 h-4" /> Dashboard Inteligente
+          <div className="flex justify-center">
+            <Kicker light>Dashboard Inteligente</Kicker>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4" style={{ fontFamily: "Poppins, sans-serif" }}>
+          <h2
+            className="text-5xl md:text-6xl font-black text-white mb-4 tracking-tight"
+            style={{ fontFamily: "Poppins, sans-serif" }}
+          >
             Todos os dados da sua
             <span className="text-[#A5D6A7] block">lavoura em um só lugar</span>
           </h2>
@@ -45,7 +46,7 @@ export function DashboardPreviewSection() {
           </p>
         </div>
 
-        <div className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+        <div className="rounded-lg overflow-hidden border border-white/10 shadow-2xl">
           <div className="bg-[#0a3d12] px-5 py-3 flex items-center gap-3">
             <div className="flex gap-1.5">
               <span className="w-3 h-3 rounded-full bg-red-400/60" />
@@ -78,7 +79,7 @@ export function DashboardPreviewSection() {
             <div className="col-span-12 md:col-span-10 p-5">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
                 {metricCards.map(({ label, value, trend, color }) => (
-                  <div key={label} className="bg-white/5 border border-white/10 rounded-xl p-3">
+                  <div key={label} className="bg-white/5 border border-white/10 rounded-md p-3">
                     <div className="text-white/50 text-xs mb-1" style={{ fontFamily: "Inter, sans-serif" }}>
                       {label}
                     </div>
@@ -93,14 +94,14 @@ export function DashboardPreviewSection() {
               </div>
 
               <div className="grid lg:grid-cols-3 gap-3">
-                <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-md overflow-hidden">
                   <img
                     src="https://images.unsplash.com/photo-1560493676-04071185765b?w=700&h=220&fit=crop&auto=format"
                     alt="Mapa de calor da lavoura"
                     className="w-full h-36 object-cover opacity-80"
                   />
                 </div>
-                <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+                <div className="bg-white/5 border border-white/10 rounded-md p-3">
                   <div className="text-white/60 text-xs mb-2" style={{ fontFamily: "Inter, sans-serif" }}>
                     Saúde Vegetativa
                   </div>
@@ -124,7 +125,7 @@ export function DashboardPreviewSection() {
         <div className="text-center mt-10">
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 bg-[#66BB6A] hover:bg-[#81C784] text-[#1B5E20] font-bold px-8 py-4 rounded-xl transition-all hover:-translate-y-0.5 shadow-xl shadow-black/20"
+            className="inline-flex items-center gap-2 bg-[#66BB6A] text-[#0a2e0c] font-bold px-8 py-4 rounded-md transition-all shadow-[4px_4px_0_0_#0a2e0c] hover:shadow-[2px_2px_0_0_#0a2e0c] hover:translate-x-[2px] hover:translate-y-[2px]"
             style={{ fontFamily: "Poppins, sans-serif" }}
           >
             Acessar Dashboard Completo <ArrowRight className="w-5 h-5" />

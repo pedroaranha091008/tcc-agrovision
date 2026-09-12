@@ -58,7 +58,7 @@ export function AnaliseFormModal({ aberto, idVoo, inicial, onFechar, onSalvar }:
     <Modal aberto={aberto} titulo={editar ? "Editar análise" : "Registrar análise"} onFechar={onFechar}>
       <form onSubmit={submeter} className="space-y-4">
         {erroApi && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
+          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
             {erroApi}
           </div>
         )}
@@ -98,7 +98,7 @@ export function AnaliseFormModal({ aberto, idVoo, inicial, onFechar, onSalvar }:
               value={form.percentual_area_afetada}
               onChange={(e) => setForm({ ...form, percentual_area_afetada: e.target.value })}
               placeholder="22.5"
-              className={`w-full px-4 py-2.5 rounded-xl border bg-white text-[#212121] text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent ${
+              className={`w-full px-4 py-2.5 rounded-md border bg-white text-[#212121] text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent ${
                 erros.percentual_area_afetada ? "border-red-300" : "border-border"
               }`}
             />
