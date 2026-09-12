@@ -4,15 +4,13 @@
  * - Date -> string ISO 8601 (UTC)
  * - remove campos sensiveis conhecidos
  * Aplica recursivamente em objetos e arrays.
+ *
+ * access_token/refresh_token NAO entram aqui: sao o proprio conteudo que
+ * /auth/registro, /auth/login e /auth/refresh devem devolver ao cliente.
+ * O que nunca pode vazar e o hash armazenado (token_hash) e a senha.
  */
 
-const CAMPOS_SENSIVEIS = new Set([
-  "senha_hash",
-  "senha",
-  "token_hash",
-  "refresh_token",
-  "access_token",
-]);
+const CAMPOS_SENSIVEIS = new Set(["senha_hash", "senha", "token_hash"]);
 
 function ehDecimalPrisma(valor) {
   return (
