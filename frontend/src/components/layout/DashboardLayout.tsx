@@ -8,7 +8,6 @@ import {
   Leaf,
   LogOut,
   Menu,
-  Search,
   Settings,
   Tractor,
 } from "lucide-react";
@@ -27,8 +26,8 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Visão Geral", disponivel: true, exato: true },
   { to: "/propriedades", icon: Tractor, label: "Propriedades", disponivel: true },
-  { to: "/analises", icon: Activity, label: "Análises", disponivel: false },
-  { to: "/relatorios", icon: FileText, label: "Relatórios", disponivel: false },
+  { to: "/analises", icon: Activity, label: "Análises", disponivel: true },
+  { to: "/relatorios", icon: FileText, label: "Relatórios", disponivel: true },
   { to: "/configuracoes", icon: Settings, label: "Configurações", disponivel: false },
 ];
 
@@ -120,16 +119,7 @@ export function DashboardLayout() {
             <Menu className="w-5 h-5" />
           </button>
 
-          <div className="flex-1 flex items-center gap-3">
-            <div className="relative max-w-xs w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4a5568]" />
-              <input
-                type="text"
-                placeholder="Buscar fazendas, relatórios..."
-                className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#F8F9FA] border border-border text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent"
-              />
-            </div>
-          </div>
+          <div className="flex-1" />
 
           <div className="flex items-center gap-3">
             <button className="relative p-2 rounded-lg hover:bg-[#F8F9FA] transition-colors" aria-label="Notificações">

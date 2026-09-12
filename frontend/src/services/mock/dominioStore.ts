@@ -1,11 +1,14 @@
-import type { Propriedade, Talhao, Voo } from "@/types/dominio";
+import type { Analise, ImagemVoo, Propriedade, Talhao, Voo } from "@/types/dominio";
+import type { Relatorio } from "@/types/relatorio";
 
 /**
- * Store do dominio agricola no modo mock. Persistido em localStorage para
- * sobreviver ao reload. Escopo por id_usuario e feito pelo adapter.
+ * Store do dominio agricola no modo mock.
+ * Propriedades/talhoes/voos sao persistidos em localStorage (sobrevivem ao reload).
+ * Imagens e analises ficam so em memoria: guardar bytes de arquivo em
+ * localStorage nao e viavel (quota ~5-10MB), entao esses dois somem no reload.
  */
 
-type Colecao = "propriedades" | "talhoes" | "voos";
+type ColecaoPersistida = "propriedades" | "talhoes" | "voos";
 const PREFIXO = "agrovision.mock.";
 
 interface Dados {
@@ -14,7 +17,7 @@ interface Dados {
   voos: Voo[];
 }
 
-function ler<K extends Colecao>(col: K): Dados[K] {
+function ler<K extends ColecaoPersistida>(col: K): Dados[K] {
   try {
     const bruto = localStorage.getItem(PREFIXO + col);
     return bruto ? JSON.parse(bruto) : [];
@@ -23,7 +26,7 @@ function ler<K extends Colecao>(col: K): Dados[K] {
   }
 }
 
-function gravar<K extends Colecao>(col: K, valor: Dados[K]) {
+function gravar<K extends ColecaoPersistida>(col: K, valor: Dados[K]) {
   try {
     localStorage.setItem(PREFIXO + col, JSON.stringify(valor));
   } catch {
@@ -35,8 +38,11 @@ export const dominio = {
   propriedades: ler("propriedades"),
   talhoes: ler("talhoes"),
   voos: ler("voos"),
+  imagens: [] as ImagemVoo[],
+  analises: [] as Analise[],
+  relatorios: [] as Relatorio[],
 
-  salvar(col: Colecao) {
+  salvar(col: ColecaoPersistida) {
     if (col === "propriedades") gravar("propriedades", this.propriedades);
     else if (col === "talhoes") gravar("talhoes", this.talhoes);
     else gravar("voos", this.voos);

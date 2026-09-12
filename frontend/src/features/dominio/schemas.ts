@@ -55,7 +55,18 @@ export const vooFormSchema = z.object({
   observacoes: textoOpcional,
 });
 
+export const analiseFormSchema = z.object({
+  tipo_analise: z.enum(["NDVI", "RGB", "termico", "multispectral", "outro"]),
+  nivel_risco: z.enum(["baixo", "medio", "alto", "critico", ""]).transform((v) => (v === "" ? undefined : v)),
+  percentual_area_afetada: numeroOpcional.pipe(
+    z.number().min(0, "Entre 0 e 100").max(100, "Entre 0 e 100").optional(),
+  ),
+  resultado: textoOpcional,
+  status: z.enum(["pendente", "em_processamento", "concluido", "falhou"]),
+});
+
 export const ESTADOS_UF = UFS;
 export type PropriedadeForm = z.infer<typeof propriedadeFormSchema>;
 export type TalhaoForm = z.infer<typeof talhaoFormSchema>;
 export type VooForm = z.infer<typeof vooFormSchema>;
+export type AnaliseForm = z.infer<typeof analiseFormSchema>;

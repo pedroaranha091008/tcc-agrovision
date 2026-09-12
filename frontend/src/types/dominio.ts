@@ -42,6 +42,39 @@ export interface Voo {
   criado_em: string;
 }
 
+export interface ImagemVoo {
+  id_imagem: string;
+  id_voo: string;
+  nome_original: string;
+  nome_armazenado: string;
+  mime_type: string;
+  tamanho_bytes: number;
+  caminho: string;
+  criado_em: string;
+}
+
+export interface Analise {
+  id_analise: string;
+  id_voo: string;
+  tipo_analise: TipoAnalise;
+  nivel_risco: NivelRisco | null;
+  percentual_area_afetada: number | null;
+  resultado: string | null;
+  url_arquivo: string | null;
+  status: StatusProcessamento;
+  data_analise: string;
+  atualizado_em: string;
+}
+
+export interface AnalisePayload {
+  id_voo: string;
+  tipo_analise: TipoAnalise;
+  nivel_risco?: NivelRisco | null;
+  percentual_area_afetada?: number | null;
+  resultado?: string | null;
+  status?: StatusProcessamento;
+}
+
 // ─── Payloads ────────────────────────────────────────────────────────────────
 
 export interface PropriedadePayload {
