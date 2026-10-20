@@ -54,7 +54,8 @@ export function RelatoriosPage() {
   const { dados, erro, carregando, recarregar } = useCarregar(() => apiLista<Monitoramento, Paginacao>(`/monitoramentos?${consulta}`), [consulta]);
 
   const mudar = (chave: string, valor: string) => {
-    const novos = new URLSearchParams(params);
+    // Lê da URL atual (não do último render) para duas mudanças seguidas não se sobrescreverem.
+    const novos = new URLSearchParams(window.location.search);
     if (valor) novos.set(chave, valor); else novos.delete(chave);
     if (chave !== "pagina") novos.delete("pagina");
     setParams(novos);

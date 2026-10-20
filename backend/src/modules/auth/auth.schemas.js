@@ -17,10 +17,12 @@ export const cadastroSchema = z.object({
     .regex(/[A-Za-z]/, "Use letras e números na senha.")
     .regex(/\d/, "Use letras e números na senha."),
   telefone: z.string().trim().max(20).optional(),
-  tipo_usuario: z.enum(["produtor", "agronomo", "empresa"]).default("produtor")
+  tipo_usuario: z.enum(["produtor", "agronomo", "empresa"]).default("produtor"),
+  lembrar: z.boolean().default(false)
 });
 
 export const loginSchema = z.object({
   email,
-  senha: z.string({ required_error: "Informe a senha." }).min(1, "Informe a senha.")
+  senha: z.string({ required_error: "Informe a senha." }).min(1, "Informe a senha."),
+  lembrar: z.boolean().default(false)
 });

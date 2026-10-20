@@ -29,6 +29,7 @@ before(async () => {
 });
 
 after(async () => {
+  await prisma.sessao.deleteMany({ where: { usuario: { email: { endsWith: SUFIXO } } } });
   await prisma.usuario.deleteMany({ where: { email: { endsWith: SUFIXO } } });
   await prisma.solicitacaoOrcamento.deleteMany({ where: { email: { endsWith: SUFIXO } } });
   await prisma.$disconnect();

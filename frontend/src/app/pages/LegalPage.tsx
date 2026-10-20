@@ -34,8 +34,8 @@ export function PrivacidadePage() {
       <p>Não vendemos seus dados. Eles só são compartilhados com fornecedores necessários para operar o serviço (por exemplo, hospedagem) ou quando exigido por lei.</p>
       <h2>Seus direitos</h2>
       <p>Você pode pedir acesso, correção, portabilidade ou exclusão dos seus dados a qualquer momento pelo email <a className="text-[#1B5E20] underline" href={`mailto:${CONTATO.email}`}>{CONTATO.email}</a>.</p>
-      <h2>Armazenamento local</h2>
-      <p>Se você marcar "Manter conectado", guardamos um token de acesso no seu navegador para não pedir a senha novamente. Ao sair da conta, esse token é apagado.</p>
+      <h2>Cookies e sessão</h2>
+      <p>Para manter você conectado usamos um único cookie de sessão, protegido (httpOnly), que nenhum script da página consegue ler. Sem a opção "Manter conectado", ele é apagado ao fechar o navegador; com ela, dura até 30 dias. Ao clicar em "Sair", a sessão é encerrada também no nosso servidor. Não usamos cookies de publicidade nem de rastreamento.</p>
     </Pagina>
   );
 }

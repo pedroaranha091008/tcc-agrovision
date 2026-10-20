@@ -57,6 +57,7 @@ model Usuario {
   atualizado_em DateTime    @updatedAt
 
   propriedades Propriedade[]
+  sessoes      Sessao[]
 
   @@map("usuarios")
 }
@@ -174,4 +175,22 @@ model ImagemVoo {
 
   @@index([id_voo])
   @@map("imagens_voo")
+}
+
+// Sessões de login. Guarda só o hash do token de renovação (o token em si fica num cookie httpOnly).
+model Sessao {
+  id_sessao       String    @id @default(uuid()) @db.Char(36)
+  id_usuario      String    @db.Char(36)
+  token_hash      String    @unique @db.Char(64)
+  lembrar         Boolean   @default(false)
+  expira_em       DateTime
+  revogada_em     DateTime?
+  substituida_por String?   @db.Char(36)
+  user_agent      String?   @db.VarChar(255)
+  criado_em       DateTime  @default(now())
+
+  usuario Usuario @relation(fields: [id_usuario], references: [id_usuario])
+
+  @@index([id_usuario])
+  @@map("sessoes")
 }

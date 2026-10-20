@@ -9,10 +9,11 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "test": "node --test --test-concurrency=1 --test-timeout=30000 test/*.test.js",
+    "test": "node --test --test-concurrency=1 --test-timeout=30000 --test-force-exit test/*.test.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:deploy": "prisma migrate deploy"
+    "prisma:deploy": "prisma migrate deploy",
+    "limpar-testes": "node scripts/limpar-dados-teste.js"
   },
   "devDependencies": {
     "nodemon": "^3.1.14",
@@ -22,6 +23,7 @@
     "@prisma/adapter-mariadb": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",

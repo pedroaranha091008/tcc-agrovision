@@ -22,6 +22,25 @@ Sem ele, o site mostra uma mensagem de erro em vez de fingir que deu certo.
 | `npm run build` | build de produção em `dist/` |
 | `npm run preview` | serve o build localmente |
 | `npm run typecheck` | verificação de tipos do TypeScript |
+| `npm run test:e2e` | testes de ponta a ponta no navegador (veja abaixo) |
+| `npm run test:e2e:relatorio` | abre o relatório HTML da última execução |
+
+## Testes de ponta a ponta (E2E)
+
+A pasta `e2e/` tem 30 testes que usam o site como um cliente: cadastro, login e sessão, fazendas, envio de imagens, análises, PDF, painel, histórico e as telas no celular.
+
+- Usam o **Chrome instalado na máquina** (não precisa baixar navegador) e a API e o banco de verdade.
+- **Pré-requisito:** MySQL/MariaDB no ar e `backend/.env` configurado. A API e o site sobem sozinhos se ainda não estiverem rodando.
+- Cada teste cria contas próprias com email `@teste.agrovision.dev`. No final, `npm --prefix ../backend run limpar-testes` apaga essas contas e os arquivos enviados.
+- Para rodar a suíte várias vezes seguidas, aumente `LIMITE_TENTATIVAS_AUTH` no `backend/.env` (o limite padrão de 20 logins por 15 minutos bloquearia).
+
+```bash
+npm run test:e2e
+```
+
+## Sessão
+
+O token de acesso (15 min) fica só na memória da página. A sessão é mantida por um cookie `httpOnly` de renovação, que o JavaScript não lê e que o site usa para pedir um novo token antes de o atual expirar. No navegador fica só o lembrete `agrovision.sessao`, que não é segredo.
 
 ## Organização
 

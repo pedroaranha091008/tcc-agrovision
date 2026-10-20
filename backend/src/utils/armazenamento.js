@@ -19,7 +19,7 @@ export async function garantirPasta(...partes) {
   return pasta;
 }
 
-/** Remove sem falhar se o arquivo já não existir. */
+/** Remove arquivo ou pasta (com o conteúdo) sem falhar se já não existir. */
 export async function remover(...partes) {
-  await fs.rm(caminho(...partes), { force: true });
+  await fs.rm(caminho(...partes), { force: true, recursive: true });
 }

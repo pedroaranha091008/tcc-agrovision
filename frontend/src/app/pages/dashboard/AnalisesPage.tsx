@@ -37,7 +37,8 @@ export function AnalisesPage() {
 
   /** Mudar qualquer filtro volta para a página 1; trocar a propriedade limpa o talhão. */
   const mudar = (mudancas: Partial<Record<Filtro | "pagina", string>>) => {
-    const novos = new URLSearchParams(params);
+    // Lê da URL atual (não do último render) para duas mudanças seguidas não se sobrescreverem.
+    const novos = new URLSearchParams(window.location.search);
     for (const [k, v] of Object.entries(mudancas)) { if (v) novos.set(k, v); else novos.delete(k); }
     if (!("pagina" in mudancas)) novos.delete("pagina");
     if ("id_propriedade" in mudancas) novos.delete("id_talhao");

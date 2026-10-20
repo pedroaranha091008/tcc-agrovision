@@ -73,6 +73,7 @@ after(async () => {
   await prisma.voo.deleteMany({ where: dono });
   await prisma.talhao.deleteMany({ where: { propriedade: { id_usuario: { in: usuarios.map((u) => u.id_usuario) } } } });
   await prisma.propriedade.deleteMany({ where: { id_usuario: { in: usuarios.map((u) => u.id_usuario) } } });
+  await prisma.sessao.deleteMany({ where: { usuario: { email: { endsWith: SUFIXO } } } });
   await prisma.usuario.deleteMany({ where: { id_usuario: { in: usuarios.map((u) => u.id_usuario) } } });
   await prisma.$disconnect();
   servidor.close();

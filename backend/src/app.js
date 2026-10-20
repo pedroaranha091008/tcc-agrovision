@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { env } from "./config/env.js";
 import apiRouter from "./routes/index.js";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler.js";
@@ -15,6 +16,7 @@ app.use(
     exposedHeaders: ["Content-Disposition"]
   })
 );
+app.use(cookieParser());
 app.use(express.json({ limit: "100kb" }));
 app.use(express.urlencoded({ extended: true }));
 

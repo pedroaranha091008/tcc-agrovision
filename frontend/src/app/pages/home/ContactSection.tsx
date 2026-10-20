@@ -82,7 +82,7 @@ export function ContactSection({ servicoEscolhido }: { servicoEscolhido: { servi
     try {
       await api("/orcamentos", {
         method: "POST",
-        token: null,
+        publico: true,
         body: {
           nome: campos.nome.trim(),
           email: campos.email.trim(),

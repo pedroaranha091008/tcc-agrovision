@@ -16,7 +16,12 @@ export const env = {
     .map((origem) => origem.trim())
     .filter(Boolean),
   jwtSecret: process.env.JWT_SECRET,
-  jwtExpiraEm: process.env.JWT_EXPIRES_IN || "7d",
+  producao: process.env.NODE_ENV === "production",
+  // Token de acesso curto (fica só na memória do navegador) + token de renovação longo em cookie httpOnly.
+  acessoMinutos: Number(process.env.ACCESS_TOKEN_MINUTOS) || 15,
+  renovacaoDias: Number(process.env.REFRESH_TOKEN_DIAS) || 30,
+  // Tentativas de login/cadastro por IP a cada 15 minutos (aumente só em ambiente de testes).
+  limiteTentativasAuth: Number(process.env.LIMITE_TENTATIVAS_AUTH) || 20,
   uploads: {
     // Pasta fora de src/, para arquivos enviados nunca serem tratados como código.
     diretorio: path.resolve(process.env.UPLOAD_DIR || "uploads"),

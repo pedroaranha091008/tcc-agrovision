@@ -94,6 +94,7 @@ describe("relatório PDF", () => {
     await prisma.voo.deleteMany({ where: { talhao: { propriedade: { id_usuario: dono } } } });
     await prisma.talhao.deleteMany({ where: { propriedade: { id_usuario: dono } } });
     await prisma.propriedade.deleteMany({ where: { id_usuario: dono } });
+    await prisma.sessao.deleteMany({ where: { usuario: { email: { endsWith: SUFIXO } } } });
     await prisma.usuario.deleteMany({ where: { id_usuario: dono } });
     await prisma.$disconnect();
     servidor.close();

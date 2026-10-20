@@ -18,6 +18,7 @@ API REST da AgroVision (Node.js + Express 5 + Prisma 7 + MySQL/MariaDB).
    ```bash
    npm run dev              # http://localhost:3000 (reinicia ao salvar)
    npm test                 # testes de integração (o banco precisa estar no ar)
+   npm run limpar-testes    # apaga contas e arquivos de teste (@teste.agrovision.dev)
    ```
 
 ## Endpoints disponíveis
@@ -28,8 +29,10 @@ Prefixo: `/api/v1`. Respostas de sucesso vêm em `{ "data": ... }` e erros em
 | Método | Rota | Autenticação | Descrição |
 |---|---|---|---|
 | GET | `/status` | — | verificação de funcionamento |
-| POST | `/auth/cadastro` | — | cria conta (`nome`, `email`, `senha`, `tipo_usuario`) e devolve `{ token, usuario }` |
-| POST | `/auth/login` | — | devolve `{ token, usuario }` |
+| POST | `/auth/cadastro` | — | cria conta (`nome`, `email`, `senha`, `tipo_usuario`, `lembrar?`), devolve `{ token, usuario }` e grava o cookie de renovação |
+| POST | `/auth/login` | — | `email`, `senha`, `lembrar?`; devolve `{ token, usuario }` e grava o cookie de renovação |
+| POST | `/auth/renovar` | cookie | troca o cookie de renovação por um novo (rotação) e devolve novo `{ token, usuario }` |
+| POST | `/auth/sair` | cookie | encerra a sessão no servidor e apaga o cookie |
 | GET | `/auth/me` | Bearer | dados do usuário logado |
 | GET | `/usuarios/me` | Bearer | idem |
 | PATCH | `/usuarios/me` | Bearer | atualiza `nome`, `telefone`, `tipo_usuario` |
@@ -54,7 +57,7 @@ Prefixo: `/api/v1`. Respostas de sucesso vêm em `{ "data": ... }` e erros em
 | GET | `/dashboard` | Bearer | indicadores do painel: totais, situação de cada talhão (análise do voo mais recente), talhões por risco, série mensal e últimas análises. Filtros: `id_propriedade`, `dias` (30, 90, 180 ou 365) |
 | GET | `/monitoramentos` | Bearer | histórico paginado de análises. Filtros: `data_inicio`, `data_fim` (AAAA-MM-DD, pela data do voo), `id_propriedade`, `id_talhao`, `tipo_analise`, `nivel_risco`, `pagina`, `por_pagina` (máx. 50). Devolve `{ data, meta: { total, pagina, por_pagina, total_paginas } }` |
 
-Autenticação: header `Authorization: Bearer <token>` (JWT, validade em `JWT_EXPIRES_IN`).
+Autenticação: header `Authorization: Bearer <token>`, com JWT de curta duração (`ACCESS_TOKEN_MINUTOS`, padrão 15). A sessão continua por meio do cookie `httpOnly` `agrovision_renovacao` (`SameSite=Lax`, `Secure` em produção, restrito a `/api/v1/auth`). No banco fica só o hash SHA-256 desse token, que é trocado a cada renovação. Se um token já trocado for reutilizado, todas as sessões do usuário são encerradas. Com "manter conectado" a sessão dura `REFRESH_TOKEN_DIAS` (padrão 30); sem a opção, dura até fechar o navegador (máx. 1 dia).
 As rotas de login/cadastro e de orçamento têm limite de tentativas por IP.
 Cada usuário só enxerga os próprios dados: acessar o ID de outro usuário responde 404.
 

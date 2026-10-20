@@ -279,8 +279,16 @@ Foram concluídas as **Partes 0, 1, 2 e 3** do planejamento. O reteste no navega
 - **Correções encontradas no reteste:** (1) o título "Mapas" ficava sozinho no fim da página do PDF; (2) o nome do arquivo baixado vinha genérico porque o CORS não expunha o cabeçalho `Content-Disposition`.
 - **Testes:** 9 testes novos de API (52 no total), incluindo as regras e a validação do PDF. No navegador, 15 de 15 verificações passaram, com o download conferido de verdade.
 
+### Parte 8 — Sessão segura e testes no repositório (em andamento)
+
+- **Renovação de sessão:** o token de acesso agora dura 15 minutos e fica só na memória da página, não mais no `localStorage`. A sessão é mantida por um cookie `httpOnly` com token de renovação rotativo; no banco fica só o hash dele. Se um token já trocado for reutilizado (sinal de roubo), todas as sessões do usuário são encerradas. "Sair" revoga a sessão no servidor. "Manter conectado" vale 30 dias; sem a opção, até fechar o navegador. O site renova sozinho antes de expirar e, se a sessão cair, avisa e leva para o login.
+- **Testes E2E no repositório:** 30 testes `@playwright/test` em `frontend/e2e/` (`npm run test:e2e`), no computador e no celular, rodando contra a API e o banco reais e apagando os dados de teste ao final. Rodaram duas vezes seguidas sem falha.
+- **Correção encontrada pela suíte:** mudar filtros muito rápido podia trazer de volta filtros já limpos (a página lia uma cópia antiga da URL).
+- **Testes de API:** 7 novos de sessão (59 no total).
+
 ### Próximos passos
 
-1. **Parte 8:** login com Google, recuperação de senha, refresh token e testes E2E no repositório.
+1. **Recuperação de senha:** fluxo completo com token de uso único. O envio do email fica configurável (SMTP), e sem configuração o link é mostrado no terminal em desenvolvimento.
+2. **Login com Google:** depende de um *Client ID* da equipe no Google Cloud Console.
 
 Antes de publicar, ainda é preciso **substituir os contatos fictícios** (telefone `99999-0000`, email e redes) em `frontend/src/app/lib/site.ts` e **gerar um `JWT_SECRET` forte** no `.env` do servidor.

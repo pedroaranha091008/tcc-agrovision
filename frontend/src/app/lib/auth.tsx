@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { api, ApiError, tokenStorage } from "./api";
+import { toast } from "sonner";
+import { api, renovarSessao, sessao, type RespostaSessao } from "./api";
 import type { TipoUsuario } from "./site";
 
 export type Usuario = {
@@ -26,40 +27,61 @@ type AuthContexto = {
 
 const Contexto = createContext<AuthContexto | null>(null);
 
-type RespostaAuth = { token: string; usuario: Usuario };
+// O token de acesso vale 15 minutos; renovamos antes disso para o usuário nunca ver a sessão cair.
+const INTERVALO_RENOVACAO_MS = 12 * 60 * 1000;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
-  const [carregando, setCarregando] = useState(() => tokenStorage.get() !== null);
+  const [carregando, setCarregando] = useState(() => sessao.provavelmenteAtiva());
   const [saiu, setSaiu] = useState(false);
 
-  // Restaura a sessão salva ao abrir/recarregar a página.
+  // Ao abrir/recarregar a página, recupera a sessão pelo cookie httpOnly.
   useEffect(() => {
-    if (!tokenStorage.get()) return;
-    api<Usuario>("/auth/me")
-      .then(setUsuario)
-      .catch((erro: unknown) => {
-        if (erro instanceof ApiError && erro.status === 401) tokenStorage.clear();
-      })
+    if (!sessao.provavelmenteAtiva()) return;
+    renovarSessao<Usuario>()
+      .then(r => setUsuario(r?.usuario ?? null))
       .finally(() => setCarregando(false));
   }, []);
 
+  // Se uma renovação falhar no meio do uso, volta para o login avisando o motivo.
+  useEffect(() => {
+    sessao.aoExpirar(() => {
+      setUsuario(atual => {
+        if (atual) toast.info("Sua sessão expirou", { description: "Entre novamente para continuar." });
+        return null;
+      });
+    });
+    return () => sessao.aoExpirar(null);
+  }, []);
+
+  const logado = usuario !== null;
+  useEffect(() => {
+    if (!logado) return;
+    const timer = setInterval(async () => {
+      const r = await renovarSessao<Usuario>();
+      if (r === null && !sessao.token()) setUsuario(null);
+    }, INTERVALO_RENOVACAO_MS);
+    return () => clearInterval(timer);
+  }, [logado]);
+
   const entrar = useCallback(async (email: string, senha: string, lembrar: boolean) => {
-    const { token, usuario } = await api<RespostaAuth>("/auth/login", { method: "POST", body: { email, senha }, token: null });
-    tokenStorage.set(token, lembrar);
+    const { token, usuario } = await api<RespostaSessao<Usuario>>("/auth/login", { method: "POST", body: { email, senha, lembrar }, publico: true });
+    sessao.iniciar(token);
     setSaiu(false);
     setUsuario(usuario);
   }, []);
 
   const cadastrar = useCallback(async (dados: DadosCadastro) => {
-    const { token, usuario } = await api<RespostaAuth>("/auth/cadastro", { method: "POST", body: dados, token: null });
-    tokenStorage.set(token, false);
+    const { token, usuario } = await api<RespostaSessao<Usuario>>("/auth/cadastro", { method: "POST", body: dados, publico: true });
+    sessao.iniciar(token);
     setSaiu(false);
     setUsuario(usuario);
   }, []);
 
   const sair = useCallback(() => {
-    tokenStorage.clear();
+    // Encerra a sessão no servidor (revoga o cookie); a tela já volta para a home sem esperar.
+    api("/auth/sair", { method: "POST", publico: true }).catch(() => {});
+    sessao.limpar();
     setSaiu(true);
     setUsuario(null);
   }, []);

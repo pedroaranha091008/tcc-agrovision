@@ -2,3 +2,5 @@
 /dist
 .env
 .env.local
+/e2e-relatorio
+/e2e-resultados
