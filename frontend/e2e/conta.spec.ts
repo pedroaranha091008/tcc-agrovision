@@ -1,4 +1,6 @@
 // Conta do cliente: cadastro, login, sessão (cookie httpOnly + renovação) e perfil.
+import fs from "node:fs";
+import path from "node:path";
 import { criarConta, emailTeste, expect, SENHA, test } from "./apoio";
 
 test.describe("cadastro", () => {
@@ -102,11 +104,64 @@ test.describe("login e sessão", () => {
     await expect(page).toHaveURL(/\/login$/);
   });
 
-  test("Google aparece como 'em breve' e 'Esqueci a senha' explica o que fazer", async ({ page }) => {
+  test("Google aparece como 'em breve'", async ({ page }) => {
     await page.goto("/login");
     await expect(page.getByRole("button", { name: /Continuar com Google/ })).toBeDisabled();
-    await page.getByRole("button", { name: "Esqueci a senha" }).click();
-    await expect(page.getByText("Recuperação de senha em breve")).toBeVisible();
+  });
+});
+
+test.describe("esqueci a senha", () => {
+  /** Sem SMTP configurado, o backend salva os emails em backend/emails-enviados/ (modo desenvolvimento). */
+  function linkDoEmail(para: string) {
+    const pasta = path.join(import.meta.dirname, "..", "..", "backend", "emails-enviados");
+    const arquivo = fs.readdirSync(pasta).filter(f => f.endsWith(`${para}.txt`)).sort().at(-1);
+    if (!arquivo) return null;
+    const conteudo = fs.readFileSync(path.join(pasta, arquivo), "utf8");
+    fs.rmSync(path.join(pasta, arquivo));
+    return /http\S+redefinir-senha\?token=\S+/.exec(conteudo)?.[0] ?? null;
+  }
+
+  test("pede o link, cria senha nova e entra com ela", async ({ page }) => {
+    const email = emailTeste("esqueci");
+    await page.request.post("http://localhost:3000/api/v1/auth/cadastro", { data: { nome: "Esqueci Teste", email, senha: SENHA } });
+    await page.context().clearCookies();
+
+    await page.goto("/login");
+    await page.getByRole("link", { name: "Esqueci a senha" }).click();
+    await page.fill("#esq-email", email);
+    await page.getByRole("button", { name: "Enviar link" }).click();
+    await expect(page.getByRole("heading", { name: "Confira seu email" })).toBeVisible();
+
+    await expect.poll(() => linkDoEmail(email) ?? "", { message: "email com o link" }).toMatch(/redefinir-senha\?token=/);
+  });
+
+  test("link do email troca a senha; link usado não funciona de novo", async ({ page }) => {
+    const email = emailTeste("trocar");
+    await page.request.post("http://localhost:3000/api/v1/auth/cadastro", { data: { nome: "Trocar Teste", email, senha: SENHA } });
+    await page.request.post("http://localhost:3000/api/v1/auth/esqueci-senha", { data: { email } });
+    let link: string | null = null;
+    await expect.poll(() => (link = linkDoEmail(email))).not.toBeNull();
+
+    await page.goto(link!);
+    await page.fill("#red-senha", "curta");
+    await page.getByRole("button", { name: "Salvar nova senha" }).click();
+    await expect(page.getByText("A senha precisa ter pelo menos 8 caracteres.")).toBeVisible();
+    await page.fill("#red-senha", "novaSenha2026");
+    await page.fill("#red-confirmar", "novaSenha2026");
+    await page.getByRole("button", { name: "Salvar nova senha" }).click();
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page.getByText("Senha alterada. Entre com a nova senha.")).toBeVisible();
+
+    await page.fill("#login-email", email);
+    await page.fill("#login-senha", "novaSenha2026");
+    await page.getByRole("button", { name: "Entrar" }).click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+
+    await page.goto(link!);
+    await page.fill("#red-senha", "outraSenha99");
+    await page.fill("#red-confirmar", "outraSenha99");
+    await page.getByRole("button", { name: "Salvar nova senha" }).click();
+    await expect(page.getByRole("heading", { name: "Link inválido ou expirado" })).toBeVisible();
   });
 });
 

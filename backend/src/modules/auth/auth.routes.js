@@ -3,7 +3,7 @@ import { validate } from "../../middlewares/validate.js";
 import { requireAuth } from "../../middlewares/auth.js";
 import { rateLimit } from "../../middlewares/rateLimit.js";
 import { env } from "../../config/env.js";
-import { cadastroSchema, loginSchema } from "./auth.schemas.js";
+import { cadastroSchema, esqueciSenhaSchema, loginSchema, redefinirSenhaSchema } from "./auth.schemas.js";
 import * as authController from "./auth.controller.js";
 import * as usuariosController from "../usuarios/usuarios.controller.js";
 
@@ -24,6 +24,8 @@ const limiteRenovacao = rateLimit({
 
 router.post("/cadastro", limiteAuth, validate(cadastroSchema), authController.cadastrar);
 router.post("/login", limiteAuth, validate(loginSchema), authController.login);
+router.post("/esqueci-senha", limiteAuth, validate(esqueciSenhaSchema), authController.esqueciSenha);
+router.post("/redefinir-senha", limiteAuth, validate(redefinirSenhaSchema), authController.redefinirSenha);
 router.post("/renovar", limiteRenovacao, authController.renovar);
 router.post("/sair", authController.sair);
 router.get("/me", requireAuth, usuariosController.perfil);

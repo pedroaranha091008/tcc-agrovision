@@ -31,6 +31,8 @@ Prefixo: `/api/v1`. Respostas de sucesso vêm em `{ "data": ... }` e erros em
 | GET | `/status` | — | verificação de funcionamento |
 | POST | `/auth/cadastro` | — | cria conta (`nome`, `email`, `senha`, `tipo_usuario`, `lembrar?`), devolve `{ token, usuario }` e grava o cookie de renovação |
 | POST | `/auth/login` | — | `email`, `senha`, `lembrar?`; devolve `{ token, usuario }` e grava o cookie de renovação |
+| POST | `/auth/esqueci-senha` | — | `email`; sempre responde igual (não revela contas) e envia o link de redefinição |
+| POST | `/auth/redefinir-senha` | — | `token` (do link) e `senha` nova; o link vale 1 hora e uma única vez, e encerra todas as sessões |
 | POST | `/auth/renovar` | cookie | troca o cookie de renovação por um novo (rotação) e devolve novo `{ token, usuario }` |
 | POST | `/auth/sair` | cookie | encerra a sessão no servidor e apaga o cookie |
 | GET | `/auth/me` | Bearer | dados do usuário logado |
@@ -60,6 +62,10 @@ Prefixo: `/api/v1`. Respostas de sucesso vêm em `{ "data": ... }` e erros em
 Autenticação: header `Authorization: Bearer <token>`, com JWT de curta duração (`ACCESS_TOKEN_MINUTOS`, padrão 15). A sessão continua por meio do cookie `httpOnly` `agrovision_renovacao` (`SameSite=Lax`, `Secure` em produção, restrito a `/api/v1/auth`). No banco fica só o hash SHA-256 desse token, que é trocado a cada renovação. Se um token já trocado for reutilizado, todas as sessões do usuário são encerradas. Com "manter conectado" a sessão dura `REFRESH_TOKEN_DIAS` (padrão 30); sem a opção, dura até fechar o navegador (máx. 1 dia).
 As rotas de login/cadastro e de orçamento têm limite de tentativas por IP.
 Cada usuário só enxerga os próprios dados: acessar o ID de outro usuário responde 404.
+
+### Emails (recuperação de senha)
+
+Com `SMTP_HOST`/`SMTP_PORT`/`SMTP_USER`/`SMTP_PASS`/`SMTP_FROM` no `.env`, os emails são enviados de verdade (nodemailer). Sem SMTP, **em desenvolvimento** o email aparece no terminal e é salvo em `backend/emails-enviados/` (fora do git), para abrir o link sem provedor de email. Em produção sem SMTP, o envio falha e um erro é registrado no log.
 
 ### Uploads e análise automática
 

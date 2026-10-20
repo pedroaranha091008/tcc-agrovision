@@ -1,13 +1,11 @@
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
-import { toast } from "sonner";
-import { AlertTriangle, Eye, EyeOff, LogIn } from "lucide-react";
+import { AlertTriangle, CheckCircle, Eye, EyeOff, LogIn } from "lucide-react";
 import loginImg from "../../assets/login.jpg";
 import { Logo } from "../components/Logo";
 import { Spinner } from "../components/Carregando";
 import { useAuth } from "../lib/auth";
 import { ApiError } from "../lib/api";
-import { CONTATO } from "../lib/site";
 import { emailValido } from "../lib/validation";
 
 const inputBase = "w-full px-4 py-3 rounded-xl border border-border bg-[#F8F9FA] focus:bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent transition-all text-sm";
@@ -74,7 +72,8 @@ export function LoginPage() {
   const { usuario, entrar } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const destino = (location.state as { de?: string } | null)?.de ?? "/dashboard";
+  const estado = location.state as { de?: string; aviso?: string } | null;
+  const destino = estado?.de ?? "/dashboard";
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -115,6 +114,12 @@ export function LoginPage() {
             <p className="text-[#4a5568]">Entre na sua conta para continuar</p>
           </div>
 
+          {estado?.aviso && (
+            <div role="status" className="mb-6 flex items-start gap-2 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-800">
+              <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" aria-hidden /> {estado.aviso}
+            </div>
+          )}
+
           <GoogleEmBreve />
 
           <form onSubmit={handleLogin} noValidate className="space-y-4">
@@ -125,10 +130,7 @@ export function LoginPage() {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label htmlFor="login-senha" className="text-sm font-medium text-[#212121]">Senha</label>
-                <button type="button" className="text-xs text-[#1B5E20] hover:underline"
-                  onClick={() => toast.info("Recuperação de senha em breve", { description: `Por enquanto, escreva para ${CONTATO.email} que redefinimos sua senha.` })}>
-                  Esqueci a senha
-                </button>
+                <Link to="/esqueci-senha" className="text-xs text-[#1B5E20] hover:underline">Esqueci a senha</Link>
               </div>
               <div className="relative">
                 <input id="login-senha" type={mostrarSenha ? "text" : "password"} autoComplete="current-password" placeholder="••••••••" value={senha} onChange={e => setSenha(e.target.value)} className={`${inputBase} pr-11`} />

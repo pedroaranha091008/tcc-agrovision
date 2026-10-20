@@ -1,5 +1,6 @@
 import { env } from "../../config/env.js";
 import * as authService from "./auth.service.js";
+import * as redefinicao from "./redefinicao.service.js";
 
 export const COOKIE_RENOVACAO = "agrovision_renovacao";
 
@@ -47,4 +48,15 @@ export async function sair(req, res) {
   await authService.sair(req.cookies?.[COOKIE_RENOVACAO]);
   res.clearCookie(COOKIE_RENOVACAO, opcoesCookie());
   res.status(204).end();
+}
+
+export async function esqueciSenha(req, res) {
+  await redefinicao.solicitar(req.body.email);
+  res.json({ data: { mensagem: "Se houver uma conta com esse email, enviamos um link para redefinir a senha." } });
+}
+
+export async function redefinirSenha(req, res) {
+  await redefinicao.redefinir(req.body.token, req.body.senha);
+  res.clearCookie(COOKIE_RENOVACAO, opcoesCookie());
+  res.json({ data: { mensagem: "Senha alterada. Entre com a nova senha." } });
 }

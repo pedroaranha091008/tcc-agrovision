@@ -22,6 +22,15 @@ export const env = {
   renovacaoDias: Number(process.env.REFRESH_TOKEN_DIAS) || 30,
   // Tentativas de login/cadastro por IP a cada 15 minutos (aumente só em ambiente de testes).
   limiteTentativasAuth: Number(process.env.LIMITE_TENTATIVAS_AUTH) || 20,
+  // Endereço do site, usado nos links enviados por email (ex.: redefinir senha).
+  frontendUrl: (process.env.FRONTEND_URL || (process.env.CORS_ORIGIN || "http://localhost:5173").split(",")[0]).trim().replace(/\/$/, ""),
+  email: {
+    host: process.env.SMTP_HOST || null,
+    porta: Number(process.env.SMTP_PORT) || 587,
+    usuario: process.env.SMTP_USER || null,
+    senha: process.env.SMTP_PASS || null,
+    remetente: process.env.SMTP_FROM || "AgroVision <nao-responda@agrovision.com.br>"
+  },
   uploads: {
     // Pasta fora de src/, para arquivos enviados nunca serem tratados como código.
     diretorio: path.resolve(process.env.UPLOAD_DIR || "uploads"),

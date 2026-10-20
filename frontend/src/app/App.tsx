@@ -9,6 +9,7 @@ import { Carregando } from "./components/Carregando";
 import { HomePage } from "./pages/home/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
+import { EsqueciSenhaPage, RedefinirSenhaPage } from "./pages/SenhaPages";
 import { PrivacidadePage, TermosPage } from "./pages/LegalPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 
@@ -28,6 +29,8 @@ const TITULOS: Record<string, string> = {
   "/": "AgroVision — Mapeamento com Drones para Agricultura de Precisão",
   "/login": "Entrar — AgroVision",
   "/cadastro": "Criar conta — AgroVision",
+  "/esqueci-senha": "Esqueci a senha — AgroVision",
+  "/redefinir-senha": "Nova senha — AgroVision",
   "/privacidade": "Política de Privacidade — AgroVision",
   "/termos": "Termos de Uso — AgroVision",
 };
@@ -66,6 +69,8 @@ export default function App() {
             </Route>
             <Route path="login" element={<LoginPage />} />
             <Route path="cadastro" element={<RegisterPage />} />
+            <Route path="esqueci-senha" element={<EsqueciSenhaPage />} />
+            <Route path="redefinir-senha" element={<RedefinirSenhaPage />} />
             <Route element={<ProtectedRoute />}>
               <Route path="dashboard" element={<DashboardLayout />}>
                 <Route index element={<OverviewPage />} />

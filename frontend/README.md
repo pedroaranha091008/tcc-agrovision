@@ -27,7 +27,7 @@ Sem ele, o site mostra uma mensagem de erro em vez de fingir que deu certo.
 
 ## Testes de ponta a ponta (E2E)
 
-A pasta `e2e/` tem 30 testes que usam o site como um cliente: cadastro, login e sessão, fazendas, envio de imagens, análises, PDF, painel, histórico e as telas no celular.
+A pasta `e2e/` tem 32 testes que usam o site como um cliente: cadastro, login e sessão, recuperação de senha, fazendas, envio de imagens, análises, PDF, painel, histórico e as telas no celular.
 
 - Usam o **Chrome instalado na máquina** (não precisa baixar navegador) e a API e o banco de verdade.
 - **Pré-requisito:** MySQL/MariaDB no ar e `backend/.env` configurado. A API e o site sobem sozinhos se ainda não estiverem rodando.
@@ -66,6 +66,7 @@ src/
 |---|---|
 | `/`, `/privacidade`, `/termos` | público |
 | `/login`, `/cadastro` | público (redireciona para o painel se já estiver logado) |
+| `/esqueci-senha`, `/redefinir-senha?token=` | público — recuperação de senha pelo link enviado por email |
 | `/dashboard` | exige login — painel com dados reais; filtros `?propriedade=` e `?dias=` na URL |
 | `/dashboard/analises` | exige login — histórico com filtros e paginação na URL |
 | `/dashboard/relatorios` | exige login — lista de relatórios com pré-visualização e download do PDF |

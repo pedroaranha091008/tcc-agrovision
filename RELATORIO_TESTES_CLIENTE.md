@@ -230,7 +230,7 @@ Foram concluídas as **Partes 0, 1, 2 e 3** do planejamento. O reteste no navega
 | F7 | ✅ | Relatório em PDF real, com download na página do voo e em Relatórios (Parte 7). |
 | F8 | ✅ | Cada item do menu tem rota própria. Análises, Relatórios, Fazendas e Agendamentos mostram uma página "Em desenvolvimento" que diz o que virá ali. Configurações já funciona (editar nome, telefone e tipo). |
 | F9 | ✅ | Nova Análise e Ver todos levam às páginas certas; o sino abre o painel de notificações. Os botões sem função (Filtrar, Ampliar, busca) foram removidos até existirem dados reais. |
-| F10 | ⚠️ Parcial | Google aparece desabilitado com o selo "Em breve"; Microsoft e Apple foram removidos; "Esqueci a senha" orienta a escrever para o email de contato. O OAuth fica para a Parte 8. |
+| F10 | ⚠️ Parcial | "Esqueci a senha" funciona de ponta a ponta (Parte 8). Microsoft e Apple foram removidos. O Google continua "Em breve" porque depende do Client ID da equipe. |
 | F11 | ✅ | "Sair" apaga a sessão e volta para a home. |
 | F12 | ✅ | "Saiba mais" abre os detalhes do serviço; "Solicitar este serviço" já preenche o formulário. |
 | F13 | ✅ | Os links do rodapé navegam; Privacidade e Termos têm páginas próprias; email e telefone são clicáveis. Os ícones de redes sociais só aparecem quando houver URL em `lib/site.ts`. |
@@ -279,16 +279,17 @@ Foram concluídas as **Partes 0, 1, 2 e 3** do planejamento. O reteste no navega
 - **Correções encontradas no reteste:** (1) o título "Mapas" ficava sozinho no fim da página do PDF; (2) o nome do arquivo baixado vinha genérico porque o CORS não expunha o cabeçalho `Content-Disposition`.
 - **Testes:** 9 testes novos de API (52 no total), incluindo as regras e a validação do PDF. No navegador, 15 de 15 verificações passaram, com o download conferido de verdade.
 
-### Parte 8 — Sessão segura e testes no repositório (em andamento)
+### Parte 8 — Sessão segura, recuperação de senha e testes no repositório
 
 - **Renovação de sessão:** o token de acesso agora dura 15 minutos e fica só na memória da página, não mais no `localStorage`. A sessão é mantida por um cookie `httpOnly` com token de renovação rotativo; no banco fica só o hash dele. Se um token já trocado for reutilizado (sinal de roubo), todas as sessões do usuário são encerradas. "Sair" revoga a sessão no servidor. "Manter conectado" vale 30 dias; sem a opção, até fechar o navegador. O site renova sozinho antes de expirar e, se a sessão cair, avisa e leva para o login.
 - **Testes E2E no repositório:** 30 testes `@playwright/test` em `frontend/e2e/` (`npm run test:e2e`), no computador e no celular, rodando contra a API e o banco reais e apagando os dados de teste ao final. Rodaram duas vezes seguidas sem falha.
 - **Correção encontrada pela suíte:** mudar filtros muito rápido podia trazer de volta filtros já limpos (a página lia uma cópia antiga da URL).
-- **Testes de API:** 7 novos de sessão (59 no total).
+- **Recuperação de senha:** "Esqueci a senha" envia um link de uso único válido por 1 hora; no banco fica só o hash do token. A resposta é a mesma exista ou não a conta, pedir de novo invalida o link anterior e trocar a senha encerra todas as sessões abertas. O envio usa SMTP se configurado; em desenvolvimento, o email vai para o terminal e para `backend/emails-enviados/`.
+- **Bug encontrado e corrigido:** ao reorganizar as regras de senha, a regra "usar números" tinha virado `/d/` (letra "d") em vez de `/d/` (dígito), o que aceitaria senhas sem números. Um teste novo cobre esse caso.
+- **Testes:** 13 testes novos de API para sessão e recuperação de senha (65 no total) e 32 testes E2E, todos passando em duas rodadas seguidas.
 
 ### Próximos passos
 
-1. **Recuperação de senha:** fluxo completo com token de uso único. O envio do email fica configurável (SMTP), e sem configuração o link é mostrado no terminal em desenvolvimento.
-2. **Login com Google:** depende de um *Client ID* da equipe no Google Cloud Console.
+1. **Login com Google:** depende de um *Client ID* da equipe no Google Cloud Console.
 
 Antes de publicar, ainda é preciso **substituir os contatos fictícios** (telefone `99999-0000`, email e redes) em `frontend/src/app/lib/site.ts` e **gerar um `JWT_SECRET` forte** no `.env` do servidor.
