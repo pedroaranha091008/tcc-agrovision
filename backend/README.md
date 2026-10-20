@@ -47,6 +47,8 @@ Prefixo: `/api/v1`. Respostas de sucesso vêm em `{ "data": ... }` e erros em
 | DELETE | `/imagens/:id` | Bearer | apaga a imagem e o arquivo |
 | POST | `/voos/:id/analises/automatica` | Bearer | analisa as imagens do voo pelo índice de verde (ExG) e gera um mapa por imagem |
 | POST | `/voos/:id/analises` | Bearer | registra análise manual (`tipo_analise`, `nivel_risco`, `percentual_area_afetada?`, `resultado`) |
+| GET | `/analises/:id` | Bearer | detalhe da análise com propriedade, talhão, voo e recomendação (pré-visualização do relatório) |
+| GET | `/analises/:id/relatorio` | Bearer | relatório em PDF (gerado na hora, sempre igual para a mesma análise) |
 | GET | `/analises/:id/mapas/:indice` | Bearer | mapa PNG da análise automática |
 | DELETE | `/analises/:id` | Bearer | apaga a análise e seus mapas |
 | GET | `/dashboard` | Bearer | indicadores do painel: totais, situação de cada talhão (análise do voo mais recente), talhões por risco, série mensal e últimas análises. Filtros: `id_propriedade`, `dias` (30, 90, 180 ou 365) |
@@ -61,6 +63,11 @@ Cada usuário só enxerga os próprios dados: acessar o ID de outro usuário res
 - Os arquivos ficam em `UPLOAD_DIR` (padrão `backend/uploads/`, fora do git), com nomes aleatórios. O tipo é conferido pela extensão e pelo MIME, e o conteúdo é aberto com o `sharp` para recusar arquivos disfarçados.
 - A análise automática calcula o **Índice de Excesso de Verde (ExG = 2g − r − b)** em cada pixel de fotos RGB. Ela classifica as áreas em vegetação vigorosa, atenção e pouca/nenhuma vegetação, e calcula a área afetada e o nível de risco. O método mede **cobertura vegetal**: não identifica pragas ou doenças, e o texto do resultado avisa isso ao usuário. Os limiares ficam em `src/modules/analises/indiceVerde.js`.
 
+### Recomendações e relatórios
+
+- As recomendações vêm de **regras versionadas** em `src/modules/relatorios/recomendacoes.js`, combinando nível de risco, tipo de análise e área afetada. A versão aparece no PDF, e a resposta sempre traz o aviso de que não é diagnóstico automático.
+- O PDF (`pdfkit`) é montado a cada download, com identificação, risco, cobertura vegetal, resultado, recomendação e mapas. Como nada é guardado, não há arquivo desatualizado nem órfão.
+
 ## Organização
 
 ```
@@ -68,11 +75,11 @@ src/
   app.js, server.js
   config/        env.js (valida variáveis), prisma.js
   middlewares/   auth, validate (zod), rateLimit, upload (multer), errorHandler
-  modules/       auth/, usuarios/, orcamentos/, propriedades/, talhoes/, voos/, imagens/, analises/, dashboard/
+  modules/       auth/, usuarios/, orcamentos/, propriedades/, talhoes/, voos/, imagens/, analises/, dashboard/, relatorios/
                  cada um: routes → controller → service (+ schemas)
   utils/         AppError, serializers, armazenamento (arquivos em disco)
 prisma/          schema.prisma e migrations
 test/            testes de integração (node:test)
 ```
 
-Próximo módulo previsto (ver `PLANEJAMENTO_BACKEND.md`): relatórios em PDF.
+Próximos passos (ver `PLANEJAMENTO_BACKEND.md`): login com Google, recuperação de senha e renovação de sessão.

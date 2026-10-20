@@ -50,6 +50,8 @@ export type NivelRisco = "baixo" | "medio" | "alto" | "critico";
 
 export type ResultadoImagem = { id_imagem: string; nome: string; saudavel: number; atencao: number; critico: number; exg_medio: number; mapa: string };
 
+export type Recomendacao = { versao: number; titulo: string; prazo: string; acoes: string[]; aviso: string };
+
 export type Analise = {
   id_analise: string;
   id_voo: string;
@@ -65,6 +67,16 @@ export type Analise = {
     por_imagem: ResultadoImagem[];
   } | null;
   data_analise: string;
+  recomendacao?: Recomendacao | null;
+};
+
+export type AnaliseDetalhe = Analise & {
+  recomendacao: Recomendacao | null;
+  voo: Pick<Voo, "id_voo" | "data_voo" | "modelo_drone" | "operador" | "altitude_metros"> & {
+    talhao: Pick<Talhao, "id_talhao" | "nome_talhao" | "cultura" | "area_hectares"> & {
+      propriedade: Pick<Propriedade, "id_propriedade" | "nome_fazenda" | "cidade" | "estado">;
+    };
+  };
 };
 
 export type ImagemVoo = {

@@ -6,7 +6,7 @@
 
 ---
 
-> **Atualização 20/10/2026:** as Partes 0, 1, 2 e 3 do planejamento foram implementadas e retestadas. Veja a [seção 7](#7-atualização--20102026-correções-aplicadas) para o status de cada erro.
+> **Atualização 20/10/2026:** as Partes 0 a 7 do planejamento foram implementadas e retestadas. Falta só a Parte 8. Veja a [seção 7](#7-atualização--20102026-correções-aplicadas) para o status de cada erro.
 
 ## 1. Resumo executivo
 
@@ -227,7 +227,7 @@ Foram concluídas as **Partes 0, 1, 2 e 3** do planejamento. O reteste no navega
 | F4 | ✅ | `/dashboard/*` exige login; sem sessão vai para `/login` e volta para a página pedida depois de entrar. |
 | F5 | ✅ | Painel 100% com dados reais (Parte 6). |
 | F6 | ✅ | Upload de imagens do drone na página do voo (Parte 5). |
-| F7 | ⏳ | O relatório em PDF fica para a Parte 7. |
+| F7 | ✅ | Relatório em PDF real, com download na página do voo e em Relatórios (Parte 7). |
 | F8 | ✅ | Cada item do menu tem rota própria. Análises, Relatórios, Fazendas e Agendamentos mostram uma página "Em desenvolvimento" que diz o que virá ali. Configurações já funciona (editar nome, telefone e tipo). |
 | F9 | ✅ | Nova Análise e Ver todos levam às páginas certas; o sino abre o painel de notificações. Os botões sem função (Filtrar, Ampliar, busca) foram removidos até existirem dados reais. |
 | F10 | ⚠️ Parcial | Google aparece desabilitado com o selo "Em breve"; Microsoft e Apple foram removidos; "Esqueci a senha" orienta a escrever para o email de contato. O OAuth fica para a Parte 8. |
@@ -271,9 +271,16 @@ Foram concluídas as **Partes 0, 1, 2 e 3** do planejamento. O reteste no navega
 - **Correção encontrada no reteste:** grades sem `grid-cols-1` alargavam o painel no celular (413 px). Corrigido em 10 grades do site.
 - **Testes:** 8 testes novos de API (43 no total) e 30 verificações no navegador para o painel e o histórico, todas OK.
 
+### Parte 7 — Relatórios e recomendações (concluída)
+
+- **Recomendações por regras versionadas,** combinando nível de risco, tipo de análise (ex.: térmica → verificar irrigação) e área afetada (acima de 40% → tratar o talhão inteiro). Cada uma tem prazo e ações e aparece junto do resultado, sempre com o aviso de que não substitui o agrônomo.
+- **Relatório em PDF** gerado pela API com identificação, destaque do risco, cobertura vegetal, resultado, recomendação, mapas e rodapé numerado. O download exige login, o arquivo sai com nome legível (`relatorio-cafe-alto-2026-10-15.pdf`) e o botão mostra "Gerando PDF..." e avisa se falhar.
+- **Página Relatórios:** lista com filtro por propriedade e risco, pré-visualização em janela antes do download e estado vazio explicativo.
+- **Correções encontradas no reteste:** (1) o título "Mapas" ficava sozinho no fim da página do PDF; (2) o nome do arquivo baixado vinha genérico porque o CORS não expunha o cabeçalho `Content-Disposition`.
+- **Testes:** 9 testes novos de API (52 no total), incluindo as regras e a validação do PDF. No navegador, 15 de 15 verificações passaram, com o download conferido de verdade.
+
 ### Próximos passos
 
-1. **Parte 7 — Relatórios em PDF** e recomendações por regra.
-2. **Parte 8:** login com Google, recuperação de senha, refresh token e testes E2E no repositório.
+1. **Parte 8:** login com Google, recuperação de senha, refresh token e testes E2E no repositório.
 
 Antes de publicar, ainda é preciso **substituir os contatos fictícios** (telefone `99999-0000`, email e redes) em `frontend/src/app/lib/site.ts` e **gerar um `JWT_SECRET` forte** no `.env` do servidor.

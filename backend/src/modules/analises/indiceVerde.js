@@ -73,11 +73,12 @@ export function resumir(porImagem) {
   return { saudavel, atencao, critico, afetada, nivel };
 }
 
-const RECOMENDACOES = {
-  baixo: "Cobertura vegetal uniforme. Mantenha o monitoramento periódico.",
-  medio: "Há manchas com pouca vegetação. Vale inspecionar essas áreas em campo para verificar falhas de plantio ou estresse.",
-  alto: "Parte importante da área tem pouca vegetação. Inspecione em campo e avalie replantio ou correção (água, nutrientes, pragas).",
-  critico: "Mais da metade da área tem pouca ou nenhuma vegetação. Verifique se a imagem é da lavoura no estágio esperado e faça inspeção em campo com urgência."
+// Só a constatação; as recomendações vêm das regras em modules/relatorios/recomendacoes.js.
+const CONSTATACOES = {
+  baixo: "Cobertura vegetal uniforme.",
+  medio: "Há manchas com pouca vegetação.",
+  alto: "Parte importante da área tem pouca vegetação.",
+  critico: "Mais da metade da área tem pouca ou nenhuma vegetação."
 };
 
 const pct = (n) => `${n.toLocaleString("pt-BR")}%`;
@@ -87,7 +88,7 @@ export function textoResultado({ saudavel, atencao, critico, afetada, nivel }, q
     `Análise automática por índice de verde (ExG) em ${quantidadeImagens} imagem(ns).`,
     `Vegetação vigorosa: ${pct(saudavel)} · Atenção: ${pct(atencao)} · Pouca ou nenhuma vegetação: ${pct(critico)}.`,
     `Área considerada afetada: ${pct(afetada)}.`,
-    RECOMENDACOES[nivel],
+    CONSTATACOES[nivel],
     "Este índice mede cobertura vegetal em fotos comuns (RGB); não identifica pragas ou doenças. Confirme sempre em campo."
   ].join("\n");
 }

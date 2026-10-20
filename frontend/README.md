@@ -49,7 +49,8 @@ src/
 | `/login`, `/cadastro` | público (redireciona para o painel se já estiver logado) |
 | `/dashboard` | exige login — painel com dados reais; filtros `?propriedade=` e `?dias=` na URL |
 | `/dashboard/analises` | exige login — histórico com filtros e paginação na URL |
-| `/dashboard/relatorios`, `/agendamentos`, `/configuracoes` | exige login |
+| `/dashboard/relatorios` | exige login — lista de relatórios com pré-visualização e download do PDF |
+| `/dashboard/agendamentos`, `/configuracoes` | exige login |
 | `/dashboard/fazendas`, `/dashboard/fazendas/:id`, `/dashboard/talhoes/:id`, `/dashboard/voos/:id` | exige login — propriedade → talhão → voo |
 
 Contatos exibidos no site (telefone, email, redes sociais) ficam em `src/app/lib/site.ts`.

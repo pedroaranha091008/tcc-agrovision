@@ -1,16 +1,10 @@
 import { Link } from "react-router";
-import { Calendar, CheckCircle, FileText, type LucideIcon } from "lucide-react";
+import { Calendar, CheckCircle, type LucideIcon } from "lucide-react";
 import { CabecalhoPagina } from "./DashboardLayout";
 
 type Secao = { titulo: string; descricao: string; icon: LucideIcon; recursos: string[]; enquantoIsso?: { texto: string; link: { to: string; label: string } } };
 
-export const SECOES_EM_BREVE: Record<"relatorios" | "agendamentos", Secao> = {
-  relatorios: {
-    titulo: "Relatórios",
-    descricao: "Relatórios técnicos de cada análise, prontos para baixar.",
-    icon: FileText,
-    recursos: ["Relatório em PDF com mapas e indicadores", "Recomendações agronômicas por talhão", "Compartilhamento com o agrônomo responsável"],
-  },
+export const SECOES_EM_BREVE: Record<"agendamentos", Secao> = {
   agendamentos: {
     titulo: "Agendamentos",
     descricao: "Agende voos de drone com a nossa equipe.",

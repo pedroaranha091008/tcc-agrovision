@@ -129,3 +129,24 @@ export function apiUpload<T>(caminho: string, campo: string, arquivos: File[], a
     xhr.send(form);
   });
 }
+
+/** Baixa um arquivo protegido e dispara o "salvar como", usando o nome enviado pelo servidor. */
+export async function apiDownload(caminho: string, nomePadrao: string) {
+  const token = tokenStorage.get();
+  let resposta: Response;
+  try {
+    resposta = await fetch(API_URL + caminho, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+  } catch {
+    throw new ApiError(SEM_CONEXAO, 0, "SEM_CONEXAO");
+  }
+  if (!resposta.ok) throw erroDaResposta(resposta.status, await resposta.json().catch(() => null));
+  const nome = /filename="?([^";]+)"?/.exec(resposta.headers.get("content-disposition") ?? "")?.[1] ?? nomePadrao;
+  const url = URL.createObjectURL(await resposta.blob());
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = nome;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}

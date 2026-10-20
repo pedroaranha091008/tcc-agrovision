@@ -2,6 +2,7 @@ import { prisma } from "../../config/prisma.js";
 import { AppError } from "../../utils/AppError.js";
 import { normalizar } from "../../utils/serializers.js";
 import { garantirDono as garantirDonoTalhao } from "../talhoes/talhoes.service.js";
+import { recomendar } from "../relatorios/recomendacoes.js";
 
 export async function garantirDono(idVoo, idUsuario) {
   const voo = await prisma.voo.findFirst({
@@ -29,7 +30,8 @@ export async function buscar(idVoo, idUsuario) {
       imagens: { orderBy: { criado_em: "asc" } }
     }
   });
-  return normalizar(voo);
+  const normalizado = normalizar(voo);
+  return { ...normalizado, analises: normalizado.analises.map((a) => ({ ...a, recomendacao: recomendar(a) })) };
 }
 
 export async function criar(idUsuario, { id_talhao, ...dados }) {

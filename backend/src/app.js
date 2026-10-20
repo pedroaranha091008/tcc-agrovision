@@ -10,7 +10,9 @@ app.disable("x-powered-by");
 app.use(
   cors({
     origin: env.corsOrigens.length > 0 ? env.corsOrigens : true,
-    credentials: true
+    credentials: true,
+    // Sem isso o navegador esconde o nome do arquivo dos downloads (relatórios PDF) do frontend.
+    exposedHeaders: ["Content-Disposition"]
   })
 );
 app.use(express.json({ limit: "100kb" }));

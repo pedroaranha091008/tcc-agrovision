@@ -10,6 +10,7 @@ import { ImagemProtegida } from "../../../components/ImagemProtegida";
 import { ConfirmarExclusao, Modal } from "../../../components/Modal";
 import { RiscoBadge } from "../../../components/RiscoBadge";
 import { CORES_STATUS } from "../../../components/FarmMap";
+import { BotaoPdf, CaixaRecomendacao } from "../../../components/Relatorio";
 
 function FormAnaliseManual({ idVoo, aoSalvar, aoCancelar }: { idVoo: string; aoSalvar: () => void; aoCancelar: () => void }) {
   const [tipo, setTipo] = useState<TipoAnalise | "">("");
@@ -88,6 +89,7 @@ function CartaoAnalise({ analise, aoExcluir }: { analise: Analise; aoExcluir: ()
         </div>
         <div className="flex items-center gap-2">
           <RiscoBadge nivel={analise.nivel_risco} />
+          <BotaoPdf idAnalise={analise.id_analise} disponivel={!!analise.nivel_risco} compacto />
           <button onClick={aoExcluir} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg" aria-label="Excluir análise"><Trash2 className="w-4 h-4" /></button>
         </div>
       </header>
@@ -113,6 +115,8 @@ function CartaoAnalise({ analise, aoExcluir }: { analise: Analise; aoExcluir: ()
       )}
 
       {analise.resultado && <p className="text-sm text-[#4a5568] whitespace-pre-line">{analise.resultado}</p>}
+
+      {analise.recomendacao && <div className="mt-4"><CaixaRecomendacao recomendacao={analise.recomendacao} /></div>}
 
       {analise.detalhes?.por_imagem && analise.detalhes.por_imagem.length > 0 && (
         <div className="mt-4">

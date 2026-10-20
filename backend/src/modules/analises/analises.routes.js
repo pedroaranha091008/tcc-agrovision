@@ -8,6 +8,8 @@ const router = Router();
 
 router.use(requireAuth);
 
+router.get("/:id", validateId, analisesController.detalhe);
+router.get("/:id/relatorio", validateId, analisesController.relatorio);
 router.get("/:id/mapas/:indice", validateId, analisesController.mapa);
 router.delete("/:id", validateId, analisesController.excluir);
 
