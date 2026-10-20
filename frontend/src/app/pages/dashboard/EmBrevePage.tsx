@@ -1,16 +1,10 @@
 import { Link } from "react-router";
-import { Activity, Calendar, CheckCircle, FileText, Tractor, type LucideIcon } from "lucide-react";
+import { Activity, Calendar, CheckCircle, FileText, type LucideIcon } from "lucide-react";
 import { CabecalhoPagina } from "./DashboardLayout";
 
 type Secao = { titulo: string; descricao: string; icon: LucideIcon; recursos: string[] };
 
-export const SECOES_EM_BREVE: Record<"analises" | "relatorios" | "fazendas" | "agendamentos", Secao> = {
-  fazendas: {
-    titulo: "Fazendas",
-    descricao: "Cadastre suas propriedades e divida-as em talhões.",
-    icon: Tractor,
-    recursos: ["Cadastro de propriedades com cidade, estado e área", "Talhões com cultura, área e localização", "Mapa de cada talhão"],
-  },
+export const SECOES_EM_BREVE: Record<"analises" | "relatorios" | "agendamentos", Secao> = {
   analises: {
     titulo: "Minhas Análises",
     descricao: "Envie as imagens do drone e acompanhe o histórico de monitoramentos.",

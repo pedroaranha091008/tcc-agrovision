@@ -5,11 +5,11 @@ import { Logo } from "../../components/Logo";
 import { useAuth } from "../../lib/auth";
 import { TIPOS_USUARIO } from "../../lib/site";
 
-export const NAV_ITEMS = [
+export const NAV_ITEMS: { to: string; icon: typeof Tractor; label: string; end?: boolean; tambem?: string[] }[] = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Visão Geral", end: true },
   { to: "/dashboard/analises", icon: Activity, label: "Minhas Análises" },
   { to: "/dashboard/relatorios", icon: FileText, label: "Relatórios" },
-  { to: "/dashboard/fazendas", icon: Tractor, label: "Fazendas" },
+  { to: "/dashboard/fazendas", icon: Tractor, label: "Fazendas", tambem: ["/dashboard/talhoes", "/dashboard/voos"] },
   { to: "/dashboard/agendamentos", icon: Calendar, label: "Agendamentos" },
   { to: "/dashboard/configuracoes", icon: Settings, label: "Configurações" },
 ];
@@ -50,10 +50,10 @@ export function DashboardLayout() {
         </div>
 
         <nav className="flex-1 p-3 flex flex-col gap-1 overflow-y-auto" aria-label="Menu do painel">
-          {NAV_ITEMS.map(({ to, icon: Icon, label, end }) => (
+          {NAV_ITEMS.map(({ to, icon: Icon, label, end, tambem }) => (
             <NavLink key={to} to={to} end={end} title={mostrarRotulos ? undefined : label}
               className={({ isActive }) => `w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium
-                ${isActive ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/10"}`}>
+                ${isActive || tambem?.some(p => pathname.startsWith(p)) ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/10"}`}>
               <Icon className="w-5 h-5 flex-shrink-0" aria-hidden />
               {mostrarRotulos ? <span>{label}</span> : <span className="sr-only">{label}</span>}
             </NavLink>

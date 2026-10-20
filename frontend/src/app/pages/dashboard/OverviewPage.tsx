@@ -165,7 +165,7 @@ export function OverviewPage() {
           <h2 className="font-bold text-[#212121] font-display">Relatórios Recentes</h2>
           <Link to="/dashboard/relatorios" className="text-xs text-[#1B5E20] font-semibold px-3 py-1.5 rounded-lg hover:bg-[#E8F5E9] transition-colors">Ver todos</Link>
         </div>
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
           <table className="w-full min-w-[640px]">
             <thead>
               <tr className="bg-[#F8F9FA]">

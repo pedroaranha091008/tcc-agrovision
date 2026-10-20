@@ -248,12 +248,18 @@ Foram concluídas as **Partes 0, 1, 2 e 3** do planejamento. O reteste no navega
 | B7 | ✅ | 12 dependências sem uso foram removidas (MUI, emotion, react-dnd, react-slick…). O painel carrega sob demanda: o pacote inicial caiu de **687 kB para 297 kB**. |
 | B8 | ⚠️ Parcial | O backend tem testes de integração. Os testes de interface (E2E) ficam para a Parte 8. |
 
+### Parte 4 — Fazendas, talhões e voos (concluída)
+
+- **API:** CRUD de propriedades, talhões e voos. Cada usuário só acessa os próprios dados (o ID de outro usuário responde 404). Exclusão de item com dependentes é recusada com 409 e uma mensagem explicando o motivo. Áreas e coordenadas voltam como número.
+- **Painel:** em `/dashboard/fazendas` o usuário navega propriedade → talhão → voo com breadcrumbs, estados vazios que convidam a cadastrar o primeiro item, formulários em modal com validação, edição e exclusão com confirmação.
+- **Correção encontrada no reteste:** no celular, o texto oculto para leitores de tela no cabeçalho das tabelas "escapava" da área com rolagem e alargava a página (para 686 px na visão geral). A verificação anterior de celular não pegou isso porque media a largura errada. Corrigido, e o teste passou a medir certo.
+- **Testes:** 12 testes novos de API (23 no total, todos passando) e 26 verificações no navegador para a hierarquia, todas OK.
+
 ### Próximos passos
 
-1. **Parte 4 — Fazendas e talhões:** é o que destrava os dados reais do painel.
-2. **Parte 5 — Upload de imagens e análises.**
-3. **Parte 6 — Painel com dados reais** e remoção do aviso de demonstração.
-4. **Parte 7 — Relatórios em PDF.**
-5. **Parte 8:** login com Google, recuperação de senha, refresh token e testes E2E no repositório.
+1. **Parte 5 — Upload de imagens e análises.**
+2. **Parte 6 — Painel com dados reais** e remoção do aviso de demonstração.
+3. **Parte 7 — Relatórios em PDF.**
+4. **Parte 8:** login com Google, recuperação de senha, refresh token e testes E2E no repositório.
 
 Antes de publicar, ainda é preciso **substituir os contatos fictícios** (telefone `99999-0000`, email e redes) em `frontend/src/app/lib/site.ts` e **gerar um `JWT_SECRET` forte** no `.env` do servidor.

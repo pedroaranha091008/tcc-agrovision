@@ -16,6 +16,10 @@ import { NotFoundPage } from "./pages/NotFoundPage";
 const DashboardLayout = lazy(() => import("./pages/dashboard/DashboardLayout").then(m => ({ default: m.DashboardLayout })));
 const OverviewPage = lazy(() => import("./pages/dashboard/OverviewPage").then(m => ({ default: m.OverviewPage })));
 const SettingsPage = lazy(() => import("./pages/dashboard/SettingsPage").then(m => ({ default: m.SettingsPage })));
+const FazendasPage = lazy(() => import("./pages/dashboard/fazendas/FazendasPage").then(m => ({ default: m.FazendasPage })));
+const PropriedadePage = lazy(() => import("./pages/dashboard/fazendas/PropriedadePage").then(m => ({ default: m.PropriedadePage })));
+const TalhaoPage = lazy(() => import("./pages/dashboard/fazendas/TalhaoPage").then(m => ({ default: m.TalhaoPage })));
+const VooPage = lazy(() => import("./pages/dashboard/fazendas/VooPage").then(m => ({ default: m.VooPage })));
 const EmBrevePage = lazy(() => import("./pages/dashboard/EmBrevePage").then(m => ({ default: m.EmBrevePage })));
 
 const TITULOS: Record<string, string> = {
@@ -65,7 +69,10 @@ export default function App() {
                 <Route index element={<OverviewPage />} />
                 <Route path="analises" element={<EmBrevePage secao="analises" />} />
                 <Route path="relatorios" element={<EmBrevePage secao="relatorios" />} />
-                <Route path="fazendas" element={<EmBrevePage secao="fazendas" />} />
+                <Route path="fazendas" element={<FazendasPage />} />
+                <Route path="fazendas/:id" element={<PropriedadePage />} />
+                <Route path="talhoes/:id" element={<TalhaoPage />} />
+                <Route path="voos/:id" element={<VooPage />} />
                 <Route path="agendamentos" element={<EmBrevePage secao="agendamentos" />} />
                 <Route path="configuracoes" element={<SettingsPage />} />
               </Route>

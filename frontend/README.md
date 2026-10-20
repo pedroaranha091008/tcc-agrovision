@@ -30,12 +30,14 @@ src/
   assets/                 imagens locais (sem depender de links externos)
   app/
     App.tsx               rotas
-    lib/                  api.ts (cliente HTTP), auth.tsx (sessão), site.ts (contatos e listas), validation.ts
-    components/           Navbar, Footer, Logo, FarmMap, ProtectedRoute...
+    lib/                  api.ts (cliente HTTP), auth.tsx (sessão), types.ts (contratos da API), format.ts,
+                          useCarregar.ts, site.ts (contatos e listas), validation.ts
+    components/           Navbar, Footer, Logo, FarmMap, ProtectedRoute, Modal, Form, Breadcrumbs, Estados...
     components/ui/        componentes shadcn/ui (gerados, não editar à mão)
     pages/
       home/               seções da página inicial
       dashboard/          painel do cliente (carregado sob demanda)
+        fazendas/         propriedades, talhões e voos (lista, detalhes, formulários)
       LoginPage, RegisterPage, LegalPage, NotFoundPage
 ```
 
@@ -45,6 +47,7 @@ src/
 |---|---|
 | `/`, `/privacidade`, `/termos` | público |
 | `/login`, `/cadastro` | público (redireciona para o painel se já estiver logado) |
-| `/dashboard`, `/dashboard/analises`, `/relatorios`, `/fazendas`, `/agendamentos`, `/configuracoes` | exige login |
+| `/dashboard`, `/dashboard/analises`, `/relatorios`, `/agendamentos`, `/configuracoes` | exige login |
+| `/dashboard/fazendas`, `/dashboard/fazendas/:id`, `/dashboard/talhoes/:id`, `/dashboard/voos/:id` | exige login — propriedade → talhão → voo |
 
 Contatos exibidos no site (telefone, email, redes sociais) ficam em `src/app/lib/site.ts`.
