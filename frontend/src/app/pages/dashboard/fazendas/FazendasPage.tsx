@@ -30,7 +30,7 @@ export function FazendasPage() {
             texto="Comece pela propriedade. Depois você divide em talhões e registra os voos de drone de cada um."
             acao={botaoNova} />
         ) : (
-          <ul className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {dados?.map(p => (
               <li key={p.id_propriedade}>
                 <Link to={`/dashboard/fazendas/${p.id_propriedade}`}

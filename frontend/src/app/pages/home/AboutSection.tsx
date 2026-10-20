@@ -8,7 +8,7 @@ export function AboutSection() {
   return (
     <section id="sobre" className="py-28 bg-white">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
             <div className="inline-flex items-center gap-2 bg-[#E8F5E9] text-[#2E7D32] rounded-full px-4 py-1.5 mb-6 text-sm font-medium">
               <Leaf className="w-4 h-4" /> Sobre a AgroVision

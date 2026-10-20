@@ -1,20 +1,10 @@
 import { Link } from "react-router";
-import { Activity, Calendar, CheckCircle, FileText, type LucideIcon } from "lucide-react";
+import { Calendar, CheckCircle, FileText, type LucideIcon } from "lucide-react";
 import { CabecalhoPagina } from "./DashboardLayout";
 
 type Secao = { titulo: string; descricao: string; icon: LucideIcon; recursos: string[]; enquantoIsso?: { texto: string; link: { to: string; label: string } } };
 
-export const SECOES_EM_BREVE: Record<"analises" | "relatorios" | "agendamentos", Secao> = {
-  analises: {
-    titulo: "Minhas Análises",
-    descricao: "Histórico de todos os monitoramentos das suas fazendas.",
-    icon: Activity,
-    recursos: ["Todas as análises em uma lista só", "Filtros por data, fazenda, talhão e tipo de análise", "Acesso rápido ao mapa e ao laudo de cada análise"],
-    enquantoIsso: {
-      texto: "Enquanto isso, você já pode enviar imagens e analisar cada voo pela página do voo, dentro de Fazendas.",
-      link: { to: "/dashboard/fazendas", label: "Ir para Fazendas" },
-    },
-  },
+export const SECOES_EM_BREVE: Record<"relatorios" | "agendamentos", Secao> = {
   relatorios: {
     titulo: "Relatórios",
     descricao: "Relatórios técnicos de cada análise, prontos para baixar.",

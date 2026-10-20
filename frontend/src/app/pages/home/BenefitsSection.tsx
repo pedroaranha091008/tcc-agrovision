@@ -22,7 +22,7 @@ export function BenefitsSection() {
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {benefits.map((b) => (
             <div key={b.title} className="group bg-white rounded-2xl p-7 border border-border hover:border-[#A5D6A7] hover:shadow-lg hover:shadow-green-900/8 hover:-translate-y-1 transition-all duration-300">
               <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-transform group-hover:scale-110"

@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router";
 import { ArrowRight, Calendar, FileText, LayoutDashboard, Map, Settings, Tractor } from "lucide-react";
 import { FarmMap } from "../../components/FarmMap";
-import { vegetativeData } from "../dashboard/demoData";
+
+// Valores ilustrativos da vitrine (saúde vegetativa %, últimos meses).
+const SAUDE_EXEMPLO = [80, 88, 92, 90, 94];
 
 /** Mini gráfico em SVG puro, para a home não precisar baixar a biblioteca de gráficos. */
 function Sparkline({ valores }: { valores: number[] }) {
@@ -80,13 +82,13 @@ export function DashboardPreviewSection() {
               </div>
 
               {/* Map + Chart row */}
-              <div className="grid lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-xl overflow-hidden">
                   <FarmMap className="w-full h-36" />
                 </div>
                 <div className="bg-white/5 border border-white/10 rounded-xl p-3">
                   <div className="text-white/60 text-xs mb-2">Saúde Vegetativa</div>
-                  <Sparkline valores={vegetativeData.slice(-5).map(d => d.health)} />
+                  <Sparkline valores={SAUDE_EXEMPLO} />
                 </div>
               </div>
             </div>

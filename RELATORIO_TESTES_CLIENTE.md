@@ -225,8 +225,9 @@ Foram concluídas as **Partes 0, 1, 2 e 3** do planejamento. O reteste no navega
 | F2 | ✅ | Login real (bcrypt + JWT). Senha errada e email inexistente dão a mesma mensagem, para não revelar quais contas existem. |
 | F3 | ✅ | Cadastro valida nome, email, senha (≥ 8 caracteres, letras e números) e confirmação, exige aceite dos termos, salva o tipo de usuário e recusa email repetido. |
 | F4 | ✅ | `/dashboard/*` exige login; sem sessão vai para `/login` e volta para a página pedida depois de entrar. |
-| F5 | ⚠️ Parcial | Nome, iniciais e tipo do usuário são reais. Os gráficos continuam com dados de exemplo, agora com o aviso **"Dados de demonstração"**. Os dados reais dependem das Partes 4–6. |
-| F6, F7 | ⏳ | Upload e PDF ficam para as Partes 5 e 7. O download na tabela de exemplo explica que é demonstração. |
+| F5 | ✅ | Painel 100% com dados reais (Parte 6). |
+| F6 | ✅ | Upload de imagens do drone na página do voo (Parte 5). |
+| F7 | ⏳ | O relatório em PDF fica para a Parte 7. |
 | F8 | ✅ | Cada item do menu tem rota própria. Análises, Relatórios, Fazendas e Agendamentos mostram uma página "Em desenvolvimento" que diz o que virá ali. Configurações já funciona (editar nome, telefone e tipo). |
 | F9 | ✅ | Nova Análise e Ver todos levam às páginas certas; o sino abre o painel de notificações. Os botões sem função (Filtrar, Ampliar, busca) foram removidos até existirem dados reais. |
 | F10 | ⚠️ Parcial | Google aparece desabilitado com o selo "Em breve"; Microsoft e Apple foram removidos; "Esqueci a senha" orienta a escrever para o email de contato. O OAuth fica para a Parte 8. |
@@ -262,10 +263,17 @@ Foram concluídas as **Partes 0, 1, 2 e 3** do planejamento. O reteste no navega
 - **Análise manual,** para laudos de agrônomo ou resultados de outro software.
 - **Testes:** 12 testes novos de API (35 no total). Com imagens sintéticas de 75% verde, o índice mede 75% de vegetação vigorosa, como esperado. O teste no navegador passou em 25 de 25 verificações.
 
+### Parte 6 — Painel real e histórico (concluída)
+
+- **Painel sem dados falsos:** o "João Silva", a "Fazenda São João" e os gráficos de exemplo saíram do painel; o arquivo `demoData.ts` foi removido. Conta nova vê um guia de primeiros passos (fazenda → talhão → voo → imagens) com o progresso marcado.
+- **Indicadores reais:** área monitorada, voos e análises no período, talhões em alerta, situação de cada talhão (pela análise do voo mais recente, os mais críticos primeiro), talhões por risco, voos e área afetada por mês e últimas análises. A propriedade e o período escolhidos ficam na URL e continuam valendo depois do F5.
+- **Histórico (`Minhas Análises`):** filtros por data do voo, propriedade, talhão, tipo e risco, mostrados como etiquetas removíveis uma a uma, com opção de limpar tudo. Tem paginação, e a URL guarda tudo. Datas invertidas recebem um aviso claro, e resultado vazio não aparece como erro. "Abrir" leva ao voo e rola até a análise. No celular, a lista vira cartões e os filtros ficam recolhidos.
+- **Correção encontrada no reteste:** grades sem `grid-cols-1` alargavam o painel no celular (413 px). Corrigido em 10 grades do site.
+- **Testes:** 8 testes novos de API (43 no total) e 30 verificações no navegador para o painel e o histórico, todas OK.
+
 ### Próximos passos
 
-1. **Parte 6 — Painel com dados reais** e remoção do aviso de demonstração.
-3. **Parte 7 — Relatórios em PDF.**
-3. **Parte 8:** login com Google, recuperação de senha, refresh token e testes E2E no repositório.
+1. **Parte 7 — Relatórios em PDF** e recomendações por regra.
+2. **Parte 8:** login com Google, recuperação de senha, refresh token e testes E2E no repositório.
 
 Antes de publicar, ainda é preciso **substituir os contatos fictícios** (telefone `99999-0000`, email e redes) em `frontend/src/app/lib/site.ts` e **gerar um `JWT_SECRET` forte** no `.env` do servidor.

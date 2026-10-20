@@ -47,7 +47,7 @@ export function SettingsPage() {
     <>
       <CabecalhoPagina titulo="Configurações" descricao="Dados da sua conta." />
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <form onSubmit={salvar} noValidate className="lg:col-span-2 bg-white rounded-2xl border border-border p-6 space-y-4">
           <h2 className="font-bold text-[#212121] font-display">Perfil</h2>
 

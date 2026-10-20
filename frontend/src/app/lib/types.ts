@@ -87,3 +87,45 @@ export type VooDetalhe = Voo & {
   analises: Analise[];
   imagens: ImagemVoo[];
 };
+
+export type ResumoAnalise = {
+  id_analise: string;
+  id_voo: string;
+  nivel_risco: NivelRisco | null;
+  percentual_area_afetada: number | null;
+  tipo_analise: TipoAnalise;
+  data_voo: string;
+};
+
+export type Painel = {
+  periodo_dias: number;
+  totais: {
+    propriedades: number; talhoes: number; area_monitorada_hectares: number; voos: number; voos_periodo: number;
+    imagens: number; analises_periodo: number; areas_criticas: number;
+  };
+  risco_talhoes: Record<NivelRisco | "sem_analise", number>;
+  talhoes: {
+    id_talhao: string; nome_talhao: string; cultura: string | null; area_hectares: number | null; status: StatusTalhao;
+    propriedade: { id_propriedade: string; nome_fazenda: string };
+    total_voos: number;
+    ultima_analise: ResumoAnalise | null;
+  }[];
+  serie_mensal: { mes: string; voos: number; area_afetada_media: number | null }[];
+  ultimas_analises: (ResumoAnalise & { data_analise: string; talhao: string; id_talhao: string; propriedade: string })[];
+};
+
+export type Monitoramento = {
+  id_analise: string;
+  tipo_analise: TipoAnalise;
+  nivel_risco: NivelRisco | null;
+  percentual_area_afetada: number | null;
+  origem: "automatica" | "manual";
+  data_analise: string;
+  voo: {
+    id_voo: string;
+    data_voo: string;
+    talhao: { id_talhao: string; nome_talhao: string; cultura: string | null; propriedade: { id_propriedade: string; nome_fazenda: string } };
+  };
+};
+
+export type Paginacao = { total: number; pagina: number; por_pagina: number; total_paginas: number };

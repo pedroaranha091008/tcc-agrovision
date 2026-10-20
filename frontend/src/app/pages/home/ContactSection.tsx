@@ -111,7 +111,7 @@ export function ContactSection({ servicoEscolhido }: { servicoEscolhido: { servi
   return (
     <section id="contato" className="py-28 bg-white">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-16 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div>
             <div className="inline-flex items-center gap-2 bg-[#E8F5E9] text-[#2E7D32] rounded-full px-4 py-1.5 mb-6 text-sm font-medium">
               <Mail className="w-4 h-4" aria-hidden /> Solicitar Análise

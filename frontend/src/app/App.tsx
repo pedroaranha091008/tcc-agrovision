@@ -20,6 +20,7 @@ const FazendasPage = lazy(() => import("./pages/dashboard/fazendas/FazendasPage"
 const PropriedadePage = lazy(() => import("./pages/dashboard/fazendas/PropriedadePage").then(m => ({ default: m.PropriedadePage })));
 const TalhaoPage = lazy(() => import("./pages/dashboard/fazendas/TalhaoPage").then(m => ({ default: m.TalhaoPage })));
 const VooPage = lazy(() => import("./pages/dashboard/fazendas/VooPage").then(m => ({ default: m.VooPage })));
+const AnalisesPage = lazy(() => import("./pages/dashboard/AnalisesPage").then(m => ({ default: m.AnalisesPage })));
 const EmBrevePage = lazy(() => import("./pages/dashboard/EmBrevePage").then(m => ({ default: m.EmBrevePage })));
 
 const TITULOS: Record<string, string> = {
@@ -67,7 +68,7 @@ export default function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="dashboard" element={<DashboardLayout />}>
                 <Route index element={<OverviewPage />} />
-                <Route path="analises" element={<EmBrevePage secao="analises" />} />
+                <Route path="analises" element={<AnalisesPage />} />
                 <Route path="relatorios" element={<EmBrevePage secao="relatorios" />} />
                 <Route path="fazendas" element={<FazendasPage />} />
                 <Route path="fazendas/:id" element={<PropriedadePage />} />

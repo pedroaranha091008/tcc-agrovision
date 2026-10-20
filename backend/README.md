@@ -49,6 +49,8 @@ Prefixo: `/api/v1`. Respostas de sucesso vêm em `{ "data": ... }` e erros em
 | POST | `/voos/:id/analises` | Bearer | registra análise manual (`tipo_analise`, `nivel_risco`, `percentual_area_afetada?`, `resultado`) |
 | GET | `/analises/:id/mapas/:indice` | Bearer | mapa PNG da análise automática |
 | DELETE | `/analises/:id` | Bearer | apaga a análise e seus mapas |
+| GET | `/dashboard` | Bearer | indicadores do painel: totais, situação de cada talhão (análise do voo mais recente), talhões por risco, série mensal e últimas análises. Filtros: `id_propriedade`, `dias` (30, 90, 180 ou 365) |
+| GET | `/monitoramentos` | Bearer | histórico paginado de análises. Filtros: `data_inicio`, `data_fim` (AAAA-MM-DD, pela data do voo), `id_propriedade`, `id_talhao`, `tipo_analise`, `nivel_risco`, `pagina`, `por_pagina` (máx. 50). Devolve `{ data, meta: { total, pagina, por_pagina, total_paginas } }` |
 
 Autenticação: header `Authorization: Bearer <token>` (JWT, validade em `JWT_EXPIRES_IN`).
 As rotas de login/cadastro e de orçamento têm limite de tentativas por IP.
@@ -66,11 +68,11 @@ src/
   app.js, server.js
   config/        env.js (valida variáveis), prisma.js
   middlewares/   auth, validate (zod), rateLimit, upload (multer), errorHandler
-  modules/       auth/, usuarios/, orcamentos/, propriedades/, talhoes/, voos/, imagens/, analises/
+  modules/       auth/, usuarios/, orcamentos/, propriedades/, talhoes/, voos/, imagens/, analises/, dashboard/
                  cada um: routes → controller → service (+ schemas)
   utils/         AppError, serializers, armazenamento (arquivos em disco)
 prisma/          schema.prisma e migrations
 test/            testes de integração (node:test)
 ```
 
-Próximos módulos previstos (ver `PLANEJAMENTO_BACKEND.md`): dashboard, histórico com filtros e relatórios PDF.
+Próximo módulo previsto (ver `PLANEJAMENTO_BACKEND.md`): relatórios em PDF.

@@ -52,7 +52,7 @@ export const tokenStorage = {
 
 type Opcoes = { method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE"; body?: unknown; token?: string | null };
 
-export async function api<T>(caminho: string, { method = "GET", body, token = tokenStorage.get() }: Opcoes = {}): Promise<T> {
+async function requisitar(caminho: string, { method = "GET", body, token = tokenStorage.get() }: Opcoes = {}) {
   let resposta: Response;
   try {
     resposta = await fetch(API_URL + caminho, {
@@ -67,11 +67,21 @@ export async function api<T>(caminho: string, { method = "GET", body, token = to
     throw new ApiError(SEM_CONEXAO, 0, "SEM_CONEXAO");
   }
 
-  if (resposta.status === 204) return undefined as T;
+  if (resposta.status === 204) return null;
 
   const json = await resposta.json().catch(() => null);
   if (!resposta.ok) throw erroDaResposta(resposta.status, json);
-  return json?.data as T;
+  return json;
+}
+
+export async function api<T>(caminho: string, opcoes: Opcoes = {}): Promise<T> {
+  return (await requisitar(caminho, opcoes))?.data as T;
+}
+
+/** Para listagens paginadas: devolve também o "meta" (total, página...). */
+export async function apiLista<T, M>(caminho: string): Promise<{ data: T[]; meta: M }> {
+  const json = await requisitar(caminho);
+  return { data: json?.data ?? [], meta: json?.meta };
 }
 
 const SEM_CONEXAO = "Não foi possível conectar ao servidor. Verifique sua internet ou tente novamente em instantes.";

@@ -78,7 +78,7 @@ const pct = (n: number) => `${n.toLocaleString("pt-BR")}%`;
 function CartaoAnalise({ analise, aoExcluir }: { analise: Analise; aoExcluir: () => void }) {
   const resumo = analise.detalhes?.resumo;
   return (
-    <article className="bg-white rounded-2xl border border-border p-5">
+    <article id={`analise-${analise.id_analise}`} className="bg-white rounded-2xl border border-border p-5 scroll-mt-20">
       <header className="flex flex-wrap items-start justify-between gap-3 mb-3">
         <div>
           <h3 className="font-bold text-[#212121] font-display">{TIPOS_ANALISE[analise.tipo_analise]}</h3>

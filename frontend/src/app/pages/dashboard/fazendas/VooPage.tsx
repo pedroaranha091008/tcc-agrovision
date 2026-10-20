@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { api } from "../../../lib/api";
 import { formatarArea, formatarData } from "../../../lib/format";
@@ -18,8 +18,15 @@ import { AnalisesVoo } from "./AnalisesVoo";
 export function VooPage() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
+  const { hash } = useLocation();
   const [editando, setEditando] = useState(false);
   const { dados: v, erro, carregando, recarregar } = useCarregar(() => api<VooDetalhe>(`/voos/${id}`), [id]);
+  const carregou = !!v;
+
+  // Links do histórico (#analise-<id>) rolam até a análise depois que a página carrega.
+  useEffect(() => {
+    if (carregou && hash) document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [carregou, hash]);
   const exclusao = useExclusao(`/voos/${id}`, () => {
     toast.success("Voo excluído");
     navigate(v ? `/dashboard/talhoes/${v.talhao.id_talhao}` : "/dashboard/fazendas", { replace: true });

@@ -25,7 +25,7 @@ export function HowItWorksSection() {
           {/* Connecting line */}
           <div className="hidden lg:block absolute top-20 left-[12.5%] right-[12.5%] h-0.5 bg-gradient-to-r from-[#E8F5E9] via-[#66BB6A] to-[#E8F5E9]" />
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((step, i) => (
               <div key={step.num} className="relative text-center group">
                 <div className="relative mb-6 flex justify-center">
