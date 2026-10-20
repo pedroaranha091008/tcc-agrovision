@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
-import { ImageUp } from "lucide-react";
 import { api } from "../../../lib/api";
 import { formatarArea, formatarData } from "../../../lib/format";
 import type { VooDetalhe } from "../../../lib/types";
@@ -13,6 +12,8 @@ import { ConfirmarExclusao, Modal } from "../../../components/Modal";
 import { CabecalhoPagina } from "../DashboardLayout";
 import { FormVoo } from "./formularios";
 import { BotoesEditarExcluir, Detalhes, useExclusao } from "./comum";
+import { ImagensVoo } from "./ImagensVoo";
+import { AnalisesVoo } from "./AnalisesVoo";
 
 export function VooPage() {
   const { id = "" } = useParams();
@@ -50,21 +51,18 @@ export function VooPage() {
         {v.observacoes && <p className="mt-4 pt-4 border-t border-border text-sm text-[#4a5568] whitespace-pre-line"><strong className="text-[#212121]">Observações:</strong> {v.observacoes}</p>}
       </section>
 
-      <h2 className="text-lg font-bold text-[#212121] mb-4 font-display">Imagens e análises</h2>
-      <div className="bg-white rounded-2xl border border-dashed border-[#A5D6A7] p-8 text-center">
-        <ImageUp className="w-10 h-10 text-[#1B5E20] mx-auto mb-3" aria-hidden />
-        <span className="inline-block text-xs font-semibold uppercase tracking-wide bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full mb-3">Em desenvolvimento</span>
-        <p className="text-sm text-[#4a5568] max-w-md mx-auto">
-          Em breve você poderá enviar aqui as imagens captadas neste voo e acompanhar as análises (NDVI, falhas, plantas daninhas).
-        </p>
-      </div>
+      <ImagensVoo idVoo={v.id_voo} imagens={v.imagens} aoMudar={recarregar} />
+      <AnalisesVoo idVoo={v.id_voo} analises={v.analises} totalImagens={v.imagens.length} aoMudar={recarregar} />
 
       <Modal aberto={editando} aoFechar={() => setEditando(false)} titulo="Editar voo">
         <FormVoo idTalhao={v.id_talhao} inicial={v} aoCancelar={() => setEditando(false)}
           aoSalvar={() => { setEditando(false); toast.success("Voo atualizado"); recarregar(); }} />
       </Modal>
-      <ConfirmarExclusao {...exclusao.props} titulo="Excluir voo?"
-        mensagem={<>O <strong>{titulo.toLowerCase()}</strong> será excluído permanentemente.</>} />
+      <ConfirmarExclusao {...exclusao.props} bloqueado={v.imagens.length + v.analises.length > 0}
+        titulo={v.imagens.length + v.analises.length > 0 ? "Não é possível excluir ainda" : "Excluir voo?"}
+        mensagem={v.imagens.length + v.analises.length > 0
+          ? <>Este voo tem {v.imagens.length} imagem(ns) e {v.analises.length} análise(s). Exclua-as primeiro.</>
+          : <>O <strong>{titulo.toLowerCase()}</strong> será excluído permanentemente.</>} />
     </>
   );
 }

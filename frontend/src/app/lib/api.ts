@@ -64,24 +64,58 @@ export async function api<T>(caminho: string, { method = "GET", body, token = to
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch {
-    throw new ApiError(
-      "Não foi possível conectar ao servidor. Verifique sua internet ou tente novamente em instantes.",
-      0,
-      "SEM_CONEXAO",
-    );
+    throw new ApiError(SEM_CONEXAO, 0, "SEM_CONEXAO");
   }
 
   if (resposta.status === 204) return undefined as T;
 
   const json = await resposta.json().catch(() => null);
-  if (!resposta.ok) {
-    const erro = json?.error;
-    throw new ApiError(
-      erro?.message ?? "Ocorreu um erro inesperado. Tente novamente mais tarde.",
-      resposta.status,
-      erro?.code ?? "ERRO_INTERNO",
-      erro?.details ?? null,
-    );
-  }
+  if (!resposta.ok) throw erroDaResposta(resposta.status, json);
   return json?.data as T;
+}
+
+const SEM_CONEXAO = "Não foi possível conectar ao servidor. Verifique sua internet ou tente novamente em instantes.";
+
+function erroDaResposta(status: number, json: { error?: { message?: string; code?: string; details?: DetalheErro[] } } | null) {
+  const erro = json?.error;
+  return new ApiError(
+    erro?.message ?? "Ocorreu um erro inesperado. Tente novamente mais tarde.",
+    status,
+    erro?.code ?? "ERRO_INTERNO",
+    erro?.details ?? null,
+  );
+}
+
+/** Baixa um arquivo protegido (imagens, mapas) com o token; o <img> comum não consegue mandar o header. */
+export async function apiBlob(caminho: string): Promise<Blob> {
+  const token = tokenStorage.get();
+  let resposta: Response;
+  try {
+    resposta = await fetch(API_URL + caminho, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+  } catch {
+    throw new ApiError(SEM_CONEXAO, 0, "SEM_CONEXAO");
+  }
+  if (!resposta.ok) throw erroDaResposta(resposta.status, await resposta.json().catch(() => null));
+  return resposta.blob();
+}
+
+/** Envia arquivos em multipart com progresso (o fetch não informa progresso de upload; o XHR sim). */
+export function apiUpload<T>(caminho: string, campo: string, arquivos: File[], aoProgredir: (fracao: number) => void): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", API_URL + caminho);
+    const token = tokenStorage.get();
+    if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    xhr.upload.onprogress = e => { if (e.lengthComputable) aoProgredir(e.loaded / e.total); };
+    xhr.onerror = () => reject(new ApiError(SEM_CONEXAO, 0, "SEM_CONEXAO"));
+    xhr.onload = () => {
+      let json = null;
+      try { json = JSON.parse(xhr.responseText); } catch { /* resposta sem JSON */ }
+      if (xhr.status >= 200 && xhr.status < 300) resolve(json?.data as T);
+      else reject(erroDaResposta(xhr.status, json));
+    };
+    const form = new FormData();
+    for (const arquivo of arquivos) form.append(campo, arquivo);
+    xhr.send(form);
+  });
 }

@@ -255,11 +255,17 @@ Foram concluídas as **Partes 0, 1, 2 e 3** do planejamento. O reteste no navega
 - **Correção encontrada no reteste:** no celular, o texto oculto para leitores de tela no cabeçalho das tabelas "escapava" da área com rolagem e alargava a página (para 686 px na visão geral). A verificação anterior de celular não pegou isso porque media a largura errada. Corrigido, e o teste passou a medir certo.
 - **Testes:** 12 testes novos de API (23 no total, todos passando) e 26 verificações no navegador para a hierarquia, todas OK.
 
+### Parte 5 — Upload de imagens e análises (concluída)
+
+- **Upload** na página do voo: o usuário arrasta as fotos ou escolhe os arquivos. Cada imagem tem barra de progresso própria, e só as falhas temporárias (rede, servidor) ganham "tentar de novo". Formato e tamanho são validados no navegador e de novo no servidor, que também abre o arquivo para recusar imagens falsas. Formatos e limites vêm da configuração da API. A galeria mostra miniaturas protegidas por login.
+- **Análise automática por índice de verde (ExG):** cada foto RGB é classificada pixel a pixel. O resultado traz a área afetada, o nível de risco (com ícone e texto, não só cor), uma recomendação simples e um mapa colorido por imagem. O texto avisa que o método mede cobertura vegetal e não identifica pragas ou doenças, e o upload orienta a usar fotos tiradas de cima para baixo.
+- **Análise manual,** para laudos de agrônomo ou resultados de outro software.
+- **Testes:** 12 testes novos de API (35 no total). Com imagens sintéticas de 75% verde, o índice mede 75% de vegetação vigorosa, como esperado. O teste no navegador passou em 25 de 25 verificações.
+
 ### Próximos passos
 
-1. **Parte 5 — Upload de imagens e análises.**
-2. **Parte 6 — Painel com dados reais** e remoção do aviso de demonstração.
+1. **Parte 6 — Painel com dados reais** e remoção do aviso de demonstração.
 3. **Parte 7 — Relatórios em PDF.**
-4. **Parte 8:** login com Google, recuperação de senha, refresh token e testes E2E no repositório.
+3. **Parte 8:** login com Google, recuperação de senha, refresh token e testes E2E no repositório.
 
 Antes de publicar, ainda é preciso **substituir os contatos fictícios** (telefone `99999-0000`, email e redes) em `frontend/src/app/lib/site.ts` e **gerar um `JWT_SECRET` forte** no `.env` do servidor.

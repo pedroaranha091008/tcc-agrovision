@@ -42,22 +42,48 @@ export type Voo = {
 
 export type TalhaoDetalhe = Talhao & {
   propriedade: Pick<Propriedade, "id_propriedade" | "nome_fazenda" | "cidade" | "estado">;
-  voos: (Voo & { total_analises: number })[];
+  voos: (Voo & { total_analises: number; total_imagens: number })[];
 };
+
+export type TipoAnalise = "NDVI" | "RGB" | "termico" | "multispectral" | "outro";
+export type NivelRisco = "baixo" | "medio" | "alto" | "critico";
+
+export type ResultadoImagem = { id_imagem: string; nome: string; saudavel: number; atencao: number; critico: number; exg_medio: number; mapa: string };
 
 export type Analise = {
   id_analise: string;
-  tipo_analise: "NDVI" | "RGB" | "termico" | "multispectral" | "outro";
-  nivel_risco: "baixo" | "medio" | "alto" | "critico" | null;
+  id_voo: string;
+  tipo_analise: TipoAnalise;
+  nivel_risco: NivelRisco | null;
   percentual_area_afetada: number | null;
   resultado: string | null;
   url_arquivo: string | null;
+  origem: "automatica" | "manual";
+  detalhes: {
+    metodo: "ExG";
+    resumo: { saudavel: number; atencao: number; critico: number; afetada: number; nivel: NivelRisco };
+    por_imagem: ResultadoImagem[];
+  } | null;
   data_analise: string;
 };
+
+export type ImagemVoo = {
+  id_imagem: string;
+  id_voo: string;
+  nome_original: string;
+  mime_type: string;
+  tamanho_bytes: number;
+  largura: number | null;
+  altura: number | null;
+  criado_em: string;
+};
+
+export type ConfiguracaoUpload = { formatos: string[]; extensoes: string[]; tipos_mime: string[]; tamanho_max_mb: number; max_arquivos_por_envio: number };
 
 export type VooDetalhe = Voo & {
   talhao: Pick<Talhao, "id_talhao" | "nome_talhao" | "cultura" | "area_hectares"> & {
     propriedade: Pick<Propriedade, "id_propriedade" | "nome_fazenda">;
   };
   analises: Analise[];
+  imagens: ImagemVoo[];
 };

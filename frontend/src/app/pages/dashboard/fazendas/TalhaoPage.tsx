@@ -72,7 +72,7 @@ export function TalhaoPage() {
                     {[v.modelo_drone, v.altitude_metros ? `${v.altitude_metros} m` : null, v.operador].filter(Boolean).join(" · ") || "Sem detalhes"}
                   </div>
                 </div>
-                <span className="text-xs text-[#4a5568] whitespace-nowrap">{v.total_analises} análise(s)</span>
+                <span className="text-xs text-[#4a5568] whitespace-nowrap text-right">{v.total_imagens} imagem(ns)<br />{v.total_analises} análise(s)</span>
                 <ChevronRight className="w-4 h-4 text-[#4a5568]" aria-hidden />
               </Link>
             </li>

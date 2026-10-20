@@ -25,7 +25,8 @@ export async function buscar(idVoo, idUsuario) {
           propriedade: { select: { id_propriedade: true, nome_fazenda: true } }
         }
       },
-      analises: { orderBy: { data_analise: "desc" } }
+      analises: { orderBy: { data_analise: "desc" } },
+      imagens: { orderBy: { criado_em: "asc" } }
     }
   });
   return normalizar(voo);
@@ -45,9 +46,13 @@ export async function atualizar(idVoo, idUsuario, dados) {
 
 export async function excluir(idVoo, idUsuario) {
   await garantirDono(idVoo, idUsuario);
-  const analises = await prisma.analise.count({ where: { id_voo: idVoo } });
-  if (analises > 0) {
-    throw new AppError(`Este voo tem ${analises} análise(s). Exclua as análises antes de excluir o voo.`, 409, "POSSUI_DEPENDENTES");
+  const [analises, imagens] = await Promise.all([
+    prisma.analise.count({ where: { id_voo: idVoo } }),
+    prisma.imagemVoo.count({ where: { id_voo: idVoo } })
+  ]);
+  if (analises > 0 || imagens > 0) {
+    const partes = [analises && `${analises} análise(s)`, imagens && `${imagens} imagem(ns)`].filter(Boolean).join(" e ");
+    throw new AppError(`Este voo tem ${partes}. Exclua-as antes de excluir o voo.`, 409, "POSSUI_DEPENDENTES");
   }
   await prisma.voo.delete({ where: { id_voo: idVoo } });
 }

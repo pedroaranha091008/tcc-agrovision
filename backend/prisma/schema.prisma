@@ -34,6 +34,11 @@ enum TipoAnalise {
   outro
 }
 
+enum OrigemAnalise {
+  automatica
+  manual
+}
+
 enum NivelRisco {
   baixo
   medio
@@ -103,8 +108,9 @@ model Voo {
   observacoes     String?  @db.Text
   criado_em       DateTime @default(now())
 
-  talhao   Talhao    @relation(fields: [id_talhao], references: [id_talhao])
+  talhao   Talhao      @relation(fields: [id_talhao], references: [id_talhao])
   analises Analise[]
+  imagens  ImagemVoo[]
 
   @@index([id_talhao])
   @@index([data_voo])
@@ -112,15 +118,17 @@ model Voo {
 }
 
 model Analise {
-  id_analise              String      @id @default(uuid()) @db.Char(36)
-  id_voo                  String      @db.Char(36)
+  id_analise              String        @id @default(uuid()) @db.Char(36)
+  id_voo                  String        @db.Char(36)
   tipo_analise            TipoAnalise
   nivel_risco             NivelRisco?
-  percentual_area_afetada Decimal?    @db.Decimal(5, 2)
-  resultado               String?     @db.Text
-  url_arquivo             String?     @db.VarChar(500)
-  data_analise            DateTime    @default(now())
-  atualizado_em           DateTime    @updatedAt
+  percentual_area_afetada Decimal?      @db.Decimal(5, 2)
+  resultado               String?       @db.Text
+  url_arquivo             String?       @db.VarChar(500)
+  origem                  OrigemAnalise @default(manual)
+  detalhes                Json?
+  data_analise            DateTime      @default(now())
+  atualizado_em           DateTime      @updatedAt
 
   voo Voo @relation(fields: [id_voo], references: [id_voo])
 
@@ -148,4 +156,22 @@ model SolicitacaoOrcamento {
   @@index([status])
   @@index([criado_em])
   @@map("solicitacoes_orcamento")
+}
+
+// Imagens captadas pelo drone e enviadas para um voo. O arquivo fica em UPLOAD_DIR, fora do código.
+model ImagemVoo {
+  id_imagem     String   @id @default(uuid()) @db.Char(36)
+  id_voo        String   @db.Char(36)
+  nome_original String   @db.VarChar(255)
+  nome_arquivo  String   @db.VarChar(255)
+  mime_type     String   @db.VarChar(100)
+  tamanho_bytes Int
+  largura       Int?
+  altura        Int?
+  criado_em     DateTime @default(now())
+
+  voo Voo @relation(fields: [id_voo], references: [id_voo])
+
+  @@index([id_voo])
+  @@map("imagens_voo")
 }

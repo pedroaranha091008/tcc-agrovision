@@ -40,11 +40,24 @@ Prefixo: `/api/v1`. Respostas de sucesso vêm em `{ "data": ... }` e erros em
 | POST | `/talhoes` | Bearer | cria talhão (`id_propriedade`, `nome_talhao`, `cultura?`, `area_hectares?`, `latitude?`, `longitude?`, `status?`) |
 | GET / PATCH / DELETE | `/talhoes/:id` | Bearer | detalhes (com voos), edição, exclusão (409 se tiver voos) |
 | POST | `/voos` | Bearer | registra voo (`id_talhao`, `data_voo`, `altitude_metros?`, `modelo_drone?`, `operador?`, `observacoes?`) |
-| GET / PATCH / DELETE | `/voos/:id` | Bearer | detalhes (com análises), edição, exclusão (409 se tiver análises) |
+| GET / PATCH / DELETE | `/voos/:id` | Bearer | detalhes (com imagens e análises), edição, exclusão (409 se tiver imagens ou análises) |
+| POST | `/voos/:id/imagens` | Bearer | envia imagens (`multipart/form-data`, campo `imagens`; JPEG, PNG ou TIFF) |
+| GET | `/imagens/configuracao` | Bearer | formatos aceitos e limites de tamanho/quantidade |
+| GET | `/imagens/:id/arquivo` | Bearer | baixa a imagem (`?miniatura=1` devolve JPEG reduzido) |
+| DELETE | `/imagens/:id` | Bearer | apaga a imagem e o arquivo |
+| POST | `/voos/:id/analises/automatica` | Bearer | analisa as imagens do voo pelo índice de verde (ExG) e gera um mapa por imagem |
+| POST | `/voos/:id/analises` | Bearer | registra análise manual (`tipo_analise`, `nivel_risco`, `percentual_area_afetada?`, `resultado`) |
+| GET | `/analises/:id/mapas/:indice` | Bearer | mapa PNG da análise automática |
+| DELETE | `/analises/:id` | Bearer | apaga a análise e seus mapas |
 
 Autenticação: header `Authorization: Bearer <token>` (JWT, validade em `JWT_EXPIRES_IN`).
 As rotas de login/cadastro e de orçamento têm limite de tentativas por IP.
 Cada usuário só enxerga os próprios dados: acessar o ID de outro usuário responde 404.
+
+### Uploads e análise automática
+
+- Os arquivos ficam em `UPLOAD_DIR` (padrão `backend/uploads/`, fora do git), com nomes aleatórios. O tipo é conferido pela extensão e pelo MIME, e o conteúdo é aberto com o `sharp` para recusar arquivos disfarçados.
+- A análise automática calcula o **Índice de Excesso de Verde (ExG = 2g − r − b)** em cada pixel de fotos RGB. Ela classifica as áreas em vegetação vigorosa, atenção e pouca/nenhuma vegetação, e calcula a área afetada e o nível de risco. O método mede **cobertura vegetal**: não identifica pragas ou doenças, e o texto do resultado avisa isso ao usuário. Os limiares ficam em `src/modules/analises/indiceVerde.js`.
 
 ## Organização
 
@@ -52,12 +65,12 @@ Cada usuário só enxerga os próprios dados: acessar o ID de outro usuário res
 src/
   app.js, server.js
   config/        env.js (valida variáveis), prisma.js
-  middlewares/   auth, validate (zod), rateLimit, errorHandler
-  modules/       auth/, usuarios/, orcamentos/, propriedades/, talhoes/, voos/
+  middlewares/   auth, validate (zod), rateLimit, upload (multer), errorHandler
+  modules/       auth/, usuarios/, orcamentos/, propriedades/, talhoes/, voos/, imagens/, analises/
                  cada um: routes → controller → service (+ schemas)
-  utils/         AppError, serializers
+  utils/         AppError, serializers, armazenamento (arquivos em disco)
 prisma/          schema.prisma e migrations
 test/            testes de integração (node:test)
 ```
 
-Próximos módulos previstos (ver `PLANEJAMENTO_BACKEND.md`): upload de imagens, análises, dashboard e relatórios.
+Próximos módulos previstos (ver `PLANEJAMENTO_BACKEND.md`): dashboard, histórico com filtros e relatórios PDF.

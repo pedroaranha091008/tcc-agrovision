@@ -19,14 +19,14 @@ export async function buscar(idTalhao, idUsuario) {
       propriedade: { select: { id_propriedade: true, nome_fazenda: true, cidade: true, estado: true } },
       voos: {
         orderBy: { data_voo: "desc" },
-        include: { _count: { select: { analises: true } } }
+        include: { _count: { select: { analises: true, imagens: true } } }
       }
     }
   });
 
   return normalizar({
     ...talhao,
-    voos: talhao.voos.map(({ _count, ...v }) => ({ ...v, total_analises: _count.analises }))
+    voos: talhao.voos.map(({ _count, ...v }) => ({ ...v, total_analises: _count.analises, total_imagens: _count.imagens }))
   });
 }
 

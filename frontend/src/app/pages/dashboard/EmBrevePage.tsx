@@ -2,14 +2,18 @@ import { Link } from "react-router";
 import { Activity, Calendar, CheckCircle, FileText, type LucideIcon } from "lucide-react";
 import { CabecalhoPagina } from "./DashboardLayout";
 
-type Secao = { titulo: string; descricao: string; icon: LucideIcon; recursos: string[] };
+type Secao = { titulo: string; descricao: string; icon: LucideIcon; recursos: string[]; enquantoIsso?: { texto: string; link: { to: string; label: string } } };
 
 export const SECOES_EM_BREVE: Record<"analises" | "relatorios" | "agendamentos", Secao> = {
   analises: {
     titulo: "Minhas Análises",
-    descricao: "Envie as imagens do drone e acompanhe o histórico de monitoramentos.",
+    descricao: "Histórico de todos os monitoramentos das suas fazendas.",
     icon: Activity,
-    recursos: ["Envio de imagens captadas pelo drone", "Identificação de falhas, plantas daninhas e áreas críticas", "Histórico com filtros por data, talhão e tipo de análise"],
+    recursos: ["Todas as análises em uma lista só", "Filtros por data, fazenda, talhão e tipo de análise", "Acesso rápido ao mapa e ao laudo de cada análise"],
+    enquantoIsso: {
+      texto: "Enquanto isso, você já pode enviar imagens e analisar cada voo pela página do voo, dentro de Fazendas.",
+      link: { to: "/dashboard/fazendas", label: "Ir para Fazendas" },
+    },
   },
   relatorios: {
     titulo: "Relatórios",
@@ -26,7 +30,7 @@ export const SECOES_EM_BREVE: Record<"analises" | "relatorios" | "agendamentos",
 };
 
 export function EmBrevePage({ secao }: { secao: keyof typeof SECOES_EM_BREVE }) {
-  const { titulo, descricao, icon: Icon, recursos } = SECOES_EM_BREVE[secao];
+  const { titulo, descricao, icon: Icon, recursos, enquantoIsso } = SECOES_EM_BREVE[secao];
   return (
     <>
       <CabecalhoPagina titulo={titulo} descricao={descricao} />
@@ -44,9 +48,12 @@ export function EmBrevePage({ secao }: { secao: keyof typeof SECOES_EM_BREVE }) 
             </li>
           ))}
         </ul>
+        {enquantoIsso && <p className="text-sm text-[#212121] bg-[#E8F5E9] rounded-xl p-3 mb-6">{enquantoIsso.texto}</p>}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link to="/dashboard" className="px-5 py-2.5 rounded-xl border border-border text-sm font-semibold text-[#1B5E20] hover:bg-[#E8F5E9]">Voltar à visão geral</Link>
-          <Link to="/#contato" className="px-5 py-2.5 rounded-xl bg-[#1B5E20] text-white text-sm font-semibold hover:bg-[#2E7D32]">Solicitar um voo com a equipe</Link>
+          {enquantoIsso
+            ? <Link to={enquantoIsso.link.to} className="px-5 py-2.5 rounded-xl bg-[#1B5E20] text-white text-sm font-semibold hover:bg-[#2E7D32]">{enquantoIsso.link.label}</Link>
+            : <Link to="/#contato" className="px-5 py-2.5 rounded-xl bg-[#1B5E20] text-white text-sm font-semibold hover:bg-[#2E7D32]">Solicitar um voo com a equipe</Link>}
         </div>
       </div>
     </>

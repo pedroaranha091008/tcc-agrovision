@@ -1,4 +1,4 @@
-import type { StatusTalhao } from "./types";
+import type { NivelRisco, StatusTalhao, TipoAnalise } from "./types";
 
 export const UFS = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MS", "MT", "MG", "PA",
@@ -39,3 +39,28 @@ export function numeroOuNulo(texto: string): number | null {
   const n = Number(limpo);
   return Number.isFinite(n) ? n : NaN;
 }
+
+export function formatarBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toLocaleString("pt-BR", { maximumFractionDigits: 0 })} KB`;
+  return `${(bytes / 1024 / 1024).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} MB`;
+}
+
+export function formatarDataHora(iso: string) {
+  return new Date(iso).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+}
+
+export const TIPOS_ANALISE: Record<TipoAnalise, string> = {
+  NDVI: "NDVI",
+  RGB: "Índice de verde (RGB)",
+  termico: "Térmica",
+  multispectral: "Multiespectral",
+  outro: "Outra",
+};
+
+export const NIVEIS_RISCO: Record<NivelRisco, string> = {
+  baixo: "Risco baixo",
+  medio: "Atenção",
+  alto: "Risco alto",
+  critico: "Crítico",
+};
