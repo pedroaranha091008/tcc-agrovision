@@ -1,24 +1,32 @@
 import express from "express";
+import cors from "cors";
+import { env } from "./config/env.js";
+import apiRouter from "./routes/index.js";
+import { errorHandler, notFoundHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
 
-app.use(express.json());
+app.disable("x-powered-by");
+app.use(
+  cors({
+    origin: env.corsOrigens.length > 0 ? env.corsOrigens : true,
+    credentials: true
+  })
+);
+app.use(express.json({ limit: "100kb" }));
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
   res.json({
-    mensagem: "API de tarefas funcionando!",
-    versao: "2.0",
-    arquitetura: "MVC"
+    mensagem: "API AgroVision funcionando!",
+    versao: "1.0",
+    api: "/api/v1"
   });
 });
 
-app.use((req, res) => {
-  res.status(404).json({
-    erro: "Rota não encontrada",
-    metodo: req.method,
-    url: req.url
-  });
-});
+app.use("/api/v1", apiRouter);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 export default app;

@@ -179,3 +179,14 @@
     line-height: 1.5;
   }
 }
+
+/* Famílias tipográficas da AgroVision: Inter no corpo, Poppins em títulos, Oswald em números grandes */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Poppins", "Inter", ui-sans-serif, sans-serif;
+  --font-numeric: "Oswald", "Inter", sans-serif;
+}
+
+html {
+  scroll-padding-top: 5rem;
+}
