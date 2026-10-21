@@ -17,6 +17,8 @@ app.use(
   cors({
     origin: env.corsOrigins.length ? env.corsOrigins : false,
     credentials: true,
+    // Sem isso o navegador esconde do frontend o nome do arquivo dos downloads (PDF).
+    exposedHeaders: ["Content-Disposition"],
   }),
 );
 if (!env.isTest) app.use(pinoHttp({ logger }));

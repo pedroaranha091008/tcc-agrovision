@@ -1,3 +1,4 @@
+import loginImg from "@/assets/login.jpg";
 import { useCallback, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { AlertCircle, Leaf, LogIn } from "lucide-react";
@@ -55,7 +56,7 @@ export function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=900&h=1200&fit=crop&auto=format"
+            src={loginImg}
             alt="Drone sobre lavoura de soja"
             className="w-full h-full object-cover"
           />

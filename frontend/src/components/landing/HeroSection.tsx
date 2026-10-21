@@ -1,3 +1,4 @@
+import heroImg from "@/assets/hero.jpg";
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
@@ -117,7 +118,7 @@ export function HeroSection() {
         <div className="absolute inset-0">
           <img
             ref={fotoRef}
-            src="https://images.unsplash.com/photo-1657093114835-031e7cf9520c?w=1600&h=900&fit=crop&auto=format"
+            src={heroImg}
             alt="Drone sobrevoando uma lavoura de trigo"
             className="w-full h-full object-cover"
           />

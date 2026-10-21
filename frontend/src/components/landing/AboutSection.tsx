@@ -1,3 +1,4 @@
+import sobreImg from "@/assets/sobre-mapa.jpg";
 import { ArrowRight } from "lucide-react";
 import { scrollToId } from "@/lib/scroll";
 import { Kicker } from "./Kicker";
@@ -73,7 +74,7 @@ export function AboutSection() {
               </div>
               <div className="relative">
                 <img
-                  src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=700&h=450&fit=crop&auto=format"
+                  src={sobreImg}
                   alt="Mapa agrícola de lavoura vista de cima"
                   className="w-full h-64 object-cover"
                 />

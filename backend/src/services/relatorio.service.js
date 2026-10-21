@@ -118,11 +118,24 @@ export async function gerar(idUsuario, idAnalise) {
   }
 }
 
+/** Ex.: relatorio-talhao-norte-2026-10-12.pdf (sem acentos/espacos, para qualquer sistema abrir). */
+function nomeArquivoLegivel(relatorio) {
+  const voo = relatorio.analise?.voo;
+  const talhao = (voo?.talhao?.nome_talhao ?? "talhao")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
+  const data = voo?.data_voo ? new Date(voo.data_voo).toISOString().slice(0, 10) : relatorio.id_analise.slice(0, 8);
+  return `relatorio-${talhao || "talhao"}-${data}.pdf`;
+}
+
 export async function caminhoDownload(idUsuario, idRelatorio) {
   const relatorio = await obter(idUsuario, idRelatorio);
   return {
     caminho_absoluto: caminhoAbsolutoPdf(relatorio.caminho_pdf),
-    nome_arquivo: `relatorio-${relatorio.id_analise}.pdf`,
+    nome_arquivo: nomeArquivoLegivel(relatorio),
   };
 }
 

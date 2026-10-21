@@ -13,6 +13,8 @@ import { VooDetailPage } from "@/pages/voos/VooDetailPage";
 import { AnalisesHistoricoPage } from "@/pages/analises/AnalisesHistoricoPage";
 import { AnaliseDetailPage } from "@/pages/analises/AnaliseDetailPage";
 import { RelatoriosListPage } from "@/pages/relatorios/RelatoriosListPage";
+import { ConfiguracoesPage } from "@/pages/ConfiguracoesPage";
+import { PrivacidadePage, TermosPage } from "@/pages/LegalPages";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
 export default function App() {
@@ -20,6 +22,8 @@ export default function App() {
     <Routes>
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/privacidade" element={<PrivacidadePage />} />
+        <Route path="/termos" element={<TermosPage />} />
       </Route>
 
       <Route
@@ -54,6 +58,7 @@ export default function App() {
         <Route path="/analises" element={<AnalisesHistoricoPage />} />
         <Route path="/analises/:id" element={<AnaliseDetailPage />} />
         <Route path="/relatorios" element={<RelatoriosListPage />} />
+        <Route path="/configuracoes" element={<ConfiguracoesPage />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

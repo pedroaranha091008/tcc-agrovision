@@ -27,6 +27,7 @@ export async function remover(id: string): Promise<void> {
 
 /** Baixa o PDF e dispara o salvamento no navegador. */
 export async function baixar(id: string, idAnalise: string, opts: OpcoesUpload = {}): Promise<void> {
-  const blob = await baixarArquivo(`/relatorios/${id}/download`, opts);
-  salvarBlobComoArquivo(blob, `relatorio-${idAnalise}.pdf`);
+  let nome = `relatorio-${idAnalise}.pdf`; // reserva, se o servidor não informar o nome
+  const blob = await baixarArquivo(`/relatorios/${id}/download`, { ...opts, aoNomeArquivo: (n) => (nome = n) });
+  salvarBlobComoArquivo(blob, nome);
 }

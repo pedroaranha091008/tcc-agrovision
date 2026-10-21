@@ -1,3 +1,4 @@
+import lavouraImg from "@/assets/lavoura.jpg";
 import { Link } from "react-router";
 import { ArrowRight, Calendar, FileText, LayoutDashboard, Map, Settings, Tractor } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
@@ -96,7 +97,7 @@ export function DashboardPreviewSection() {
               <div className="grid lg:grid-cols-3 gap-3">
                 <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-md overflow-hidden">
                   <img
-                    src="https://images.unsplash.com/photo-1560493676-04071185765b?w=700&h=220&fit=crop&auto=format"
+                    src={lavouraImg}
                     alt="Mapa de calor da lavoura"
                     className="w-full h-36 object-cover opacity-80"
                   />
