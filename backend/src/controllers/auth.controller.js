@@ -1,4 +1,5 @@
 import * as authService from "../services/auth.service.js";
+import * as redefinicaoService from "../services/redefinicao.service.js";
 import { criado, ok } from "../utils/resposta.js";
 import { handler } from "../utils/assincrono.js";
 
@@ -29,4 +30,14 @@ export const renovar = handler(async (req, res) => {
 export const logout = handler(async (req, res) => {
   await authService.logout(req.body.refresh_token);
   ok(res, { mensagem: "Sessao encerrada" });
+});
+
+export const esqueciSenha = handler(async (req, res) => {
+  await redefinicaoService.solicitar(req.body.email);
+  ok(res, { mensagem: "Se houver uma conta com esse email, enviamos um link para redefinir a senha." });
+});
+
+export const redefinirSenha = handler(async (req, res) => {
+  await redefinicaoService.redefinir(req.body.token, req.body.senha);
+  ok(res, { mensagem: "Senha alterada. Entre com a nova senha." });
 });

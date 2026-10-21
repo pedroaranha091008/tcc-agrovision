@@ -3,9 +3,11 @@ import * as ctrl from "../controllers/auth.controller.js";
 import { validate } from "../middlewares/validate.js";
 import { limiteAuth, limiteSessao } from "../middlewares/rateLimit.js";
 import {
+  esqueciSenhaSchema,
   googleSchema,
   loginSchema,
   refreshSchema,
+  redefinirSenhaSchema,
   registroSchema,
 } from "../schemas/auth.schema.js";
 
@@ -17,6 +19,8 @@ const router = Router();
 router.post("/registro", limiteAuth, validate({ body: registroSchema }), ctrl.registrar);
 router.post("/login", limiteAuth, validate({ body: loginSchema }), ctrl.login);
 router.post("/google", limiteAuth, validate({ body: googleSchema }), ctrl.google);
+router.post("/esqueci-senha", limiteAuth, validate({ body: esqueciSenhaSchema }), ctrl.esqueciSenha);
+router.post("/redefinir-senha", limiteAuth, validate({ body: redefinirSenhaSchema }), ctrl.redefinirSenha);
 router.post("/refresh", limiteSessao, validate({ body: refreshSchema }), ctrl.renovar);
 router.post("/logout", limiteSessao, validate({ body: refreshSchema }), ctrl.logout);
 

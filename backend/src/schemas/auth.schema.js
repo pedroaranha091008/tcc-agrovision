@@ -29,3 +29,12 @@ export const atualizarPerfilSchema = z
     senha: senha.optional(),
   })
   .refine((d) => Object.keys(d).length > 0, { message: "nenhum campo para atualizar" });
+
+export const esqueciSenhaSchema = z.object({
+  email: z.string().trim().toLowerCase().email("email invalido").max(255),
+});
+
+export const redefinirSenhaSchema = z.object({
+  token: z.string().min(20, "link invalido").max(200, "link invalido"),
+  senha,
+});

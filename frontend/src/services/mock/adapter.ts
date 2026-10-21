@@ -24,6 +24,19 @@ type Handler = (ctx: Ctx, params: Record<string, string>, query: URLSearchParams
 
 const rotasAuth: Array<{ metodo: string; regex: RegExp; handler: Handler }> = [
   {
+    // Modo mock nao envia email: o pedido so e aceito, como no backend (resposta igual sempre).
+    metodo: "POST",
+    regex: /^\/auth\/esqueci-senha$/,
+    handler: () => ({ data: { mensagem: "Se houver uma conta com esse email, enviamos um link para redefinir a senha." } }),
+  },
+  {
+    metodo: "POST",
+    regex: /^\/auth\/redefinir-senha$/,
+    handler: () => {
+      throw new ApiError("REQUISICAO_INVALIDA", "Este link é inválido ou expirou. Peça um novo link de redefinição.", 400);
+    },
+  },
+  {
     // Formulario de orcamento da pagina inicial (rota publica, nao exige login).
     metodo: "POST",
     regex: /^\/orcamentos$/,

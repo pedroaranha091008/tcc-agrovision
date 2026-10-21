@@ -15,6 +15,7 @@ import { AnaliseDetailPage } from "@/pages/analises/AnaliseDetailPage";
 import { RelatoriosListPage } from "@/pages/relatorios/RelatoriosListPage";
 import { ConfiguracoesPage } from "@/pages/ConfiguracoesPage";
 import { PrivacidadePage, TermosPage } from "@/pages/LegalPages";
+import { EsqueciSenhaPage, RedefinirSenhaPage } from "@/pages/SenhaPages";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
 export default function App() {
@@ -60,6 +61,9 @@ export default function App() {
         <Route path="/relatorios" element={<RelatoriosListPage />} />
         <Route path="/configuracoes" element={<ConfiguracoesPage />} />
       </Route>
+
+      <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
+      <Route path="/redefinir-senha" element={<RedefinirSenhaPage />} />
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

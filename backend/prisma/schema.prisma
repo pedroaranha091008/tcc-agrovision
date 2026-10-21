@@ -54,6 +54,7 @@ model Usuario {
 
   propriedades Propriedade[]
   sessoes      Sessao[]
+  redefinicoes RedefinicaoSenha[]
 
   @@map("usuarios")
 }
@@ -207,4 +208,19 @@ model SolicitacaoOrcamento {
   @@index([status])
   @@index([criado_em])
   @@map("solicitacoes_orcamento")
+}
+
+// Pedidos de "esqueci a senha": token de uso unico (so o hash fica guardado), valido por pouco tempo.
+model RedefinicaoSenha {
+  id_redefinicao String    @id @default(uuid()) @db.Char(36)
+  id_usuario     String    @db.Char(36)
+  token_hash     String    @unique @db.Char(64)
+  expira_em      DateTime
+  usada_em       DateTime?
+  criado_em      DateTime  @default(now())
+
+  usuario Usuario @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+
+  @@index([id_usuario])
+  @@map("redefinicoes_senha")
 }

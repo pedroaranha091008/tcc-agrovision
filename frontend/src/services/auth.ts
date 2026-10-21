@@ -42,6 +42,16 @@ export async function atualizarPerfil(payload: AtualizarPerfilPayload): Promise<
   return data;
 }
 
+/** Pede o link de redefinição. A resposta é sempre a mesma, exista ou não a conta. */
+export async function esqueciSenha(email: string): Promise<void> {
+  await http.post("/auth/esqueci-senha", { email }, { auth: false });
+}
+
+/** Troca a senha usando o token do link recebido por email. */
+export async function redefinirSenha(token: string, senha: string): Promise<void> {
+  await http.post("/auth/redefinir-senha", { token, senha }, { auth: false });
+}
+
 export async function logout(): Promise<void> {
   const refresh = session.getRefreshToken();
   try {

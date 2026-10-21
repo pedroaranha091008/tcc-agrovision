@@ -62,6 +62,21 @@ const env = {
     clientId: opcional("GOOGLE_CLIENT_ID", ""),
   },
 
+  // Endereco do site, usado nos links enviados por email (ex.: redefinir senha).
+  get frontendUrl() {
+    return opcional("FRONTEND_URL", this.corsOrigins[0] ?? "http://localhost:5173").replace(/\/$/, "");
+  },
+
+  // Envio de email. Sem SMTP_HOST, em desenvolvimento o email vai para o log
+  // e para a pasta emails-enviados/ (ver src/utils/email.js).
+  email: {
+    host: opcional("SMTP_HOST", ""),
+    porta: inteiro("SMTP_PORT", 587),
+    usuario: opcional("SMTP_USER", ""),
+    senha: opcional("SMTP_PASS", ""),
+    remetente: opcional("SMTP_FROM", "AgroVision <nao-responda@agrovision.com.br>"),
+  },
+
   upload: {
     dir: opcional("UPLOAD_DIR", "./uploads"),
     maxFileBytes: inteiro("UPLOAD_MAX_FILE_MB", 25) * 1024 * 1024,
