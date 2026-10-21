@@ -181,3 +181,30 @@ model Relatorio {
   @@index([id_analise])
   @@map("relatorios")
 }
+
+enum StatusOrcamento {
+  novo
+  em_contato
+  concluido
+  cancelado
+}
+
+// Pedidos feitos pelo formulário "Solicite seu orçamento" da página inicial (não exigem conta).
+model SolicitacaoOrcamento {
+  id_solicitacao String          @id @default(uuid()) @db.Char(36)
+  nome           String          @db.VarChar(150)
+  email          String          @db.VarChar(255)
+  telefone       String          @db.VarChar(20)
+  cidade         String          @db.VarChar(150)
+  cultura        String          @db.VarChar(100)
+  area_hectares  Decimal         @db.Decimal(12, 2)
+  servico        String          @db.VarChar(100)
+  mensagem       String?         @db.Text
+  status         StatusOrcamento @default(novo)
+  criado_em      DateTime        @default(now())
+  atualizado_em  DateTime        @updatedAt
+
+  @@index([status])
+  @@index([criado_em])
+  @@map("solicitacoes_orcamento")
+}

@@ -9,6 +9,7 @@ import analisesRoutes from "./analises.routes.js";
 import dashboardRoutes from "./dashboard.routes.js";
 import monitoramentosRoutes from "./monitoramentos.routes.js";
 import relatoriosRoutes from "./relatorios.routes.js";
+import orcamentosRoutes from "./orcamentos.routes.js";
 
 const router = Router();
 
@@ -34,5 +35,6 @@ router.use("/analises", analisesRoutes);
 router.use("/dashboard", dashboardRoutes);
 router.use("/monitoramentos", monitoramentosRoutes);
 router.use("/relatorios", relatoriosRoutes);
+router.use("/orcamentos", orcamentosRoutes);
 
 export default router;

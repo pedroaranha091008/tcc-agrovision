@@ -39,3 +39,13 @@ export const limiteSessao = rateLimit({
   skip: () => desativado,
   message: respostaLimite,
 });
+
+/** Formulario publico de orcamento: evita spam automatizado (por IP). */
+export const limiteOrcamentos = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 10,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  skip: () => desativado,
+  message: respostaLimite,
+});

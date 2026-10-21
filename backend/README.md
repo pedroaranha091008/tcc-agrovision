@@ -55,6 +55,7 @@ Migrations versionadas em `prisma/migrations/`:
 1. `20260618135012_init` — usuarios, propriedades, talhoes, voos, analises.
 2. `20260910120000_auth_provedor_sessao` — senha opcional, provedor Google, `email_verificado`, tabela `sessoes`.
 3. `20260910120100_imagens_status_relatorio` — `imagens_voo`, `relatorios`, status de processamento em voo/analise.
+4. `20261021151848_solicitacoes_orcamento` — pedidos de orcamento do formulario do site.
 
 > Se `prisma migrate dev` acusar drift em um banco de desenvolvimento descartavel, rode `npx prisma migrate reset`.
 
@@ -96,6 +97,13 @@ Ambiente `Base`: preencha `access_token` / `refresh_token` (do retorno de `/auth
 `Authorization: Bearer <access_token>` nas rotas protegidas.
 Fluxo: `registro`/`login` → `access_token` (curto) + `refresh_token` (opaco, 1 uso — rotacionado no `refresh`).
 `logout` revoga a sessao; um refresh token revogado ou expirado retorna 401.
+
+## Solicitacoes de orcamento
+
+`POST /api/v1/orcamentos` (publica, sem login) recebe o formulario "Solicite seu orcamento" da pagina inicial:
+`nome`, `email`, `telefone` (com DDD), `cidade`, `cultura`, `area_hectares`, `servico`, `mensagem?`.
+Os pedidos ficam na tabela `solicitacoes_orcamento` com `status` (`novo`, `em_contato`, `concluido`, `cancelado`)
+e aparecem no log do servidor. Limite de 10 pedidos por hora por IP (anti-spam).
 
 ## Upload de imagens
 

@@ -24,6 +24,12 @@ type Handler = (ctx: Ctx, params: Record<string, string>, query: URLSearchParams
 
 const rotasAuth: Array<{ metodo: string; regex: RegExp; handler: Handler }> = [
   {
+    // Formulario de orcamento da pagina inicial (rota publica, nao exige login).
+    metodo: "POST",
+    regex: /^\/orcamentos$/,
+    handler: () => ({ data: { id_solicitacao: crypto.randomUUID(), status: "novo", criado_em: agora() } }),
+  },
+  {
     metodo: "POST",
     regex: /^\/auth\/registro$/,
     handler: ({ body }) => {
