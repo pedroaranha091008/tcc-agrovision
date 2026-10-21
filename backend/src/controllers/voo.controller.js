@@ -43,3 +43,11 @@ export const removerImagem = handler(async (req, res) => {
   await imagemService.removerImagem(req.voo.id_voo, req.params.idImagem);
   semConteudo(res);
 });
+
+export const arquivoImagem = handler(async (req, res) => {
+  const { caminho, tipo, nome } = await imagemService.arquivo(req.voo.id_voo, req.params.idImagem, req.query.miniatura === "1");
+  res.setHeader("Content-Type", tipo);
+  res.setHeader("Cache-Control", "private, max-age=3600");
+  res.setHeader("Content-Disposition", `inline; filename*=UTF-8${encodeURIComponent(nome)}`);
+  res.sendFile(caminho);
+});

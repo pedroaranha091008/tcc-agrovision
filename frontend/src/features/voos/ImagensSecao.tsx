@@ -3,7 +3,8 @@ import { FileImage, RotateCcw, Trash2, Upload, X } from "lucide-react";
 import { ConfirmarExclusao } from "@/components/comum/Modal";
 import { EstadoVazio } from "@/components/comum/Estados";
 import * as imagemService from "@/services/imagens";
-import { mensagemDoErro } from "@/services/erros";
+import { ImagemProtegida } from "@/components/comum/ImagemProtegida";
+import { ApiError, mensagemDoErro } from "@/services/erros";
 import { data } from "@/lib/formatar";
 import { validarArquivo, UPLOAD_ALLOWED_EXT, UPLOAD_MAX_FILE_MB, UPLOAD_MAX_FILES } from "./uploadConfig";
 import type { ImagemVoo } from "@/types/dominio";
@@ -51,7 +52,20 @@ export function ImagensSecao({
       onAlterado();
     } catch (err) {
       setFila((f) =>
-        f.map((x) => (x.id === item.id ? { ...x, status: "erro", erro: mensagemDoErro(err) } : x)),
+        f.map((x) =>
+          x.id === item.id
+            ? {
+                ...x,
+                status: "erro",
+                // O servidor abre o arquivo e recusa o que nao e imagem de verdade (422);
+                // a mensagem generica de "campos invalidos" nao ajudaria aqui.
+                erro:
+                  err instanceof ApiError && err.code === "VALIDACAO"
+                    ? "O arquivo está corrompido ou não é uma imagem válida."
+                    : mensagemDoErro(err),
+              }
+            : x,
+        ),
       );
     }
   }
@@ -225,9 +239,11 @@ export function ImagensSecao({
                 {img.caminho.startsWith("blob:") ? (
                   <img src={img.caminho} alt={img.nome_original} className="w-full h-28 object-cover" />
                 ) : (
-                  <div className="w-full h-28 flex items-center justify-center bg-[#F8F9FA]">
-                    <FileImage className="w-8 h-8 text-[#4a5568]" />
-                  </div>
+                  <ImagemProtegida
+                    caminho={`/voos/${idVoo}/imagens/${img.id_imagem}/arquivo?miniatura=1`}
+                    alt={img.nome_original}
+                    className="w-full h-28 object-cover"
+                  />
                 )}
                 <div className="p-2 text-xs" style={{ fontFamily: "Inter, sans-serif" }}>
                   <p className="truncate text-[#212121] font-medium" title={img.nome_original}>

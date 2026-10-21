@@ -46,6 +46,12 @@ router.post(
   receberImagens,
   ctrl.enviarImagens,
 );
+router.get(
+  "/:id/imagens/:idImagem/arquivo",
+  validate({ params: imagemParam }),
+  carregarVoo(),
+  ctrl.arquivoImagem,
+);
 router.delete(
   "/:id/imagens/:idImagem",
   validate({ params: imagemParam }),

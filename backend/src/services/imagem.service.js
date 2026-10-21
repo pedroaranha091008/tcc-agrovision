@@ -1,3 +1,7 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+import sharp from "sharp";
+import env from "../config/env.js";
 import { prisma } from "../config/prisma.js";
 import { erros } from "../utils/AppError.js";
 import { storage } from "../utils/storage.js";
@@ -17,6 +21,18 @@ export async function listarDoVoo(idVoo) {
 export async function anexarAoVoo(voo, arquivos) {
   if (!arquivos || arquivos.length === 0) {
     throw erros.requisicaoInvalida("Envie ao menos uma imagem no campo 'imagens'");
+  }
+
+  // MIME e extensao vem do cliente e podem mentir (um texto renomeado para
+  // .jpg passava). Abre cada arquivo de verdade antes de gravar qualquer um.
+  const invalidos = [];
+  for (const arquivo of arquivos) {
+    if (!(await ehImagemValida(arquivo.buffer))) {
+      invalidos.push({ campo: arquivo.originalname, mensagem: "o arquivo esta corrompido ou nao e uma imagem valida" });
+    }
+  }
+  if (invalidos.length) {
+    throw erros.validacao(invalidos, "O arquivo está corrompido ou não é uma imagem válida.");
   }
 
   // allSettled (nao Promise.all): se um arquivo falhar, os outros ainda
@@ -77,5 +93,38 @@ export async function removerImagem(idVoo, idImagem) {
   // ja apagado do banco mas o arquivo ainda ocupando espaco, sem chance de
   // um retry encontrar e limpar.
   await storage.remover(imagem.caminho);
+  await fs.rm(path.join(PASTA_MINIATURAS, `${imagem.id_imagem}.jpg`), { force: true });
   await prisma.imagemVoo.delete({ where: { id_imagem: idImagem } });
+}
+
+async function ehImagemValida(buffer) {
+  try {
+    const meta = await sharp(buffer).metadata();
+    return Boolean(meta.width && meta.height);
+  } catch {
+    return false;
+  }
+}
+
+const PASTA_MINIATURAS = path.resolve(env.upload.dir, "miniaturas");
+
+/**
+ * Arquivo de uma imagem do voo, para exibir na tela. Com `miniatura`, devolve
+ * um JPEG reduzido (o navegador nao abre TIFF e as fotos de drone sao grandes),
+ * gerado na primeira vez e reaproveitado depois.
+ */
+export async function arquivo(idVoo, idImagem, miniatura) {
+  const imagem = await prisma.imagemVoo.findFirst({ where: { id_imagem: idImagem, id_voo: idVoo } });
+  if (!imagem) throw erros.naoEncontrado("Imagem nao encontrada");
+  const original = storage.caminhoAbsoluto(imagem.caminho);
+  if (!miniatura) return { caminho: original, tipo: imagem.mime_type, nome: imagem.nome_original };
+
+  const destino = path.join(PASTA_MINIATURAS, `${imagem.id_imagem}.jpg`);
+  try {
+    await fs.access(destino);
+  } catch {
+    await fs.mkdir(PASTA_MINIATURAS, { recursive: true });
+    await sharp(original).rotate().resize({ width: 480, height: 480, fit: "inside" }).jpeg({ quality: 78 }).toFile(destino);
+  }
+  return { caminho: destino, tipo: "image/jpeg", nome: imagem.nome_original };
 }

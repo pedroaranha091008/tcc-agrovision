@@ -111,6 +111,12 @@ e aparecem no log do servidor. Limite de 10 pedidos por hora por IP (anti-spam).
 Aceita JPEG, PNG e TIFF por padrao. Valida MIME + extensao, grava com nome aleatorio e sem permissao de execucao,
 e registra os metadados em `imagens_voo`. Os arquivos ficam em `UPLOAD_DIR` e sao servidos apenas por rotas autenticadas.
 
+Alem do MIME e da extensao (informados pelo cliente), cada arquivo e aberto com o `sharp` antes de ser gravado:
+um arquivo que nao e imagem de verdade (ex.: texto renomeado para `.jpg`) e recusado com 422 e nada e salvo.
+
+`GET /api/v1/voos/:id/imagens/:idImagem/arquivo` devolve a imagem; com `?miniatura=1`, um JPEG de ate 480px
+(gerado na primeira vez em `UPLOAD_DIR/miniaturas/`), usado nas miniaturas da tela — o navegador nao exibe TIFF.
+
 ## Estrutura
 
 ```
