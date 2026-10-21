@@ -1,7 +1,7 @@
 import { Router } from "express";
 import * as ctrl from "../controllers/auth.controller.js";
 import { validate } from "../middlewares/validate.js";
-import { limiteAuth } from "../middlewares/rateLimit.js";
+import { limiteAuth, limiteSessao } from "../middlewares/rateLimit.js";
 import {
   googleSchema,
   loginSchema,
@@ -11,12 +11,13 @@ import {
 
 const router = Router();
 
-router.use(limiteAuth);
-
-router.post("/registro", validate({ body: registroSchema }), ctrl.registrar);
-router.post("/login", validate({ body: loginSchema }), ctrl.login);
-router.post("/google", validate({ body: googleSchema }), ctrl.google);
-router.post("/refresh", validate({ body: refreshSchema }), ctrl.renovar);
-router.post("/logout", validate({ body: refreshSchema }), ctrl.logout);
+// Limite estrito (anti forca-bruta) so onde se testa credencial. A renovacao
+// acontece a cada abertura de pagina e a cada 15 min; se dividisse o mesmo
+// limite de 20, quem recarregasse a pagina algumas vezes seria deslogado.
+router.post("/registro", limiteAuth, validate({ body: registroSchema }), ctrl.registrar);
+router.post("/login", limiteAuth, validate({ body: loginSchema }), ctrl.login);
+router.post("/google", limiteAuth, validate({ body: googleSchema }), ctrl.google);
+router.post("/refresh", limiteSessao, validate({ body: refreshSchema }), ctrl.renovar);
+router.post("/logout", limiteSessao, validate({ body: refreshSchema }), ctrl.logout);
 
 export default router;

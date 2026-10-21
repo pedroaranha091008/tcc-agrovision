@@ -51,11 +51,25 @@ export async function logout(): Promise<void> {
   }
 }
 
+let renovacaoEmAndamento: Promise<boolean> | null = null;
+
 /**
  * Troca o refresh token persistido por um novo par de tokens.
  * Retorna true se a sessao foi renovada.
+ *
+ * Chamadas simultaneas (StrictMode ao abrir a pagina, ou varias requisicoes
+ * recebendo 401 quando o access token vence) compartilham a mesma renovacao.
+ * Sem isso, todas mandavam o mesmo refresh token: o backend rotacionava na
+ * primeira e as outras recebiam 401, derrubando a sessao do usuario.
  */
-export async function renovarSessao(): Promise<boolean> {
+export function renovarSessao(): Promise<boolean> {
+  renovacaoEmAndamento ??= executarRenovacao().finally(() => {
+    renovacaoEmAndamento = null;
+  });
+  return renovacaoEmAndamento;
+}
+
+async function executarRenovacao(): Promise<boolean> {
   const refresh = session.getRefreshToken();
   if (!refresh) return false;
   try {

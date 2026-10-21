@@ -55,6 +55,9 @@ const env = {
     refreshTtlDays: inteiro("REFRESH_TTL_DAYS", 30),
   },
 
+  // Tentativas de login/registro por IP a cada 15 min (aumente so em ambiente de testes).
+  limiteTentativasAuth: inteiro("LIMITE_TENTATIVAS_AUTH", 20),
+
   google: {
     clientId: opcional("GOOGLE_CLIENT_ID", ""),
   },

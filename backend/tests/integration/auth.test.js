@@ -70,6 +70,25 @@ describe.skipIf(!bancoDisponivel)("fluxo de autenticacao", () => {
     refreshToken = novoRefresh;
   });
 
+  it("renovações simultâneas com o mesmo token abrem no máximo uma sessão nova", async () => {
+    const usuario = await prisma.usuario.findUnique({ where: { email } });
+    const contarAtivas = () => prisma.sessao.count({ where: { id_usuario: usuario.id_usuario, revogado_em: null } });
+    const ativasAntes = await contarAtivas();
+
+    const respostas = await Promise.all(
+      Array.from({ length: 5 }, () =>
+        request(app).post("/api/v1/auth/refresh").send({ refresh_token: refreshToken }),
+      ),
+    );
+    const sucessos = respostas.filter((r) => r.status === 200);
+    expect(sucessos).toHaveLength(1);
+    expect(respostas.filter((r) => r.status === 401)).toHaveLength(4);
+
+    // Uma sessão revogada e uma criada: o total de sessões ativas não cresce.
+    expect(await contarAtivas()).toBe(ativasAntes);
+    refreshToken = sucessos[0].body.data.refresh_token;
+  });
+
   it("faz logout e impede renovacao posterior", async () => {
     const logout = await request(app)
       .post("/api/v1/auth/logout")

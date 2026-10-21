@@ -122,11 +122,16 @@ export async function renovar(refreshToken, contexto) {
     throw erros.naoAutenticado("Sessao invalida ou expirada");
   }
 
-  // Rotaciona: revoga a sessao atual e abre uma nova.
-  await prisma.sessao.update({
-    where: { id_sessao: sessao.id_sessao },
+  // Rotaciona: revoga a sessao atual e abre uma nova. A revogacao e
+  // condicional (so se ainda estiver ativa) para que pedidos simultaneos com o
+  // mesmo token nao abram varias sessoes: apenas o primeiro consegue revogar.
+  const revogada = await prisma.sessao.updateMany({
+    where: { id_sessao: sessao.id_sessao, revogado_em: null },
     data: { revogado_em: new Date() },
   });
+  if (revogada.count === 0) {
+    throw erros.naoAutenticado("Sessao invalida ou expirada");
+  }
   return abrirSessao(sessao.usuario, contexto);
 }
 
