@@ -37,6 +37,8 @@ npm run prisma:generate
 | `UPLOAD_MAX_FILES` | nao (20) | quantidade maxima por requisicao |
 | `UPLOAD_ALLOWED_MIME` | nao | MIME types aceitos |
 | `REPORT_DIR` | nao (`./relatorios`) | pasta dos PDFs gerados |
+| `FRONTEND_URL` | nao (1a origem do CORS) | endereco do site, usado no link de redefinicao de senha |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` | nao | envio de email; sem `SMTP_HOST`, os emails ficam em `emails-enviados/` |
 
 A aplicacao valida o ambiente na inicializacao e encerra se faltar variavel obrigatoria.
 
@@ -56,6 +58,7 @@ Migrations versionadas em `prisma/migrations/`:
 2. `20260910120000_auth_provedor_sessao` — senha opcional, provedor Google, `email_verificado`, tabela `sessoes`.
 3. `20260910120100_imagens_status_relatorio` — `imagens_voo`, `relatorios`, status de processamento em voo/analise.
 4. `20261021151848_solicitacoes_orcamento` — pedidos de orcamento do formulario do site.
+5. `20261021152544_redefinicao_senha` — links de redefinicao de senha (`redefinicoes_senha`).
 
 > Se `prisma migrate dev` acusar drift em um banco de desenvolvimento descartavel, rode `npx prisma migrate reset`.
 
@@ -97,6 +100,13 @@ Ambiente `Base`: preencha `access_token` / `refresh_token` (do retorno de `/auth
 `Authorization: Bearer <access_token>` nas rotas protegidas.
 Fluxo: `registro`/`login` → `access_token` (curto) + `refresh_token` (opaco, 1 uso — rotacionado no `refresh`).
 `logout` revoga a sessao; um refresh token revogado ou expirado retorna 401.
+
+**Esqueci a senha.** `POST /auth/esqueci-senha` (`{ email }`) responde sempre a mesma mensagem, exista ou nao
+a conta, e envia um link `FRONTEND_URL/redefinir-senha?token=...` valido por 60 minutos e de uso unico.
+Pedir de novo invalida o link anterior. `POST /auth/redefinir-senha` (`{ token, senha }`) troca a senha e
+encerra todas as sessoes abertas; link invalido, usado ou expirado responde 400.
+Sem `SMTP_HOST` configurado (desenvolvimento), o email nao e enviado: vai para o log e para a pasta
+`emails-enviados/`.
 
 ## Solicitacoes de orcamento
 
