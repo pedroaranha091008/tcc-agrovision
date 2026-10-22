@@ -26,7 +26,7 @@ npm run prisma:generate
 | `NODE_ENV` | nao | `development` \| `production` \| `test` |
 | `CORS_ORIGINS` | nao | origens liberadas, separadas por virgula |
 | `DATABASE_URL` | sim | string de conexao MySQL usada pelas migrations |
-| `DATABASE_HOST` / `DATABASE_USER` / `DATABASE_PASSWORD` / `DATABASE_NAME` / `DATABASE_PORT` | sim | usados pelo adapter MariaDB em runtime |
+| `DATABASE_HOST` / `DATABASE_USER` / `DATABASE_PASSWORD` / `DATABASE_NAME` / `DATABASE_PORT` | nao | conexao do adapter em runtime; sem elas, saem do `DATABASE_URL` |
 | `JWT_ACCESS_SECRET` | sim | segredo do access token |
 | `JWT_ACCESS_TTL` | nao (15m) | validade do access token |
 | `REFRESH_SECRET` | sim | segredo para derivar o hash do refresh token |
@@ -37,6 +37,7 @@ npm run prisma:generate
 | `UPLOAD_MAX_FILES` | nao (20) | quantidade maxima por requisicao |
 | `UPLOAD_ALLOWED_MIME` | nao | MIME types aceitos |
 | `REPORT_DIR` | nao (`./relatorios`) | pasta dos PDFs gerados |
+| `FRONTEND_DIST` | nao | pasta do site compilado (`frontend/dist`); definida, o servidor entrega o site no mesmo endereco da API (hospedagem, ver `DEPLOY.md`) |
 | `FRONTEND_URL` | nao (1a origem do CORS) | endereco do site, usado no link de redefinicao de senha |
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` | nao | envio de email; sem `SMTP_HOST`, os emails ficam em `emails-enviados/` |
 

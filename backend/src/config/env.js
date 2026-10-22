@@ -34,18 +34,41 @@ function lista(nome, padrao = "") {
     .filter(Boolean);
 }
 
+// Hospedagens (Railway, Render...) entregam o banco so como uma URL
+// mysql://usuario:senha@host:porta/banco. As variaveis DATABASE_HOST etc.
+// continuam valendo e tem prioridade; sem elas, saem da URL.
+const databaseUrl = obrigatoria("DATABASE_URL");
+let daUrl = {};
+try {
+  const u = new URL(databaseUrl);
+  daUrl = {
+    host: u.hostname,
+    user: decodeURIComponent(u.username),
+    password: decodeURIComponent(u.password),
+    name: u.pathname.replace(/^\//, ""),
+    port: u.port || "3306",
+  };
+} catch {
+  // URL invalida: as variaveis separadas passam a ser obrigatorias.
+}
+const doBanco = (nome, chave) => opcional(nome, daUrl[chave]) ?? obrigatoria(nome);
+
 const env = {
   nodeEnv: opcional("NODE_ENV", "development"),
   port: inteiro("PORT", 3000),
   corsOrigins: lista("CORS_ORIGINS", "http://localhost:5173"),
 
-  databaseUrl: obrigatoria("DATABASE_URL"),
+  // Pasta do site compilado (frontend/dist). Definida, o servidor entrega o
+  // site e a API no mesmo endereco (usado na hospedagem).
+  frontendDist: opcional("FRONTEND_DIST", ""),
+
+  databaseUrl,
   db: {
-    host: obrigatoria("DATABASE_HOST"),
-    user: obrigatoria("DATABASE_USER"),
-    password: obrigatoria("DATABASE_PASSWORD"),
-    name: obrigatoria("DATABASE_NAME"),
-    port: inteiro("DATABASE_PORT", 3306),
+    host: doBanco("DATABASE_HOST", "host"),
+    user: doBanco("DATABASE_USER", "user"),
+    password: opcional("DATABASE_PASSWORD", daUrl.password ?? ""),
+    name: doBanco("DATABASE_NAME", "name"),
+    port: inteiro("DATABASE_PORT", daUrl.port ?? 3306),
   },
 
   auth: {

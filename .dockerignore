@@ -1,0 +1,12 @@
+**/node_modules
+**/.env
+**/.env.*
+!**/.env.example
+**/dist
+**/coverage
+**/*.tsbuildinfo
+backend/generated
+backend/uploads
+backend/relatorios
+backend/emails-enviados
+.git
