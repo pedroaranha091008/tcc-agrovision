@@ -75,6 +75,11 @@ export async function anexarAoVoo(voo, arquivos) {
     throw e;
   }
 
+  // Imagem nova ainda nao foi analisada: o voo volta a "pendente". Fora de
+  // transacao com o insert: o site envia os arquivos em paralelo e as duas
+  // escritas juntas (FK + update na mesma linha do voo) davam deadlock.
+  await prisma.voo.update({ where: { id_voo: voo.id_voo }, data: { status_processamento: "pendente" } });
+
   return prisma.imagemVoo.findMany({
     where: { id_voo: voo.id_voo, nome_armazenado: { in: salvos.map((s) => s.nome_armazenado) } },
     orderBy: { criado_em: "asc" },

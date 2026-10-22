@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
 import { EstadoVazio } from "@/components/comum/Estados";
 import { ConfirmarExclusao } from "@/components/comum/Modal";
-import { BotaoPrimario } from "@/components/comum/Form";
+import { BotaoPrimario, BotaoSecundario } from "@/components/comum/Form";
 import { RiscoBadge, StatusProcessamentoBadge } from "@/components/comum/StatusBadge";
 import { AnaliseFormModal } from "@/features/dominio/AnaliseFormModal";
 import * as analiseService from "@/services/analises";
 import { data, numero } from "@/lib/formatar";
-import { mensagemDoErro } from "@/services/erros";
+import { ApiError, mensagemDoErro } from "@/services/erros";
 import type { Analise } from "@/types/dominio";
 
 const ROTULO_TIPO: Record<string, string> = {
@@ -23,17 +23,34 @@ export function AnalisesSecao({
   idVoo,
   itens,
   carregando,
+  temImagens,
   onAlterado,
 }: {
   idVoo: string;
   itens: Analise[];
   carregando: boolean;
+  temImagens: boolean;
   onAlterado: () => void;
 }) {
   const [modal, setModal] = useState<{ aberto: boolean; alvo: Analise | null }>({ aberto: false, alvo: null });
   const [excluirAlvo, setExcluirAlvo] = useState<Analise | null>(null);
   const [processando, setProcessando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [analisando, setAnalisando] = useState(false);
+
+  async function analisar() {
+    setAnalisando(true);
+    setErro(null);
+    try {
+      await analiseService.analisarVoo(idVoo);
+      onAlterado();
+    } catch (err) {
+      // 422 aqui nao e campo de formulario: o servidor explica o motivo (sem imagens, foto ilegivel).
+      setErro(err instanceof ApiError && err.status === 422 ? err.message : mensagemDoErro(err));
+    } finally {
+      setAnalisando(false);
+    }
+  }
 
   async function excluir() {
     if (!excluirAlvo) return;
@@ -52,11 +69,26 @@ export function AnalisesSecao({
 
   return (
     <div>
-      <div className="flex items-center justify-end mb-3">
-        <BotaoPrimario onClick={() => setModal({ aberto: true, alvo: null })}>
-          <Plus className="w-4 h-4" /> Registrar análise
+      <div className="flex flex-wrap items-center justify-end gap-2 mb-3">
+        <BotaoSecundario onClick={() => setModal({ aberto: true, alvo: null })}>
+          <Plus className="w-4 h-4" /> Registrar manualmente
+        </BotaoSecundario>
+        <BotaoPrimario
+          onClick={analisar}
+          carregando={analisando}
+          disabled={!temImagens}
+          title={temImagens ? undefined : "Envie as imagens do voo primeiro"}
+        >
+          {!analisando && <Sparkles className="w-4 h-4" />}
+          {analisando ? "Analisando imagens..." : "Analisar imagens"}
         </BotaoPrimario>
       </div>
+
+      {!temImagens && !carregando && (
+        <p className="mb-3 text-xs text-[#4a5568] text-right" style={{ fontFamily: "Inter, sans-serif" }}>
+          Envie as imagens do voo acima para liberar a análise automática.
+        </p>
+      )}
 
       {erro && (
         <div className="mb-3 rounded-md border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
@@ -66,13 +98,8 @@ export function AnalisesSecao({
 
       {!carregando && itens.length === 0 && (
         <EstadoVazio
-          titulo="Nenhuma análise registrada"
-          descricao="Registre o tipo de análise, o risco identificado e o percentual de área afetada."
-          acao={
-            <BotaoPrimario onClick={() => setModal({ aberto: true, alvo: null })}>
-              <Plus className="w-4 h-4" /> Registrar análise
-            </BotaoPrimario>
-          }
+          titulo="Nenhuma análise ainda"
+          descricao="Clique em “Analisar imagens” para medir a cobertura vegetal das fotos do voo, ou registre manualmente o resultado de uma análise feita fora do sistema."
         />
       )}
 
@@ -87,6 +114,9 @@ export function AnalisesSecao({
                   </span>
                   <RiscoBadge nivel={a.nivel_risco} />
                   <StatusProcessamentoBadge status={a.status} />
+                  {a.origem === "automatica" && (
+                    <span className="text-xs bg-[#F3E5F5] text-[#6A1B9A] px-2.5 py-1 rounded-full font-medium">Automática</span>
+                  )}
                   {a.percentual_area_afetada != null && (
                     <span className="text-xs text-[#4a5568]">
                       {numero(a.percentual_area_afetada)}% da área afetada
@@ -111,7 +141,7 @@ export function AnalisesSecao({
                 </div>
               </div>
               {a.resultado && (
-                <p className="text-sm text-[#212121] mt-2" style={{ fontFamily: "Inter, sans-serif" }}>
+                <p className="text-sm text-[#212121] mt-2 whitespace-pre-line" style={{ fontFamily: "Inter, sans-serif" }}>
                   {a.resultado}
                 </p>
               )}

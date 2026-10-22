@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { z } from "zod";
 import * as ctrl from "../controllers/analise.controller.js";
 import { autenticar } from "../middlewares/auth.js";
 import { carregarAnalise } from "../middlewares/autorizacao.js";
@@ -23,6 +24,13 @@ router.patch(
   carregarAnalise(),
   ctrl.atualizar,
 );
+
+// Mapa colorido (indice de verde) de cada imagem de uma analise automatica
+const mapaParam = z.object({
+  id: z.string().uuid("id invalido"),
+  indice: z.coerce.number().int().min(0).max(999),
+});
+router.get("/:id/mapas/:indice", validate({ params: mapaParam }), carregarAnalise(), ctrl.mapa);
 router.delete("/:id", validate({ params: idParam }), carregarAnalise(), ctrl.remover);
 
 export default router;

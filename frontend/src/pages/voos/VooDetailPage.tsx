@@ -48,7 +48,8 @@ export function VooDetailPage() {
     }
   }
 
-  if (voo.loading) return <Carregando />;
+  // So mostra o carregando na primeira busca; ao atualizar, mantem a tela.
+  if (voo.loading && !voo.data) return <Carregando />;
   if (voo.error || !voo.data)
     return (
       <div className="max-w-4xl mx-auto">
@@ -138,7 +139,10 @@ export function VooDetailPage() {
             idVoo={id}
             itens={imagens.data ?? []}
             carregando={imagens.loading}
-            onAlterado={imagens.refetch}
+            onAlterado={() => {
+              imagens.refetch();
+              voo.refetch();
+            }}
           />
         )}
       </section>
@@ -157,7 +161,11 @@ export function VooDetailPage() {
             idVoo={id}
             itens={analises.data?.itens ?? []}
             carregando={analises.loading}
-            onAlterado={analises.refetch}
+            temImagens={(imagens.data?.length ?? 0) > 0}
+            onAlterado={() => {
+              analises.refetch();
+              voo.refetch();
+            }}
           />
         )}
       </section>

@@ -21,6 +21,11 @@ export const atualizar = handler(async (req, res) => {
   ok(res, analise);
 });
 
+export const mapa = handler(async (req, res) => {
+  res.setHeader("Cache-Control", "private, max-age=3600");
+  res.type("png").sendFile(service.caminhoMapa(req.analise, Number(req.params.indice)));
+});
+
 export const remover = handler(async (req, res) => {
   await service.remover(req.analise);
   semConteudo(res);

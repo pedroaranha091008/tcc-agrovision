@@ -33,6 +33,11 @@ enum ProvedorAuth {
   google
 }
 
+enum OrigemAnalise {
+  manual
+  automatica
+}
+
 enum StatusProcessamento {
   pendente
   em_processamento
@@ -157,6 +162,9 @@ model Analise {
   resultado               String?             @db.Text
   url_arquivo             String?             @db.VarChar(500)
   status                  StatusProcessamento @default(concluido)
+  origem                  OrigemAnalise       @default(manual)
+  // Na analise automatica: metodo, limiares e os percentuais e o mapa de cada imagem.
+  detalhes                Json?
   data_analise            DateTime            @default(now())
   atualizado_em           DateTime            @updatedAt
 

@@ -22,6 +22,12 @@ export async function atualizar(id: string, payload: Partial<Omit<AnalisePayload
   return data;
 }
 
+/** Roda a analise automatica (indice de verde) em todas as imagens do voo. */
+export async function analisarVoo(idVoo: string): Promise<Analise> {
+  const { data } = await http.post<Analise>(`/voos/${idVoo}/analisar`, {});
+  return data;
+}
+
 export async function remover(id: string): Promise<void> {
   await http.delete(`/analises/${id}`);
 }

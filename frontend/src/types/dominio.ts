@@ -62,8 +62,24 @@ export interface Analise {
   resultado: string | null;
   url_arquivo: string | null;
   status: StatusProcessamento;
+  origem: "manual" | "automatica";
+  detalhes?: DetalhesAnalise | null;
   data_analise: string;
   atualizado_em: string;
+}
+
+/** Percentuais de cada classe do indice de verde (ExG), por imagem e no total. */
+export interface PercentuaisExg {
+  saudavel: number;
+  atencao: number;
+  critico: number;
+}
+
+export interface DetalhesAnalise {
+  metodo: string;
+  versao: string;
+  resumo: PercentuaisExg & { afetada: number; nivel: NivelRisco };
+  por_imagem: Array<PercentuaisExg & { id_imagem: string; nome: string; exg_medio: number; mapa: string }>;
 }
 
 export interface AnalisePayload {

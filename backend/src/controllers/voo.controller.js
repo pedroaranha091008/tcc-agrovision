@@ -1,5 +1,6 @@
 import * as service from "../services/voo.service.js";
 import * as imagemService from "../services/imagem.service.js";
+import * as analiseService from "../services/analise.service.js";
 import { criado, ok, semConteudo } from "../utils/resposta.js";
 import { handler } from "../utils/assincrono.js";
 
@@ -48,6 +49,11 @@ export const arquivoImagem = handler(async (req, res) => {
   const { caminho, tipo, nome } = await imagemService.arquivo(req.voo.id_voo, req.params.idImagem, req.query.miniatura === "1");
   res.setHeader("Content-Type", tipo);
   res.setHeader("Cache-Control", "private, max-age=3600");
-  res.setHeader("Content-Disposition", `inline; filename*=UTF-8${encodeURIComponent(nome)}`);
+  res.setHeader("Content-Disposition", `inline; filename*=UTF-8''${encodeURIComponent(nome)}`);
   res.sendFile(caminho);
+});
+
+export const analisar = handler(async (req, res) => {
+  const analise = await analiseService.analisarVoo(req.voo);
+  criado(res, analise);
 });

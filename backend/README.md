@@ -59,6 +59,7 @@ Migrations versionadas em `prisma/migrations/`:
 3. `20260910120100_imagens_status_relatorio` — `imagens_voo`, `relatorios`, status de processamento em voo/analise.
 4. `20261021151848_solicitacoes_orcamento` — pedidos de orcamento do formulario do site.
 5. `20261021152544_redefinicao_senha` — links de redefinicao de senha (`redefinicoes_senha`).
+6. `20261022133706_analise_automatica` — `origem` (manual/automatica) e `detalhes` (JSON) em `analises`.
 
 > Se `prisma migrate dev` acusar drift em um banco de desenvolvimento descartavel, rode `npx prisma migrate reset`.
 
@@ -114,6 +115,18 @@ Sem `SMTP_HOST` configurado (desenvolvimento), o email nao e enviado: vai para o
 `nome`, `email`, `telefone` (com DDD), `cidade`, `cultura`, `area_hectares`, `servico`, `mensagem?`.
 Os pedidos ficam na tabela `solicitacoes_orcamento` com `status` (`novo`, `em_contato`, `concluido`, `cancelado`)
 e aparecem no log do servidor. Limite de 10 pedidos por hora por IP (anti-spam).
+
+## Analise automatica (indice de verde)
+
+`POST /api/v1/voos/:id/analisar` le todas as imagens do voo e calcula, pixel a pixel, o indice de excesso de verde
+(ExG = 2g - r - b, com r, g, b normalizados). Cada pixel vira *vegetacao vigorosa* (ExG >= 0,10), *atencao*
+(>= 0,03) ou *pouca/nenhuma vegetacao*. Area afetada = pouca vegetacao + metade da atencao; nivel de risco:
+< 15% baixo, < 30% medio, < 50% alto, senao critico (`src/utils/indiceVerde.js`).
+
+Grava uma analise `RGB` com `origem: automatica`, os percentuais por imagem em `detalhes` e um mapa colorido
+de cada imagem em `UPLOAD_DIR/mapas/` (`GET /api/v1/analises/:id/mapas/:indice`). O voo passa por
+`em_processamento` e termina `concluido` (ou `falhou`); enviar imagens novas o volta a `pendente`.
+Mede cobertura vegetal em fotos RGB comuns: nao identifica pragas ou doencas, e o texto do resultado diz isso.
 
 ## Upload de imagens
 

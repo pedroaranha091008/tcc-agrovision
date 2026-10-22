@@ -371,10 +371,51 @@ export const rotasDominio: Array<{
         resultado: b.resultado ?? null,
         url_arquivo: null,
         status: b.status ?? "concluido",
+        origem: "manual",
         data_analise: agora(),
         atualizado_em: agora(),
       };
       dominio.analises.push(nova);
+      return { data: nova };
+    },
+  },
+  {
+    // Sem backend nao ha como ler os pixels: gera percentuais plausiveis por imagem
+    // (sem os mapas coloridos, que a tela mostra como indisponiveis).
+    metodo: "POST",
+    regex: /^\/voos\/(?<id>[^/]+)\/analisar$/,
+    handler: (_c, p) => {
+      const voo = acharVoo(p.id, usuarioAutenticado().id_usuario);
+      const imagens = dominio.imagens.filter((i) => i.id_voo === voo.id_voo);
+      if (imagens.length === 0) {
+        throw new ApiError("VALIDACAO", "Envie ao menos uma imagem do voo antes de analisar.", 422);
+      }
+      const porImagem = imagens.map((img, i) => {
+        const critico = 8 + ((i * 7) % 20);
+        const atencao = 12 + ((i * 5) % 10);
+        return { id_imagem: img.id_imagem, nome: img.nome_original, saudavel: 100 - critico - atencao, atencao, critico, exg_medio: 0.12, mapa: "" };
+      });
+      const media = (k: "saudavel" | "atencao" | "critico") =>
+        Math.round((porImagem.reduce((s, x) => s + x[k], 0) / porImagem.length) * 10) / 10;
+      const resumo = { saudavel: media("saudavel"), atencao: media("atencao"), critico: media("critico"), afetada: 0, nivel: "baixo" as const };
+      const afetada = Math.round((resumo.critico + resumo.atencao / 2) * 10) / 10;
+      const nivel = afetada < 15 ? "baixo" : afetada < 30 ? "medio" : afetada < 50 ? "alto" : "critico";
+      const nova: Analise = {
+        id_analise: crypto.randomUUID(),
+        id_voo: voo.id_voo,
+        tipo_analise: "RGB",
+        nivel_risco: nivel,
+        percentual_area_afetada: afetada,
+        resultado: `Análise automática por índice de verde (ExG) em ${imagens.length} imagem(ns) (demonstração).\nÁrea considerada afetada: ${afetada}%.`,
+        url_arquivo: null,
+        status: "concluido",
+        origem: "automatica",
+        detalhes: { metodo: "ExG", versao: "1.0.0", resumo: { ...resumo, afetada, nivel }, por_imagem: porImagem },
+        data_analise: agora(),
+        atualizado_em: agora(),
+      };
+      dominio.analises.push(nova);
+      voo.status_processamento = "concluido";
       return { data: nova };
     },
   },

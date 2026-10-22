@@ -59,4 +59,7 @@ router.delete(
   ctrl.removerImagem,
 );
 
+// Analise automatica (indice de verde) sobre as imagens do voo
+router.post("/:id/analisar", validate({ params: idParam }), carregarVoo(), ctrl.analisar);
+
 export default router;
