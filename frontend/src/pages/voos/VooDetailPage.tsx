@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { Activity, ImageIcon, Pencil, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/comum/PageHeader";
 import { Carregando, EstadoErro } from "@/components/comum/Estados";
 import { ConfirmarExclusao } from "@/components/comum/Modal";
-import { BotaoSecundario } from "@/components/comum/Form";
+import { BotoesEditarExcluir, Detalhes, TituloSecao } from "@/components/comum/Detalhes";
 import { StatusProcessamentoBadge } from "@/components/comum/StatusBadge";
 import { VooFormModal } from "@/features/dominio/VooFormModal";
 import { ImagensSecao } from "@/features/voos/ImagensSecao";
@@ -15,7 +14,7 @@ import * as talhaoService from "@/services/talhoes";
 import * as propService from "@/services/propriedades";
 import * as imagemService from "@/services/imagens";
 import * as analiseService from "@/services/analises";
-import { data, numero } from "@/lib/formatar";
+import { area, data, numero } from "@/lib/formatar";
 import { mensagemDoErro } from "@/services/erros";
 
 export function VooDetailPage() {
@@ -52,38 +51,35 @@ export function VooDetailPage() {
   if (voo.loading && !voo.data) return <Carregando />;
   if (voo.error || !voo.data)
     return (
-      <div className="max-w-4xl mx-auto">
+      <div>
         <EstadoErro erro={voo.error} onTentarNovamente={voo.refetch} />
         <div className="mt-4 text-center">
           <Link to="/propriedades" className="text-sm text-[#1B5E20] hover:underline">
-            Voltar para propriedades
+            Voltar para Fazendas
           </Link>
         </div>
       </div>
     );
 
   const v = voo.data;
+  const titulo = `Voo de ${data(v.data_voo)}`;
+  const nomeFazenda = prop.data?.nome_fazenda ?? "Propriedade";
+  const nomeTalhao = talhao.data?.nome_talhao ?? "Talhão";
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div>
       <PageHeader
-        titulo={`Voo de ${data(v.data_voo)}`}
+        titulo={titulo}
+        descricao={[nomeFazenda, nomeTalhao, talhao.data?.area_hectares != null ? area(talhao.data.area_hectares) : null]
+          .filter(Boolean)
+          .join(" · ")}
         breadcrumbs={[
-          { label: "Propriedades", to: "/propriedades" },
-          { label: prop.data?.nome_fazenda ?? "Propriedade", to: idProp ? `/propriedades/${idProp}` : undefined },
-          { label: talhao.data?.nome_talhao ?? "Talhão", to: idTalhao ? `/talhoes/${idTalhao}` : undefined },
-          { label: data(v.data_voo) },
+          { label: "Fazendas", to: "/propriedades" },
+          { label: nomeFazenda, to: idProp ? `/propriedades/${idProp}` : undefined },
+          { label: nomeTalhao, to: idTalhao ? `/talhoes/${idTalhao}` : undefined },
+          { label: titulo },
         ]}
-        acao={
-          <div className="flex gap-2">
-            <BotaoSecundario onClick={() => setEditar(true)}>
-              <Pencil className="w-4 h-4" /> Editar
-            </BotaoSecundario>
-            <BotaoSecundario onClick={() => setExcluir(true)}>
-              <Trash2 className="w-4 h-4" /> Excluir
-            </BotaoSecundario>
-          </div>
-        }
+        acao={<BotoesEditarExcluir nome={titulo} aoEditar={() => setEditar(true)} aoExcluir={() => setExcluir(true)} />}
       />
 
       {erroAcao && (
@@ -92,46 +88,22 @@ export function VooDetailPage() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg border border-border p-5 mb-6" style={{ fontFamily: "Inter, sans-serif" }}>
-        <dl className="grid sm:grid-cols-3 gap-4 text-sm">
-          <div>
-            <dt className="text-xs text-[#4a5568] uppercase tracking-wide">Data do voo</dt>
-            <dd className="text-[#212121] font-medium mt-0.5">{data(v.data_voo)}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-[#4a5568] uppercase tracking-wide">Altitude</dt>
-            <dd className="text-[#212121] font-medium mt-0.5">
-              {v.altitude_metros != null ? `${numero(v.altitude_metros)} m` : "—"}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs text-[#4a5568] uppercase tracking-wide">Processamento</dt>
-            <dd className="mt-1">
-              <StatusProcessamentoBadge status={v.status_processamento} />
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs text-[#4a5568] uppercase tracking-wide">Drone</dt>
-            <dd className="text-[#212121] font-medium mt-0.5">{v.modelo_drone ?? "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-[#4a5568] uppercase tracking-wide">Operador</dt>
-            <dd className="text-[#212121] font-medium mt-0.5">{v.operador ?? "—"}</dd>
-          </div>
-          <div className="sm:col-span-3">
-            <dt className="text-xs text-[#4a5568] uppercase tracking-wide">Observações</dt>
-            <dd className="text-[#212121] mt-0.5">{v.observacoes ?? "—"}</dd>
-          </div>
-        </dl>
-      </div>
+      <Detalhes
+        itens={[
+          ["Altitude", v.altitude_metros != null ? `${numero(v.altitude_metros)} m` : "—"],
+          ["Drone", v.modelo_drone ?? "—"],
+          ["Operador", v.operador ?? "—"],
+          ["Processamento", <StatusProcessamentoBadge status={v.status_processamento} />],
+        ]}
+      />
+      {v.observacoes && (
+        <p className="-mt-3 mb-6 text-sm text-[#4a5568] whitespace-pre-line" style={{ fontFamily: "Inter, sans-serif" }}>
+          <strong className="text-[#212121]">Observações:</strong> {v.observacoes}
+        </p>
+      )}
 
       <section className="mb-8">
-        <h2
-          className="font-bold text-[#212121] flex items-center gap-2 mb-3"
-          style={{ fontFamily: "Poppins, sans-serif" }}
-        >
-          <ImageIcon className="w-4 h-4" /> Imagens
-        </h2>
+        <TituloSecao titulo="Imagens do voo" total={imagens.data?.length} />
         {imagens.error ? (
           <EstadoErro erro={imagens.error} onTentarNovamente={imagens.refetch} />
         ) : (
@@ -148,12 +120,6 @@ export function VooDetailPage() {
       </section>
 
       <section>
-        <h2
-          className="font-bold text-[#212121] flex items-center gap-2 mb-3"
-          style={{ fontFamily: "Poppins, sans-serif" }}
-        >
-          <Activity className="w-4 h-4" /> Análises
-        </h2>
         {analises.error ? (
           <EstadoErro erro={analises.error} onTentarNovamente={analises.refetch} />
         ) : (

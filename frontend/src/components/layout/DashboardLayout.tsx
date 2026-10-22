@@ -26,9 +26,9 @@ type NavItem = {
 
 const NAV_ITEMS: NavItem[] = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Visão Geral", exato: true },
-  { to: "/propriedades", icon: Tractor, label: "Propriedades", tambem: ["/talhoes", "/voos"] },
-  { to: "/analises", icon: Activity, label: "Análises" },
+  { to: "/analises", icon: Activity, label: "Minhas Análises" },
   { to: "/relatorios", icon: FileText, label: "Relatórios" },
+  { to: "/propriedades", icon: Tractor, label: "Fazendas", tambem: ["/talhoes", "/voos"] },
   { to: "/configuracoes", icon: Settings, label: "Configurações" },
 ];
 

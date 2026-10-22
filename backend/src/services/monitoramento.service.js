@@ -15,6 +15,7 @@ export async function historico(idUsuario, consulta) {
     voo: { talhao: { propriedade: { id_usuario: idUsuario } } },
   };
   if (consulta.tipo_analise) where.tipo_analise = consulta.tipo_analise;
+  if (consulta.nivel_risco) where.nivel_risco = consulta.nivel_risco;
   if (consulta.data_inicio || consulta.data_fim) {
     where.data_analise = {};
     if (consulta.data_inicio) where.data_analise.gte = consulta.data_inicio;
@@ -51,6 +52,7 @@ export async function historico(idUsuario, consulta) {
     id_analise: a.id_analise,
     tipo_analise: a.tipo_analise,
     nivel_risco: a.nivel_risco,
+    origem: a.origem,
     percentual_area_afetada: a.percentual_area_afetada,
     status: a.status,
     data_analise: a.data_analise,

@@ -167,6 +167,9 @@ export function ImagensSecao({
         <p className="text-xs text-[#4a5568] mt-2">
           JPEG, PNG ou TIFF · até {UPLOAD_MAX_FILE_MB} MB por arquivo · máximo {UPLOAD_MAX_FILES} imagens
         </p>
+        <p className="text-xs text-[#4a5568] mt-1">
+          Use fotos tiradas de cima para baixo: céu, estradas e construções contam como área sem vegetação na análise.
+        </p>
       </div>
 
       {erroLista && (

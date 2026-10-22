@@ -1,5 +1,7 @@
 /** Tipos do dominio agricola, espelhando o schema do backend (snake_case). */
 
+import type { RecomendacaoGerada } from "./relatorio";
+
 export type StatusTalhao = "ativo" | "inativo" | "em_analise";
 export type StatusProcessamento = "pendente" | "em_processamento" | "concluido" | "falhou";
 export type TipoAnalise = "NDVI" | "RGB" | "termico" | "multispectral" | "outro";
@@ -14,6 +16,9 @@ export interface Propriedade {
   area_total_hectares: number | null;
   criado_em: string;
   atualizado_em: string;
+  // Resumo devolvido pela listagem
+  total_talhoes?: number;
+  area_talhoes_hectares?: number;
 }
 
 export interface Talhao {
@@ -28,6 +33,9 @@ export interface Talhao {
   status: StatusTalhao;
   criado_em: string;
   atualizado_em: string;
+  // Resumo devolvido pela listagem
+  total_voos?: number;
+  ultimo_voo?: string | null;
 }
 
 export interface Voo {
@@ -40,6 +48,9 @@ export interface Voo {
   observacoes: string | null;
   status_processamento: StatusProcessamento;
   criado_em: string;
+  // Resumo devolvido pela listagem
+  total_imagens?: number;
+  total_analises?: number;
 }
 
 export interface ImagemVoo {
@@ -64,6 +75,8 @@ export interface Analise {
   status: StatusProcessamento;
   origem: "manual" | "automatica";
   detalhes?: DetalhesAnalise | null;
+  // Recomendacao por regras (vem junto com a analise; null sem nivel de risco)
+  recomendacao?: RecomendacaoGerada | null;
   data_analise: string;
   atualizado_em: string;
 }

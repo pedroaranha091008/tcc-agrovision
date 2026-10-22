@@ -1,14 +1,18 @@
 import * as service from "../services/analise.service.js";
 import { criado, ok, semConteudo } from "../utils/resposta.js";
 import { handler } from "../utils/assincrono.js";
+import { gerarRecomendacao } from "../utils/recomendacao.js";
+
+// A recomendacao por regras acompanha a analise para a tela mostrar sem gerar o PDF.
+const comRecomendacao = (a) => ({ ...a, recomendacao: a.nivel_risco ? gerarRecomendacao(a) : null });
 
 export const listar = handler(async (req, res) => {
   const { itens, meta } = await service.listar(req.usuario.id_usuario, req.consulta);
-  ok(res, itens, meta);
+  ok(res, itens.map(comRecomendacao), meta);
 });
 
 export const consultar = handler(async (req, res) => {
-  ok(res, req.analise);
+  ok(res, comRecomendacao(req.analise));
 });
 
 export const criar = handler(async (req, res) => {

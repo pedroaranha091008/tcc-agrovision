@@ -19,10 +19,24 @@ export async function listar(idUsuario, consulta) {
   if (consulta.status) where.status = consulta.status;
   if (consulta.cultura) where.cultura = { contains: consulta.cultura };
 
-  const [itens, total] = await Promise.all([
-    prisma.talhao.findMany({ where, skip, take, orderBy }),
+  const [linhas, total] = await Promise.all([
+    prisma.talhao.findMany({
+      where,
+      skip,
+      take,
+      orderBy,
+      include: {
+        _count: { select: { voos: true } },
+        voos: { select: { data_voo: true }, orderBy: { data_voo: "desc" }, take: 1 },
+      },
+    }),
     prisma.talhao.count({ where }),
   ]);
+  const itens = linhas.map(({ _count, voos, ...t }) => ({
+    ...t,
+    total_voos: _count.voos,
+    ultimo_voo: voos[0]?.data_voo ?? null,
+  }));
   return { itens, meta: meta(total, { pagina, porPagina }) };
 }
 

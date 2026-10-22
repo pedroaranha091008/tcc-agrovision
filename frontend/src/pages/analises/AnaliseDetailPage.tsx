@@ -2,7 +2,7 @@ import { Link, useParams } from "react-router";
 import { PageHeader } from "@/components/comum/PageHeader";
 import { Carregando, EstadoErro } from "@/components/comum/Estados";
 import { RiscoBadge, StatusProcessamentoBadge } from "@/components/comum/StatusBadge";
-import { RelatorioSecao } from "@/features/relatorios/RelatorioSecao";
+import { analiseCompleta, BotaoPdf, CaixaRecomendacao } from "@/features/relatorios/Relatorio";
 import { MapasVegetacao } from "@/features/analises/MapasVegetacao";
 import { useQuery } from "@/hooks/useQuery";
 import * as analiseService from "@/services/analises";
@@ -26,7 +26,7 @@ export function AnaliseDetailPage() {
   if (analise.loading) return <Carregando />;
   if (analise.error || !analise.data)
     return (
-      <div className="max-w-3xl mx-auto">
+      <div>
         <EstadoErro erro={analise.error} onTentarNovamente={analise.refetch} />
         <div className="mt-4 text-center">
           <Link to="/analises" className="text-sm text-[#1B5E20] hover:underline">
@@ -39,18 +39,19 @@ export function AnaliseDetailPage() {
   const a = analise.data;
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div>
       <PageHeader
         titulo={`Análise ${TIPO_LABEL[a.tipo_analise] ?? a.tipo_analise}`}
         breadcrumbs={[
-          { label: "Histórico de análises", to: "/analises" },
+          { label: "Minhas Análises", to: "/analises" },
           { label: prop.data?.nome_fazenda ?? "Propriedade", to: idProp ? `/propriedades/${idProp}` : undefined },
           { label: talhao.data?.nome_talhao ?? "Talhão", to: idTalhao ? `/talhoes/${idTalhao}` : undefined },
           { label: TIPO_LABEL[a.tipo_analise] ?? a.tipo_analise },
         ]}
+        acao={<BotaoPdf idAnalise={a.id_analise} disponivel={analiseCompleta(a)} />}
       />
 
-      <div className="bg-white rounded-lg border border-border p-5 mb-6" style={{ fontFamily: "Inter, sans-serif" }}>
+      <div className="bg-white rounded-2xl border border-border p-5 mb-6" style={{ fontFamily: "Inter, sans-serif" }}>
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <RiscoBadge nivel={a.nivel_risco} />
           <StatusProcessamentoBadge status={a.status} />
@@ -93,7 +94,7 @@ export function AnaliseDetailPage() {
         <MapasVegetacao idAnalise={a.id_analise} idVoo={a.id_voo} detalhes={a.detalhes} />
       ) : null}
 
-      <RelatorioSecao analise={a} />
+      {a.recomendacao && <CaixaRecomendacao recomendacao={a.recomendacao} />}
     </div>
   );
 }

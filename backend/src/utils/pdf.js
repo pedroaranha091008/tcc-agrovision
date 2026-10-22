@@ -6,6 +6,7 @@ import PDFDocument from "pdfkit";
 import env from "../config/env.js";
 
 const RAIZ = path.resolve(env.report.dir);
+const PASTA_MAPAS = path.resolve(env.upload.dir, "mapas");
 
 // "startsWith(RAIZ)" sozinho aceita um irmao com prefixo igual (RAIZ=/a/relatorios
 // tambem "contem" /a/relatorios-evil). Exige que o caminho seja a propria raiz
@@ -14,9 +15,212 @@ function dentroDaRaiz(alvo) {
   return alvo === RAIZ || alvo.startsWith(RAIZ + path.sep);
 }
 
-function linha(doc, rotulo, valor) {
-  doc.font("Helvetica-Bold").text(`${rotulo}: `, { continued: true });
-  doc.font("Helvetica").text(valor ?? "-");
+const VERDE = "#1B5E20";
+const CINZA = "#4a5568";
+const TEXTO = "#212121";
+const CORES_RISCO = { baixo: "#2E7D32", medio: "#B7950B", alto: "#E65100", critico: "#C62828" };
+const ROTULOS_RISCO = { baixo: "Risco baixo", medio: "Atenção", alto: "Risco alto", critico: "Crítico" };
+const TIPOS = {
+  NDVI: "NDVI",
+  RGB: "Índice de verde (RGB)",
+  termico: "Térmica",
+  multispectral: "Multiespectral",
+  outro: "Outra",
+};
+
+const data = (d) => new Date(d).toLocaleDateString("pt-BR", { timeZone: "UTC" });
+const dataHora = (d) =>
+  new Date(d).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" });
+const num = (n) => Number(n).toLocaleString("pt-BR");
+const area = (n) => (n === null || n === undefined ? "—" : `${num(n)} ha`);
+
+function secao(doc, titulo) {
+  doc.moveDown(0.8);
+  if (doc.y > doc.page.height - 140) doc.addPage();
+  doc.font("Helvetica-Bold").fontSize(12).fillColor(VERDE).text(titulo);
+  doc
+    .moveTo(doc.page.margins.left, doc.y + 2)
+    .lineTo(doc.page.width - doc.page.margins.right, doc.y + 2)
+    .strokeColor("#C8E6C9")
+    .lineWidth(1)
+    .stroke();
+  doc.moveDown(0.5);
+}
+
+/** Tabela simples de duas colunas (rotulo: valor). */
+function campos(doc, pares) {
+  const x = doc.page.margins.left;
+  const largura = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+  for (const [rotulo, valor] of pares) {
+    const y = doc.y;
+    doc.font("Helvetica").fontSize(9).fillColor(CINZA).text(rotulo, x, y, { width: 130 });
+    doc.font("Helvetica").fontSize(10).fillColor(TEXTO).text(String(valor ?? "—"), x + 135, y, { width: largura - 135 });
+    doc.moveDown(0.25);
+  }
+  doc.x = x;
+}
+
+async function desenhar(doc, { propriedade, talhao, voo, analise, recomendacao }) {
+  const largura = doc.page.width - 100;
+
+  // Cabecalho
+  doc.rect(0, 0, doc.page.width, 90).fill(VERDE);
+  doc.font("Helvetica-Bold").fontSize(22).fillColor("#FFFFFF").text("AgroVision", 50, 28);
+  doc.font("Helvetica").fontSize(11).fillColor("#C8E6C9").text("Relatório de análise da lavoura", 50, 56);
+  doc
+    .font("Helvetica")
+    .fontSize(9)
+    .fillColor("#C8E6C9")
+    .text(`Nº ${analise.id_analise.slice(0, 8).toUpperCase()}`, 50, 40, { width: largura, align: "right" });
+  doc.y = 110;
+  doc.x = 50;
+
+  // Destaque do risco
+  const nivel = analise.nivel_risco;
+  const afetada = analise.percentual_area_afetada;
+  doc.roundedRect(50, doc.y, largura, 56, 8).fill("#F8F9FA");
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(16)
+    .fillColor(CORES_RISCO[nivel] ?? TEXTO)
+    .text(ROTULOS_RISCO[nivel] ?? "Sem classificação", 66, doc.y + 12);
+  doc
+    .font("Helvetica")
+    .fontSize(10)
+    .fillColor(CINZA)
+    .text(
+      `${TIPOS[analise.tipo_analise] ?? analise.tipo_analise} · ${afetada != null ? `área afetada: ${num(afetada)}%` : "área afetada não informada"}`,
+      66,
+      doc.y + 2,
+    );
+  doc.y = 110 + 56 + 6;
+  doc.x = 50;
+
+  secao(doc, "Identificação");
+  campos(doc, [
+    ["Propriedade", `${propriedade.nome_fazenda} — ${propriedade.cidade}/${propriedade.estado}`],
+    ["Talhão", [talhao.nome_talhao, talhao.cultura, area(talhao.area_hectares)].filter(Boolean).join(" · ")],
+    ["Data do voo", data(voo.data_voo)],
+    ["Drone / operador", [voo.modelo_drone, voo.operador].filter(Boolean).join(" · ") || "—"],
+    ["Altitude", voo.altitude_metros ? `${num(voo.altitude_metros)} m` : "—"],
+    [
+      "Análise",
+      `${analise.origem === "automatica" ? "Automática (índice de verde ExG)" : "Registrada manualmente"} em ${dataHora(analise.data_analise)}`,
+    ],
+  ]);
+
+  const resumo = analise.detalhes?.resumo;
+  if (resumo) {
+    secao(doc, "Cobertura vegetal");
+    const y = doc.y;
+    let x = 50;
+    for (const [valor, cor] of [
+      [resumo.saudavel, "#43A047"],
+      [resumo.atencao, "#FBC02D"],
+      [resumo.critico, "#E53935"],
+    ]) {
+      const w = (largura * valor) / 100;
+      if (w > 0) doc.rect(x, y, w, 12).fill(cor);
+      x += w;
+    }
+    doc.y = y + 18;
+    doc
+      .font("Helvetica")
+      .fontSize(9)
+      .fillColor(CINZA)
+      .text(
+        `Vegetação vigorosa: ${num(resumo.saudavel)}%   ·   Atenção: ${num(resumo.atencao)}%   ·   Pouca ou nenhuma vegetação: ${num(resumo.critico)}%`,
+        50,
+      );
+  }
+
+  if (analise.resultado) {
+    secao(doc, "Resultado");
+    doc.font("Helvetica").fontSize(10).fillColor(TEXTO).text(analise.resultado, { width: largura, lineGap: 2 });
+  }
+
+  secao(doc, `Recomendação — ${recomendacao.titulo}`);
+  doc.font("Helvetica-Bold").fontSize(10).fillColor(TEXTO).text(`Prazo: ${recomendacao.prazo}`);
+  doc.moveDown(0.3);
+  doc
+    .font("Helvetica")
+    .fontSize(10)
+    .fillColor(TEXTO)
+    .list(recomendacao.acoes, { bulletRadius: 2, textIndent: 12, lineGap: 2, width: largura - 12 });
+  doc.moveDown(0.4);
+  doc
+    .font("Helvetica-Oblique")
+    .fontSize(8.5)
+    .fillColor(CINZA)
+    .text(`${recomendacao.aviso} (Regras versão ${recomendacao.versao}.)`, { width: largura });
+
+  const mapas = analise.detalhes?.por_imagem ?? [];
+  if (mapas.length) {
+    const larguraMapa = (largura - 16) / 2;
+    const alturaMapa = larguraMapa * 0.62;
+    // Nao deixa o titulo da secao sozinho no fim da pagina, separado dos mapas.
+    if (doc.y + alturaMapa + 110 > doc.page.height - 60) doc.addPage();
+    secao(doc, "Mapas de vegetação por imagem");
+    doc
+      .font("Helvetica")
+      .fontSize(8.5)
+      .fillColor(CINZA)
+      .text("Verde: vegetação vigorosa · Amarelo: atenção · Vermelho: pouca ou nenhuma vegetação.");
+    doc.moveDown(0.4);
+    for (const [i, img] of mapas.slice(0, 6).entries()) {
+      if (i % 2 === 0 && doc.y + alturaMapa + 30 > doc.page.height - 60) doc.addPage();
+      const x = 50 + (i % 2) * (larguraMapa + 16);
+      const y = doc.y;
+      try {
+        const buffer = await fsp.readFile(path.join(PASTA_MAPAS, path.basename(img.mapa)));
+        doc.image(buffer, x, y, { fit: [larguraMapa, alturaMapa], align: "center", valign: "center" });
+      } catch {
+        doc.rect(x, y, larguraMapa, alturaMapa).fill("#F8F9FA");
+        doc
+          .font("Helvetica")
+          .fontSize(8)
+          .fillColor(CINZA)
+          .text("Mapa indisponível", x, y + alturaMapa / 2 - 4, { width: larguraMapa, align: "center" });
+      }
+      doc
+        .font("Helvetica")
+        .fontSize(8)
+        .fillColor(CINZA)
+        .text(`${img.nome} — ${num(img.saudavel)}% vigorosa`, x, y + alturaMapa + 4, {
+          width: larguraMapa,
+          ellipsis: true,
+          height: 10,
+        });
+      doc.y = i % 2 === 0 && i < mapas.length - 1 ? y : y + alturaMapa + 22;
+    }
+    if (mapas.length > 6) {
+      doc
+        .font("Helvetica")
+        .fontSize(8.5)
+        .fillColor(CINZA)
+        .text(`+ ${mapas.length - 6} mapa(s) disponíveis na plataforma.`, 50);
+    }
+  }
+
+  // Rodape em todas as paginas
+  const geradoEm = dataHora(new Date());
+  const paginas = doc.bufferedPageRange();
+  for (let i = 0; i < paginas.count; i++) {
+    doc.switchToPage(i);
+    const yRodape = doc.page.height - 40;
+    doc.page.margins.bottom = 0;
+    doc
+      .font("Helvetica")
+      .fontSize(7.5)
+      .fillColor(CINZA)
+      .text(
+        `Gerado pela AgroVision em ${geradoEm}. Este relatório apoia a decisão e não substitui a avaliação de um engenheiro agrônomo.`,
+        50,
+        yRodape,
+        { width: largura - 60 },
+      )
+      .text(`Página ${i + 1} de ${paginas.count}`, 50, yRodape, { width: largura, align: "right" });
+  }
 }
 
 /**
@@ -26,71 +230,30 @@ function linha(doc, rotulo, valor) {
  *
  * @returns {Promise<{ caminho: string }>}
  */
-export async function gerarPdfRelatorio({ propriedade, talhao, voo, analise, recomendacao }) {
+export async function gerarPdfRelatorio(dados) {
   await fsp.mkdir(RAIZ, { recursive: true });
-  const nome = `relatorio-${analise.id_analise}.pdf`;
+  const nome = `relatorio-${dados.analise.id_analise}.pdf`;
   const destino = path.join(RAIZ, nome);
   // sufixo aleatorio: duas geracoes concorrentes da MESMA analise (duplo
   // clique, requisicao repetida) escrevem em arquivos .tmp distintos em vez
   // de disputar o mesmo arquivo e corromper o PDF final.
   const tmp = `${destino}.${crypto.randomBytes(6).toString("hex")}.tmp`;
 
-  await new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: "A4", margin: 50 });
-    const stream = fs.createWriteStream(tmp);
-    doc.pipe(stream);
-
-    doc.font("Helvetica-Bold").fontSize(18).text("AgroVision - Relatorio de Analise");
-    doc.moveDown(0.5);
-    doc.font("Helvetica").fontSize(10).fillColor("#555")
-      .text(`Gerado em ${new Date().toISOString()}`);
-    doc.fillColor("#000").moveDown();
-
-    doc.fontSize(12);
-    doc.font("Helvetica-Bold").fontSize(13).text("Propriedade");
-    doc.fontSize(11);
-    linha(doc, "Fazenda", propriedade.nome_fazenda);
-    linha(doc, "Local", `${propriedade.cidade} - ${propriedade.estado}`);
-    doc.moveDown(0.5);
-
-    doc.font("Helvetica-Bold").fontSize(13).text("Talhao");
-    doc.fontSize(11);
-    linha(doc, "Nome", talhao.nome_talhao);
-    linha(doc, "Cultura", talhao.cultura);
-    linha(doc, "Area (ha)", talhao.area_hectares != null ? String(talhao.area_hectares) : "-");
-    doc.moveDown(0.5);
-
-    doc.font("Helvetica-Bold").fontSize(13).text("Voo");
-    doc.fontSize(11);
-    linha(doc, "Data", new Date(voo.data_voo).toISOString().slice(0, 10));
-    linha(doc, "Drone", voo.modelo_drone);
-    linha(doc, "Operador", voo.operador);
-    doc.moveDown(0.5);
-
-    doc.font("Helvetica-Bold").fontSize(13).text("Analise");
-    doc.fontSize(11);
-    linha(doc, "Tipo", analise.tipo_analise);
-    linha(doc, "Nivel de risco", analise.nivel_risco);
-    linha(
-      doc,
-      "Area afetada (%)",
-      analise.percentual_area_afetada != null ? String(analise.percentual_area_afetada) : "-",
-    );
-    linha(doc, "Resultado", analise.resultado);
-    doc.moveDown(0.5);
-
-    doc.font("Helvetica-Bold").fontSize(13).text("Recomendacao");
-    doc.fontSize(11).font("Helvetica").text(recomendacao.texto, { align: "justify" });
-    doc.moveDown();
-    doc.fontSize(9).fillColor("#777")
-      .text(
-        "Esta recomendacao e baseada em regras versionadas e nao constitui diagnostico automatico por IA.",
-      );
-
-    doc.end();
+  const doc = new PDFDocument({
+    size: "A4",
+    margin: 50,
+    bufferPages: true,
+    info: { Title: "Relatório de análise — AgroVision", Author: "AgroVision" },
+  });
+  const stream = fs.createWriteStream(tmp);
+  const gravado = new Promise((resolve, reject) => {
     stream.on("finish", resolve);
     stream.on("error", reject);
   });
+  doc.pipe(stream);
+  await desenhar(doc, dados);
+  doc.end();
+  await gravado;
 
   await fsp.rename(tmp, destino);
   return { caminho: path.relative(process.cwd(), destino) };

@@ -32,7 +32,7 @@ function Distribuicao({ valores }: { valores: PercentuaisExg }) {
 
 export function MapasVegetacao({ idAnalise, idVoo, detalhes }: { idAnalise: string; idVoo: string; detalhes: DetalhesAnalise }) {
   return (
-    <section className="bg-white rounded-lg border border-border p-5 mb-6" style={{ fontFamily: "Inter, sans-serif" }}>
+    <section className="bg-white rounded-2xl border border-border p-5 mb-6" style={{ fontFamily: "Inter, sans-serif" }}>
       <h2 className="font-bold text-[#212121] mb-1" style={{ fontFamily: "Poppins, sans-serif" }}>
         Mapa de vegetação
       </h2>

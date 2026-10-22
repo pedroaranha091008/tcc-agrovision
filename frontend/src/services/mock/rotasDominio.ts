@@ -1,5 +1,6 @@
 import type { Analise, Propriedade, Talhao, Voo } from "@/types/dominio";
 import type { Relatorio } from "@/types/relatorio";
+import type { Painel } from "@/types/dashboard";
 import { ApiError } from "../erros";
 import { agora, dominio } from "./dominioStore";
 import { paginar, usuarioAutenticado, type Ctx } from "./base";
@@ -450,6 +451,111 @@ export const rotasDominio: Array<{
       if (relatorios > 0) conflito("Análise possui relatórios gerados", { relatorios });
       dominio.analises = dominio.analises.filter((x) => x.id_analise !== alvo.id_analise);
       return { data: undefined };
+    },
+  },
+
+  // Painel da Visao Geral (mesmo calculo de GET /dashboard/painel no backend)
+  {
+    metodo: "GET",
+    regex: /^\/dashboard\/painel$/,
+    handler: (_c, _p, q) => {
+      const u = usuarioAutenticado();
+      const idPropriedade = q.get("id_propriedade");
+      const dias = Number(q.get("dias")) || 90;
+      const desde = new Date(Date.now() - dias * 86_400_000).toISOString();
+      const peso: Record<string, number> = { baixo: 0, medio: 1, alto: 2, critico: 3 };
+
+      const hoje = new Date();
+      const nMeses = dias >= 365 ? 12 : 6;
+      const meses = Array.from({ length: nMeses }, (_, i) =>
+        new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth() - (nMeses - 1 - i), 1)).toISOString().slice(0, 7),
+      );
+      const serie = new Map(meses.map((m) => [m, { voos: 0, soma: 0, qtd: 0 }]));
+
+      let props = minhasPropriedades(u.id_usuario);
+      if (idPropriedade) props = props.filter((p) => p.id_propriedade === idPropriedade);
+
+      const talhoes: Painel["talhoes"] = [];
+      const analisesNoPeriodo: Painel["ultimas_analises"] = [];
+      let voosTotal = 0;
+      let voosPeriodo = 0;
+      let imagens = 0;
+      for (const p of props) {
+        for (const t of dominio.talhoes.filter((x) => x.id_propriedade === p.id_propriedade)) {
+          const voos = dominio.voos.filter((v) => v.id_talhao === t.id_talhao);
+          let ultima: Painel["ultimas_analises"][number] | null = null;
+          for (const v of voos) {
+            voosTotal++;
+            imagens += dominio.imagens.filter((i) => i.id_voo === v.id_voo).length;
+            const noPeriodo = v.data_voo >= desde;
+            if (noPeriodo) voosPeriodo++;
+            const mes = serie.get(v.data_voo.slice(0, 7));
+            if (mes) mes.voos++;
+            for (const a of dominio.analises.filter((x) => x.id_voo === v.id_voo)) {
+              const item = {
+                id_analise: a.id_analise,
+                id_voo: v.id_voo,
+                nivel_risco: a.nivel_risco,
+                percentual_area_afetada: a.percentual_area_afetada,
+                tipo_analise: a.tipo_analise,
+                data_voo: v.data_voo,
+                data_analise: a.data_analise,
+                talhao: t.nome_talhao,
+                id_talhao: t.id_talhao,
+                propriedade: p.nome_fazenda,
+              };
+              if (noPeriodo) analisesNoPeriodo.push(item);
+              if (mes && a.percentual_area_afetada != null) {
+                mes.soma += a.percentual_area_afetada;
+                mes.qtd++;
+              }
+              if (!ultima || v.data_voo > ultima.data_voo || (v.data_voo === ultima.data_voo && a.data_analise > ultima.data_analise)) {
+                ultima = item;
+              }
+            }
+          }
+          talhoes.push({
+            id_talhao: t.id_talhao,
+            nome_talhao: t.nome_talhao,
+            cultura: t.cultura,
+            area_hectares: t.area_hectares,
+            status: t.status,
+            propriedade: { id_propriedade: p.id_propriedade, nome_fazenda: p.nome_fazenda },
+            total_voos: voos.length,
+            ultima_analise: ultima,
+          });
+        }
+      }
+      talhoes.sort(
+        (a, b) => (peso[b.ultima_analise?.nivel_risco ?? ""] ?? -1) - (peso[a.ultima_analise?.nivel_risco ?? ""] ?? -1),
+      );
+      const risco = { baixo: 0, medio: 0, alto: 0, critico: 0, sem_analise: 0 };
+      for (const t of talhoes) risco[t.ultima_analise?.nivel_risco ?? "sem_analise"]++;
+      const areaTalhoes = talhoes.reduce((s, t) => s + (t.area_hectares ?? 0), 0);
+
+      const painel: Painel = {
+        periodo_dias: dias,
+        totais: {
+          propriedades: props.length,
+          talhoes: talhoes.length,
+          area_monitorada_hectares: areaTalhoes || props.reduce((s, p) => s + (p.area_total_hectares ?? 0), 0),
+          voos: voosTotal,
+          voos_periodo: voosPeriodo,
+          imagens,
+          analises_periodo: analisesNoPeriodo.length,
+          areas_criticas: risco.alto + risco.critico,
+        },
+        risco_talhoes: risco,
+        talhoes,
+        serie_mensal: meses.map((m) => {
+          const s = serie.get(m)!;
+          return { mes: m, voos: s.voos, area_afetada_media: s.qtd ? Math.round((s.soma / s.qtd) * 10) / 10 : null };
+        }),
+        ultimas_analises: analisesNoPeriodo
+          .sort((a, b) => b.data_voo.localeCompare(a.data_voo) || b.data_analise.localeCompare(a.data_analise))
+          .slice(0, 5),
+      };
+      return { data: painel };
     },
   },
 

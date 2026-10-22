@@ -6,6 +6,7 @@ export interface MonitoramentoItem {
   nivel_risco: NivelRisco | null;
   percentual_area_afetada: number | null;
   status: StatusProcessamento;
+  origem: "manual" | "automatica";
   data_analise: string;
   voo: { id_voo: string; data_voo: string };
   talhao: { id_talhao: string; nome_talhao: string; cultura: string | null };
@@ -20,5 +21,6 @@ export interface HistoricoFiltros {
   id_propriedade?: string;
   id_talhao?: string;
   tipo_analise?: TipoAnalise;
+  nivel_risco?: NivelRisco;
   [extra: string]: string | number | undefined;
 }

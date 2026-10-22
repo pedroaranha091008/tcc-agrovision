@@ -29,7 +29,7 @@ describe("fluxo essencial: cadastro -> dashboard protegido -> logout", () => {
     await user.click(screen.getByRole("button", { name: /criar conta/i }));
 
     // Caiu no dashboard, autenticado, com o nome do usuario.
-    expect(await screen.findByText(/bem-vindo, carlos/i, {}, { timeout: 5000 })).toBeInTheDocument();
+    expect(await screen.findByText(/olá, carlos/i, {}, { timeout: 5000 })).toBeInTheDocument();
     expect(screen.getByText("Carlos Produtor")).toBeInTheDocument(); // topo do layout autenticado
 
     // Rota publica de login nao aparece mais (usuario esta logado).

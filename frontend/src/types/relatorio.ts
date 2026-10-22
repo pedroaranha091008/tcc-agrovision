@@ -29,6 +29,10 @@ export interface Relatorio {
 export interface RecomendacaoGerada {
   versao: string;
   baseada_em_regras: true;
+  titulo: string;
+  prazo: string;
+  acoes: string[];
+  aviso: string;
   texto: string;
 }
 

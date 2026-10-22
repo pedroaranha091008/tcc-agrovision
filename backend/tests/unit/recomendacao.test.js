@@ -10,7 +10,7 @@ describe("motor de recomendacao (por regras)", () => {
     });
     expect(r.baseada_em_regras).toBe(true);
     expect(r.versao).toBe(VERSAO_REGRAS);
-    expect(r.texto).toContain("nao substitui");
+    expect(r.texto).toContain("não substituem");
   });
 
   it("e deterministico para a mesma entrada", () => {
@@ -28,6 +28,15 @@ describe("motor de recomendacao (por regras)", () => {
   it("usa faixa de percentual quando informado", () => {
     const alto = gerarRecomendacao({ tipo_analise: "NDVI", nivel_risco: "medio", percentual_area_afetada: 50 });
     expect(alto.texto).toContain("extensa");
+  });
+
+  it("lista as acoes e acrescenta a acao do tipo quando ha risco", () => {
+    const r = gerarRecomendacao({ tipo_analise: "termico", nivel_risco: "alto", percentual_area_afetada: 20 });
+    expect(r.titulo).toBe("Intervenção recomendada");
+    expect(r.prazo).toMatch(/3 dias/);
+    expect(r.acoes).toContain("Verificar a irrigação e sinais de estresse hídrico nas zonas mais quentes.");
+    const baixo = gerarRecomendacao({ tipo_analise: "termico", nivel_risco: "baixo", percentual_area_afetada: 2 });
+    expect(baixo.acoes.join(" ")).not.toMatch(/irrigação/);
   });
 
   it("aceita tipo desconhecido sem quebrar", () => {
