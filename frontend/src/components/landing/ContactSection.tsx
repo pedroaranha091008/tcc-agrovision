@@ -1,10 +1,10 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { AlertTriangle, CheckCircle, Mail, MapPin, Phone } from "lucide-react";
-import { Kicker } from "./Kicker";
 import { validarCom, type ErrosCampo } from "@/lib/formularios";
 import { ApiError } from "@/services/erros";
 import { solicitarOrcamento } from "@/services/orcamentos";
+import { CULTURAS as culturas, SERVICOS as servicos } from "@/lib/site";
 
 const campos = [
   { key: "nome", label: "Nome completo", type: "text", placeholder: "João da Silva", colSpan: 2, autoComplete: "name" },
@@ -14,15 +14,6 @@ const campos = [
   { key: "hectares", label: "Área (hectares)", type: "text", placeholder: "100", colSpan: 1, autoComplete: "off" },
 ] as const;
 
-const culturas = ["Soja", "Milho", "Cana-de-açúcar", "Café", "Algodão", "Citros", "Eucalipto", "Outro"];
-const servicos = [
-  "NDVI / Saúde vegetativa",
-  "Falhas de plantio",
-  "Plantas daninhas",
-  "Contagem de árvores",
-  "Monitoramento completo",
-  "Relatório personalizado",
-];
 
 const TELEFONE = "+55 (16) 99999-0000";
 const EMAIL = "contato@agrovision.com.br";
@@ -85,13 +76,18 @@ const classeCampo = (erro?: string) =>
     erro ? "border-red-400" : "border-border"
   }`;
 
-export function ContactSection() {
+/** `servicoEscolhido` vem do botao "Solicitar este servico" da secao de servicos. */
+export function ContactSection({ servicoEscolhido }: { servicoEscolhido?: { servico: string; vez: number } | null } = {}) {
   const [formData, setFormData] = useState<FormState>(ESTADO_INICIAL);
   const [erros, setErros] = useState<ErrosCampo>({});
   const [enviando, setEnviando] = useState(false);
   const [erroEnvio, setErroEnvio] = useState<string | null>(null);
   const [enviadoPara, setEnviadoPara] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (servicoEscolhido) setFormData((f) => ({ ...f, servico: servicoEscolhido.servico }));
+  }, [servicoEscolhido]);
 
   const alterar = (campo: keyof FormState, valor: string) => {
     setFormData((f) => ({ ...f, [campo]: campo === "telefone" ? mascaraTelefone(valor) : valor }));
@@ -167,11 +163,10 @@ export function ContactSection() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div>
-            <Kicker>Solicitar Análise</Kicker>
-            <h2
-              className="text-5xl md:text-6xl font-black text-[#212121] mb-6 tracking-tight"
-              style={{ fontFamily: "Poppins, sans-serif" }}
-            >
+            <div className="inline-flex items-center gap-2 bg-[#E8F5E9] text-[#2E7D32] rounded-full px-4 py-1.5 mb-6 text-sm font-medium">
+              <Mail className="w-4 h-4" aria-hidden /> Solicitar Análise
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-[#212121] mb-6 font-display">
               Solicite seu
               <span className="text-[#1B5E20] block">orçamento gratuito</span>
             </h2>
@@ -183,8 +178,8 @@ export function ContactSection() {
             <div className="space-y-6">
               {contatos.map(({ icon: Icon, title, info, href }) => (
                 <div key={title} className="flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-md bg-[#1B5E20] flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-5 h-5 text-white" />
+                  <div className="w-11 h-11 rounded-xl bg-[#E8F5E9] flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-5 h-5 text-[#1B5E20]" />
                   </div>
                   <div>
                     <div className="text-xs text-[#4a5568] uppercase tracking-wider" style={{ fontFamily: "Inter, sans-serif" }}>
