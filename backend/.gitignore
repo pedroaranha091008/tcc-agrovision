@@ -3,6 +3,11 @@
 /generated/prisma
 
 .env
+.env.local
+.env.*.local
+.env.development
+.env.production
+*.log
 
 # Arquivos gerados em runtime
 /uploads

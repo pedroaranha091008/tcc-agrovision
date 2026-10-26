@@ -5,14 +5,14 @@ React 18 + TypeScript + Vite + React Router + Tailwind CSS.
 
 ## Requisitos
 
-- Node.js 20+ (testado com 24)
+- Node.js 24.x (faixa fixada em engines)
 - npm 10+
 
 ## Instalação
 
 ```bash
 npm install
-cp .env.example .env   # ajuste se necessário
+cp .env.example .env.development   # ajuste se necessário
 npm run dev
 ```
 
@@ -24,7 +24,7 @@ npm run dev
 | `VITE_API_MOCK` | não (`false`) | quando `true`, o cliente HTTP responde com um backend simulado em memória/`localStorage` (`src/services/mock/`), sem precisar do backend real no ar |
 | `VITE_GOOGLE_CLIENT_ID` | não | client ID OAuth do Google; sem ele, o botão de login Google fica desabilitado (ou em modo demo, se `VITE_API_MOCK=true`) |
 
-O `.env` do repositório vem com `VITE_API_MOCK=true` para permitir demonstrar a aplicação inteira sem o backend rodando. Para integrar com o backend real, aponte `VITE_API_URL` para ele e mude para `VITE_API_MOCK=false`.
+O exemplo usa `VITE_API_MOCK=false` para integrar com o backend real. Para demonstração local sem backend, configure `VITE_API_MOCK=true`. Não use mock na build de produção.
 
 ## Execução
 
@@ -95,3 +95,12 @@ tests/
 - O bundle de produção passa de 500 kB (aviso do Vite); não há code-splitting por rota ainda — aceitável para o escopo do TCC, mas seria o próximo passo de performance.
 - Não há mapa geoespacial real: a visão de talhões usa cartões com status e localização textual, como definido no planejamento.
 - O PDF em modo mock é só uma demonstração do fluxo de download; o PDF real é gerado pelo backend.
+
+## Deploy
+
+Consulte o [guia Hostinger/Apache](../README.md#deploy).
+Copie `.env.production.example` para `.env.production` e preencha `VITE_API_URL` com a URL HTTPS real do Render incluindo `/api/v1`.
+Build: `npm run build`. Saída: `dist/`. Caminho público e base: `/tecti/2026/gpec06/`.
+O BrowserRouter usa a base do Vite; `public/.htaccess` é copiado para `dist/.htaccess`.
+Transfira o CONTEÚDO de `dist`, incluindo `.htaccess`, via FileZilla. Gere novamente a build após mudar variáveis.
+Desenvolvimento: `http://localhost:5173/tecti/2026/gpec06/`; preview: `http://localhost:4173/tecti/2026/gpec06/`.

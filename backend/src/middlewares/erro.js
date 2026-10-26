@@ -3,7 +3,7 @@ import prismaPkg from "../../generated/prisma/client.js";
 import { AppError, erros } from "../utils/AppError.js";
 import logger from "../config/logger.js";
 
-const { PrismaClientKnownRequestError } = prismaPkg;
+const { PrismaClientKnownRequestError } = prismaPkg.Prisma;
 
 // P2002 (unique constraint) e P2003 (violacao de FK) acontecem em corridas
 // legitimas (ex.: dois cadastros com o mesmo email quase simultaneos, ou um

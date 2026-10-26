@@ -6,7 +6,7 @@ export type ErrosCampo = Record<string, string>;
  * Valida `valores` com um schema zod. Retorna os dados parseados
  * ou um mapa campo -> mensagem para exibir inline.
  */
-export function validarCom<S extends z.ZodTypeAny>(
+export function validarCom<S extends z.ZodType>(
   schema: S,
   valores: unknown,
 ): { ok: true; dados: z.output<S> } | { ok: false; erros: ErrosCampo } {
@@ -28,7 +28,7 @@ export const numeroOpcional = z
     const n = typeof v === "number" ? v : Number(v);
     return Number.isNaN(n) ? NaN : n;
   })
-  .pipe(z.number({ invalid_type_error: "valor numérico inválido" }).optional());
+  .pipe(z.number({ error: "valor numérico inválido" }).optional());
 
 export const textoOpcional = z
   .string()

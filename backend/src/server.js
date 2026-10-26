@@ -6,14 +6,14 @@ import { prisma } from "./config/prisma.js";
 async function iniciar() {
   try {
     await prisma.$connect();
-    logger.info("Conexao com o banco de dados estabelecida");
+    logger.info("Cliente do banco inicializado; /api/v1/health verifica a disponibilidade do banco");
   } catch (error) {
     logger.error({ err: error }, "Falha ao conectar ao banco de dados");
     process.exit(1);
   }
 
-  const servidor = app.listen(env.port, () => {
-    logger.info(`Servidor ouvindo em http://localhost:${env.port} (${env.nodeEnv})`);
+  const servidor = app.listen(env.port, "0.0.0.0", () => {
+    logger.info(`Servidor ouvindo na porta ${env.port} (${env.nodeEnv})`);
   });
 
   async function encerrar(sinal) {

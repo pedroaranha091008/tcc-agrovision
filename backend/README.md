@@ -5,7 +5,7 @@ Node.js + Express 5 + Prisma 7 (MySQL/MariaDB).
 
 ## Requisitos
 
-- Node.js 20+ (testado com 24)
+- Node.js 24.x (faixa fixada em engines)
 - MySQL 8 ou MariaDB 10.6+
 - npm 10+
 
@@ -56,7 +56,7 @@ Migrations versionadas em `prisma/migrations/`:
 2. `20260910120000_auth_provedor_sessao` — senha opcional, provedor Google, `email_verificado`, tabela `sessoes`.
 3. `20260910120100_imagens_status_relatorio` — `imagens_voo`, `relatorios`, status de processamento em voo/analise.
 
-> Se `prisma migrate dev` acusar drift em um banco de desenvolvimento descartavel, rode `npx prisma migrate reset`.
+Para drift, revise o historico e o schema antes de qualquer acao. O deploy usa apenas `npm run prisma:deploy`, apos backup.
 
 ## Execucao
 
@@ -66,6 +66,7 @@ npm start       # producao
 ```
 
 - `GET /` — disponibilidade.
+- `GET /health` — liveness sem consulta ao banco.
 - `GET /api/v1/health` — status da API + conexao com o banco (503 se o banco estiver fora).
 
 ## Testes
@@ -126,3 +127,11 @@ insomnia/           colecao exportada
 
 IA para pragas/doencas, previsao de problemas, app mobile e integracao direta com drones.
 A identificacao de problemas e as recomendacoes sao **baseadas em regras versionadas** (`src/utils/recomendacao.js`), sem diagnostico automatico por IA.
+
+## Deploy
+
+Consulte a [configuração completa de Render, banco, TLS e persistência](../README.md#deploy).
+Produção exige CORS com origens HTTPS sem caminho, senha de banco não vazia e dois segredos distintos com pelo menos 32 caracteres.
+`DATABASE_SSL` e `DATABASE_SSL_CA` configuram TLS do adapter; configure separadamente TLS na URL da CLI Prisma.
+Build: `npm ci --include=dev && npm run prisma:generate`. Start: `npm start`. Root Directory: `backend`.
+Migrations manuais: `npm run prisma:deploy`. Nunca execute os testes de integração no banco de produção.

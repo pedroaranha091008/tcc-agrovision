@@ -3,8 +3,9 @@ import { ApiError } from "./erros";
 import { session } from "./session";
 import { mockRequest, mockUpload, mockDownload } from "./mock/adapter";
 
-const BASE_URL = (import.meta.env.VITE_API_URL ?? "http://localhost:3000/api/v1").replace(/\/$/, "");
+const BASE_URL = (import.meta.env.VITE_API_URL ?? "").trim().replace(/\/$/, "");
 const USAR_MOCK = import.meta.env.VITE_API_MOCK === "true";
+if (!BASE_URL && !USAR_MOCK) throw new Error("Configure VITE_API_URL antes de iniciar o frontend.");
 
 export type Metodo = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 

@@ -22,6 +22,8 @@ app.use(
 if (!env.isTest) app.use(pinoHttp({ logger }));
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+// Liveness independente do banco e do limite de requisicoes da API.
+app.get("/health", (_req, res) => res.json({ status: "ok" }));
 app.use(limiteGlobal);
 
 // Verificacao simples de disponibilidade (nao faz parte da API funcional).

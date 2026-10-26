@@ -5,9 +5,9 @@ import "dotenv/config";
  * Falha rapido (throw) se faltar variavel obrigatoria.
  */
 
-function obrigatoria(nome) {
+function obrigatoria(nome, { permitirVazio = false } = {}) {
   const valor = process.env[nome];
-  if (valor === undefined || valor === "") {
+  if (valor === undefined || (!permitirVazio && valor === "")) {
     throw new Error(`Variavel de ambiente obrigatoria ausente: ${nome}`);
   }
   return valor;
@@ -37,15 +37,18 @@ function lista(nome, padrao = "") {
 const env = {
   nodeEnv: opcional("NODE_ENV", "development"),
   port: inteiro("PORT", 3000),
-  corsOrigins: lista("CORS_ORIGINS", "http://localhost:5173"),
+  corsOrigins: lista("CORS_ORIGINS", process.env.NODE_ENV === "production" ? "" : "http://localhost:5173,http://localhost:4173"),
 
   databaseUrl: obrigatoria("DATABASE_URL"),
   db: {
     host: obrigatoria("DATABASE_HOST"),
     user: obrigatoria("DATABASE_USER"),
-    password: obrigatoria("DATABASE_PASSWORD"),
+    // XAMPP local pode usar senha vazia; a variavel ainda deve estar definida.
+    password: obrigatoria("DATABASE_PASSWORD", { permitirVazio: true }),
     name: obrigatoria("DATABASE_NAME"),
     port: inteiro("DATABASE_PORT", 3306),
+    ssl: opcional("DATABASE_SSL", "false") === "true",
+    sslCa: opcional("DATABASE_SSL_CA", "").replace(/\\n/g, "\n"),
   },
 
   auth: {
@@ -77,5 +80,24 @@ const env = {
     return this.nodeEnv === "test";
   },
 };
+
+for (const origin of env.corsOrigins) {
+  const url = new URL(origin);
+  if (url.origin !== origin || !["http:", "https:"].includes(url.protocol)) {
+    throw new Error("CORS_ORIGINS deve conter apenas origens (protocolo e dominio, sem caminho ou barra final).");
+  }
+}
+if (env.isProd) {
+  if (!env.corsOrigins.length || env.corsOrigins.some((origin) => !origin.startsWith("https://"))) {
+    throw new Error("Configure CORS_ORIGINS com a origem HTTPS da Hostinger em producao.");
+  }
+  if (!env.db.password) throw new Error("DATABASE_PASSWORD nao pode ser vazia em producao.");
+  for (const secret of [env.auth.accessSecret, env.auth.refreshSecret]) {
+    if (secret.length < 32 || /troque-por|changeme/i.test(secret)) {
+      throw new Error("Configure segredos independentes e aleatorios de pelo menos 32 caracteres em producao.");
+    }
+  }
+  if (env.auth.accessSecret === env.auth.refreshSecret) throw new Error("Os segredos de autenticacao devem ser diferentes.");
+}
 
 export default env;
