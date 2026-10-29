@@ -2,7 +2,7 @@ import { prisma } from "../config/prisma.js";
 import { erros } from "../utils/AppError.js";
 import { lerPaginacao, meta } from "../utils/paginacao.js";
 import { gerarRecomendacao, VERSAO_REGRAS } from "../utils/recomendacao.js";
-import { caminhoAbsolutoPdf, gerarPdfRelatorio, removerPdf } from "../utils/pdf.js";
+import { lerPdf, gerarPdfRelatorio, removerPdf } from "../utils/pdf.js";
 
 function analiseCompleta(analise) {
   return (
@@ -121,13 +121,14 @@ export async function gerar(idUsuario, idAnalise) {
 export async function caminhoDownload(idUsuario, idRelatorio) {
   const relatorio = await obter(idUsuario, idRelatorio);
   return {
-    caminho_absoluto: caminhoAbsolutoPdf(relatorio.caminho_pdf),
+    conteudo: await lerPdf(relatorio.caminho_pdf),
     nome_arquivo: `relatorio-${relatorio.id_analise}.pdf`,
   };
 }
 
 export async function remover(idUsuario, idRelatorio) {
   const relatorio = await obter(idUsuario, idRelatorio);
-  await prisma.relatorio.delete({ where: { id_relatorio: relatorio.id_relatorio } });
+  // Preserva a referencia para permitir retry se o storage externo falhar.
   await removerPdf(relatorio.caminho_pdf);
+  await prisma.relatorio.delete({ where: { id_relatorio: relatorio.id_relatorio } });
 }

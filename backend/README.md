@@ -32,6 +32,10 @@ npm run prisma:generate
 | `REFRESH_SECRET` | sim | segredo para derivar o hash do refresh token |
 | `REFRESH_TTL_DAYS` | nao (30) | validade do refresh token, em dias |
 | `GOOGLE_CLIENT_ID` | nao | client id OAuth do Google; sem ele, `/auth/google` responde 400 |
+| `STORAGE_PROVIDER` | nao (`local`) | `supabase` para arquivos persistentes sem disco pago no Render |
+| `SUPABASE_URL` | com Supabase | URL HTTPS do projeto |
+| `SUPABASE_SECRET_KEY` | com Supabase | chave secreta do projeto, somente no backend |
+| `SUPABASE_STORAGE_BUCKET` | nao (`agrovision-arquivos`) | nome do bucket privado |
 | `UPLOAD_DIR` | nao (`./uploads`) | pasta de imagens (fora de `src`) |
 | `UPLOAD_MAX_FILE_MB` | nao (25) | tamanho maximo por arquivo |
 | `UPLOAD_MAX_FILES` | nao (20) | quantidade maxima por requisicao |
@@ -102,7 +106,8 @@ Fluxo: `registro`/`login` → `access_token` (curto) + `refresh_token` (opaco, 1
 
 `POST /api/v1/voos/:id/imagens` com `multipart/form-data`, campo `imagens` (1..N arquivos).
 Aceita JPEG, PNG e TIFF por padrao. Valida MIME + extensao, grava com nome aleatorio e sem permissao de execucao,
-e registra os metadados em `imagens_voo`. Os arquivos ficam em `UPLOAD_DIR` e sao servidos apenas por rotas autenticadas.
+e registra os metadados em `imagens_voo`. Os arquivos ficam no bucket privado Supabase quando `STORAGE_PROVIDER=supabase`,
+ou em `UPLOAD_DIR` no modo local. Nenhuma URL publica de arquivo e criada. PDFs sao baixados pela API autenticada.
 
 ## Estrutura
 
@@ -135,3 +140,6 @@ Produção exige CORS com origens HTTPS sem caminho, senha de banco não vazia e
 `DATABASE_SSL` e `DATABASE_SSL_CA` configuram TLS do adapter; configure separadamente TLS na URL da CLI Prisma.
 Build: `npm ci --include=dev && npm run prisma:generate`. Start: `npm start`. Root Directory: `backend`.
 Migrations manuais: `npm run prisma:deploy`. Nunca execute os testes de integração no banco de produção.
+
+Para arquivos no plano gratuito, siga [Supabase Storage](STORAGE.md). A integracao usa apenas Storage;
+nao migra o MySQL, nao altera o login e nao exige migration de banco.

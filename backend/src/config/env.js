@@ -62,6 +62,13 @@ const env = {
     clientId: opcional("GOOGLE_CLIENT_ID", ""),
   },
 
+  storage: {
+    provider: opcional("STORAGE_PROVIDER", "local"),
+    url: opcional("SUPABASE_URL", ""),
+    secretKey: opcional("SUPABASE_SECRET_KEY", ""),
+    bucket: opcional("SUPABASE_STORAGE_BUCKET", "agrovision-arquivos"),
+  },
+
   upload: {
     dir: opcional("UPLOAD_DIR", "./uploads"),
     maxFileBytes: inteiro("UPLOAD_MAX_FILE_MB", 25) * 1024 * 1024,
@@ -80,6 +87,19 @@ const env = {
     return this.nodeEnv === "test";
   },
 };
+
+if (!["local", "supabase"].includes(env.storage.provider)) {
+  throw new Error("STORAGE_PROVIDER deve ser local ou supabase.");
+}
+if (env.storage.provider === "supabase") {
+  const url = new URL(obrigatoria("SUPABASE_URL"));
+  if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash || url.pathname !== "/") {
+    throw new Error("SUPABASE_URL deve ser a URL HTTPS do projeto, sem caminho ou credenciais.");
+  }
+  env.storage.url = url.origin;
+  obrigatoria("SUPABASE_SECRET_KEY");
+  if (!/^[a-zA-Z0-9_-]+$/.test(env.storage.bucket)) throw new Error("Nome de bucket Supabase invalido.");
+}
 
 for (const origin of env.corsOrigins) {
   const url = new URL(origin);

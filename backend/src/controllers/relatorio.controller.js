@@ -1,7 +1,6 @@
 import * as service from "../services/relatorio.service.js";
 import { criado, ok, semConteudo } from "../utils/resposta.js";
 import { handler } from "../utils/assincrono.js";
-import { erros } from "../utils/AppError.js";
 
 export const listar = handler(async (req, res) => {
   const { itens, meta } = await service.listar(req.usuario.id_usuario, req.consulta);
@@ -21,16 +20,13 @@ export const gerar = handler(async (req, res) => {
   criado(res, { relatorio, recomendacao });
 });
 
-export const baixar = handler(async (req, res, next) => {
-  const { caminho_absoluto, nome_arquivo } = await service.caminhoDownload(
+export const baixar = handler(async (req, res) => {
+  const { conteudo, nome_arquivo } = await service.caminhoDownload(
     req.usuario.id_usuario,
     req.params.id,
   );
-  res.download(caminho_absoluto, nome_arquivo, (err) => {
-    if (err && !res.headersSent) {
-      next(erros.naoEncontrado("Arquivo do relatorio indisponivel"));
-    }
-  });
+  res.set("Cache-Control", "private, no-store");
+  res.attachment(nome_arquivo).type("application/pdf").send(conteudo);
 });
 
 export const remover = handler(async (req, res) => {

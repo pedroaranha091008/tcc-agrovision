@@ -28,6 +28,7 @@ export async function anexarAoVoo(voo, arquivos) {
       const { nome_armazenado, caminho } = await storage.salvar(
         arquivo.buffer,
         arquivo.originalname,
+        arquivo.mimetype,
       );
       return {
         id_voo: voo.id_voo,

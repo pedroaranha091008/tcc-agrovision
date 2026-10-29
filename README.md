@@ -158,8 +158,10 @@ DATABASE_NAME=<NOME_DO_BANCO>
 DATABASE_SSL=<true_SE_O_PROVEDOR_EXIGIR_TLS>
 JWT_ACCESS_SECRET=<SEGREDO_ALEATORIO_INDEPENDENTE_DE_PELO_MENOS_32_CARACTERES>
 REFRESH_SECRET=<OUTRO_SEGREDO_ALEATORIO_DE_PELO_MENOS_32_CARACTERES>
-UPLOAD_DIR=/var/data/uploads
-REPORT_DIR=/var/data/relatorios
+STORAGE_PROVIDER=supabase
+SUPABASE_URL=<URL_HTTPS_DO_PROJETO_SUPABASE>
+SUPABASE_SECRET_KEY=<CHAVE_SECRETA_SOMENTE_BACKEND>
+SUPABASE_STORAGE_BUCKET=agrovision-arquivos
 ```
 
 Opcionais: `DATABASE_SSL_CA` (CA PEM, se fornecida pelo provedor; aceita `\n`), `GOOGLE_CLIENT_ID` (para login Google).
@@ -170,10 +172,14 @@ Para Google, use o mesmo Client ID no frontend/backend e autorize a **origem** H
 São aceitas várias origens separadas por vírgula. Produção exige HTTPS. A autenticação existente usa Bearer token
 e refresh token no corpo; não é necessário alterar o fluxo para cookies.
 
-**Persistência obrigatória para imagens/PDFs:** anexe um Persistent Disk ao Web Service em `/var/data`.
-Esse recurso exige um serviço compatível/pago no Render. O filesystem padrão é efêmero e perderia uploads nos redeploys.
-Sem esse disco, o fluxo de arquivos não está pronto para produção. Preserve o ponto de montagem entre deploys e mantenha backups.
-Arquivos/dados de desenvolvimento não são transferidos automaticamente; caminhos antigos do Windows exigem migração manual se forem preservados.
+**Arquivos no plano gratuito:** use Supabase Storage com um bucket privado e as quatro variáveis acima.
+Não é necessário Persistent Disk no Render nessa configuração. Imagens e PDFs são enviados pelo backend ao Supabase;
+o MySQL continua armazenando metadados e referências. O download de PDF continua autenticado pela API existente.
+Consulte o [passo a passo do armazenamento gratuito](backend/STORAGE.md) para criar o bucket e obter a chave.
+
+Para desenvolvimento, `STORAGE_PROVIDER=local` mantém arquivos em `UPLOAD_DIR` e `REPORT_DIR`.
+Se optar por disco local em produção, ainda será necessário um Persistent Disk pago; disco efêmero não preserva uploads.
+Arquivos antigos não são migrados automaticamente. Guarde cópias antes de mudar o armazenamento.
 
 `GET /health` responde `{"status":"ok"}` sem consultar o banco. `GET /api/v1/health` faz `SELECT 1` e retorna
 200 se o banco estiver disponível ou 503 se estiver indisponível. A inicialização do adapter sozinha não comprova a conexão.
