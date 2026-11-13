@@ -28,10 +28,21 @@ export async function listar(idUsuario, consulta) {
     if (consulta.data_fim) where.data_voo.lte = fimDoDia(consulta.data_fim);
   }
 
-  const [itens, total] = await Promise.all([
-    prisma.voo.findMany({ where, skip, take, orderBy }),
+  const [linhas, total] = await Promise.all([
+    prisma.voo.findMany({
+      where,
+      skip,
+      take,
+      orderBy,
+      include: { _count: { select: { imagens: true, analises: true } } },
+    }),
     prisma.voo.count({ where }),
   ]);
+  const itens = linhas.map(({ _count, ...v }) => ({
+    ...v,
+    total_imagens: _count.imagens,
+    total_analises: _count.analises,
+  }));
   return { itens, meta: meta(total, { pagina, porPagina }) };
 }
 

@@ -1,194 +1,147 @@
 import { useState } from "react";
-import { Link } from "react-router";
-import { Pencil, Plus, Search, Tractor, Trash2 } from "lucide-react";
+import { Link, useNavigate } from "react-router";
+import { ChevronRight, MapPin, Plus, Search, Tractor } from "lucide-react";
 import { PageHeader } from "@/components/comum/PageHeader";
 import { Carregando, EstadoErro, EstadoVazio } from "@/components/comum/Estados";
 import { Paginacao } from "@/components/comum/Paginacao";
-import { ConfirmarExclusao } from "@/components/comum/Modal";
 import { BotaoPrimario, Select } from "@/components/comum/Form";
 import { PropriedadeFormModal } from "@/features/dominio/PropriedadeFormModal";
 import { useQuery } from "@/hooks/useQuery";
 import { ESTADOS_UF } from "@/features/dominio/schemas";
 import * as service from "@/services/propriedades";
-import { area, data } from "@/lib/formatar";
-import { mensagemDoErro } from "@/services/erros";
-import type { Propriedade, PropriedadePayload } from "@/types/dominio";
+import { area } from "@/lib/formatar";
+import type { PropriedadePayload } from "@/types/dominio";
 
 export function PropriedadesListPage() {
+  const navigate = useNavigate();
   const [pagina, setPagina] = useState(1);
   const [busca, setBusca] = useState("");
   const [buscaAplicada, setBuscaAplicada] = useState("");
   const [estado, setEstado] = useState("");
-
-  const [modalForm, setModalForm] = useState<{ aberto: boolean; alvo: Propriedade | null }>({
-    aberto: false,
-    alvo: null,
-  });
-  const [excluir, setExcluir] = useState<Propriedade | null>(null);
-  const [excluindo, setExcluindo] = useState(false);
-  const [erroAcao, setErroAcao] = useState<string | null>(null);
+  const [criando, setCriando] = useState(false);
 
   const q = useQuery(
     (signal) =>
-      service.listar({ pagina, por_pagina: 10, busca: buscaAplicada || undefined, estado: estado || undefined }, signal),
+      service.listar({ pagina, por_pagina: 12, busca: buscaAplicada || undefined, estado: estado || undefined }, signal),
     [pagina, buscaAplicada, estado],
   );
 
   async function salvar(dados: PropriedadePayload) {
-    if (modalForm.alvo) await service.atualizar(modalForm.alvo.id_propriedade, dados);
-    else await service.criar(dados);
-    q.refetch();
+    const nova = await service.criar(dados);
+    navigate(`/propriedades/${nova.id_propriedade}`);
   }
 
-  async function confirmarExclusao() {
-    if (!excluir) return;
-    setExcluindo(true);
-    setErroAcao(null);
-    try {
-      await service.remover(excluir.id_propriedade);
-      setExcluir(null);
-      q.refetch();
-    } catch (err) {
-      setErroAcao(mensagemDoErro(err));
-    } finally {
-      setExcluindo(false);
-    }
-  }
+  const filtrando = Boolean(buscaAplicada || estado);
+  const botaoNova = (
+    <BotaoPrimario onClick={() => setCriando(true)}>
+      <Plus className="w-4 h-4" /> Nova propriedade
+    </BotaoPrimario>
+  );
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <PageHeader
-        titulo="Propriedades"
-        descricao="Gerencie as fazendas monitoradas"
-        acao={
-          <BotaoPrimario onClick={() => setModalForm({ aberto: true, alvo: null })}>
-            <Plus className="w-4 h-4" /> Nova propriedade
-          </BotaoPrimario>
-        }
-      />
+    <div style={{ fontFamily: "Inter, sans-serif" }}>
+      <PageHeader titulo="Fazendas" descricao="Suas propriedades e os talhões de cada uma." acao={botaoNova} />
 
-      <div className="flex flex-wrap gap-3 mb-4">
-        <form
-          className="relative flex-1 min-w-[200px]"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setPagina(1);
-            setBuscaAplicada(busca.trim());
-          }}
-        >
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4a5568]" />
-          <label htmlFor="busca-propriedade" className="sr-only">
-            Buscar por nome da fazenda
+      {(filtrando || (q.data?.meta?.total ?? 0) > 3) && (
+        <div className="flex flex-wrap gap-3 mb-5">
+          <form
+            className="relative flex-1 min-w-[200px]"
+            onSubmit={(e) => {
+              e.preventDefault();
+              setPagina(1);
+              setBuscaAplicada(busca.trim());
+            }}
+          >
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4a5568]" />
+            <label htmlFor="busca-propriedade" className="sr-only">
+              Buscar por nome da fazenda
+            </label>
+            <input
+              id="busca-propriedade"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Buscar por nome da fazenda..."
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-border text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent"
+            />
+          </form>
+          <label htmlFor="filtro-estado" className="sr-only">
+            Filtrar por estado
           </label>
-          <input
-            id="busca-propriedade"
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            placeholder="Buscar por nome da fazenda..."
-            className="w-full pl-9 pr-4 py-2.5 rounded-md bg-white border border-border text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A] focus:border-transparent"
-          />
-        </form>
-        <label htmlFor="filtro-estado" className="sr-only">
-          Filtrar por estado
-        </label>
-        <Select
-          id="filtro-estado"
-          value={estado}
-          onChange={(e) => {
-            setPagina(1);
-            setEstado(e.target.value);
-          }}
-          className="!w-auto min-w-[120px]"
-        >
-          <option value="">Todos os estados</option>
-          {ESTADOS_UF.map((uf) => (
-            <option key={uf} value={uf}>
-              {uf}
-            </option>
-          ))}
-        </Select>
-      </div>
-
-      {erroAcao && (
-        <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
-          {erroAcao}
+          <Select
+            id="filtro-estado"
+            value={estado}
+            onChange={(e) => {
+              setPagina(1);
+              setEstado(e.target.value);
+            }}
+            className="!w-auto min-w-[120px]"
+          >
+            <option value="">Todos os estados</option>
+            {ESTADOS_UF.map((uf) => (
+              <option key={uf} value={uf}>
+                {uf}
+              </option>
+            ))}
+          </Select>
         </div>
       )}
 
-      {q.loading && <Carregando />}
+      {q.loading && !q.data && <Carregando />}
       {q.error && <EstadoErro erro={q.error} onTentarNovamente={q.refetch} />}
 
-      {!q.loading && !q.error && q.data && (
+      {!q.error && q.data && (
         <>
           {q.data.itens.length === 0 ? (
             <EstadoVazio
-              titulo={buscaAplicada || estado ? "Nenhuma propriedade encontrada" : "Nenhuma propriedade cadastrada"}
+              titulo={filtrando ? "Nenhuma propriedade encontrada" : "Cadastre sua primeira fazenda"}
               descricao={
-                buscaAplicada || estado
+                filtrando
                   ? "Ajuste os filtros para ver outros resultados."
-                  : "Cadastre a primeira fazenda para começar a monitorar talhões e voos."
+                  : "Comece pela propriedade. Depois você divide em talhões e registra os voos de drone de cada um."
               }
-              acao={
-                !buscaAplicada && !estado ? (
-                  <BotaoPrimario onClick={() => setModalForm({ aberto: true, alvo: null })}>
-                    <Plus className="w-4 h-4" /> Nova propriedade
-                  </BotaoPrimario>
-                ) : undefined
-              }
+              acao={filtrando ? undefined : botaoNova}
             />
           ) : (
-            <div className="bg-white rounded-lg border border-border overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm" style={{ fontFamily: "Inter, sans-serif" }}>
-                  <thead>
-                    <tr className="bg-[#F8F9FA] text-left text-xs font-semibold text-[#4a5568] uppercase tracking-wider">
-                      <th className="px-5 py-3">Fazenda</th>
-                      <th className="px-5 py-3">Local</th>
-                      <th className="px-5 py-3">Área</th>
-                      <th className="px-5 py-3">Criada em</th>
-                      <th className="px-5 py-3" />
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {q.data.itens.map((p) => (
-                      <tr key={p.id_propriedade} className="hover:bg-[#F8F9FA] transition-colors">
-                        <td className="px-5 py-3.5">
-                          <Link
-                            to={`/propriedades/${p.id_propriedade}`}
-                            className="font-medium text-[#1B5E20] hover:underline flex items-center gap-2"
-                          >
-                            <Tractor className="w-4 h-4" /> {p.nome_fazenda}
-                          </Link>
-                        </td>
-                        <td className="px-5 py-3.5 text-[#4a5568]">
-                          {p.cidade} — {p.estado}
-                        </td>
-                        <td className="px-5 py-3.5 text-[#4a5568]">{area(p.area_total_hectares)}</td>
-                        <td className="px-5 py-3.5 text-[#4a5568]">{data(p.criado_em)}</td>
-                        <td className="px-5 py-3.5">
-                          <div className="flex justify-end gap-1">
-                            <button
-                              onClick={() => setModalForm({ aberto: true, alvo: p })}
-                              className="p-1.5 rounded-lg hover:bg-[#E8F5E9] text-[#4a5568] hover:text-[#1B5E20] transition-colors"
-                              aria-label={`Editar ${p.nome_fazenda}`}
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => setExcluir(p)}
-                              className="p-1.5 rounded-lg hover:bg-red-50 text-[#4a5568] hover:text-red-600 transition-colors"
-                              aria-label={`Excluir ${p.nome_fazenda}`}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {q.data.itens.map((p) => (
+                <li key={p.id_propriedade}>
+                  <Link
+                    to={`/propriedades/${p.id_propriedade}`}
+                    className="group block bg-white rounded-2xl border border-border p-5 hover:border-[#66BB6A] hover:shadow-md transition-all"
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="w-11 h-11 rounded-xl bg-[#E8F5E9] flex items-center justify-center flex-shrink-0">
+                        <Tractor className="w-5 h-5 text-[#1B5E20]" aria-hidden />
+                      </div>
+                      <ChevronRight
+                        className="w-5 h-5 text-[#4a5568] group-hover:text-[#1B5E20] group-hover:translate-x-0.5 transition-all"
+                        aria-hidden
+                      />
+                    </div>
+                    <h2 className="font-bold text-[#212121]" style={{ fontFamily: "Poppins, sans-serif" }}>
+                      {p.nome_fazenda}
+                    </h2>
+                    <p className="text-sm text-[#4a5568] flex items-center gap-1 mb-4">
+                      <MapPin className="w-3.5 h-3.5" aria-hidden /> {p.cidade} — {p.estado}
+                    </p>
+                    <div className="flex gap-6 text-sm">
+                      <div>
+                        <div className="text-xs text-[#4a5568]">Área total</div>
+                        <div className="font-semibold text-[#212121]">{area(p.area_total_hectares)}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-[#4a5568]">Talhões</div>
+                        <div className="font-semibold text-[#212121]">{p.total_talhoes ?? "—"}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-[#4a5568]">Área em talhões</div>
+                        <div className="font-semibold text-[#212121]">{area(p.area_talhoes_hectares)}</div>
+                      </div>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           )}
 
           {q.data.meta && <Paginacao meta={q.data.meta} onPagina={setPagina} />}
@@ -196,22 +149,11 @@ export function PropriedadesListPage() {
       )}
 
       <PropriedadeFormModal
-        key={`${modalForm.aberto}-${modalForm.alvo?.id_propriedade ?? "novo"}`}
-        aberto={modalForm.aberto}
-        inicial={modalForm.alvo}
-        onFechar={() => setModalForm({ aberto: false, alvo: null })}
+        key={`${criando}`}
+        aberto={criando}
+        inicial={null}
+        onFechar={() => setCriando(false)}
         onSalvar={salvar}
-      />
-
-      <ConfirmarExclusao
-        aberto={Boolean(excluir)}
-        mensagem={`Excluir a propriedade "${excluir?.nome_fazenda}"? Esta ação não pode ser desfeita.`}
-        processando={excluindo}
-        onConfirmar={confirmarExclusao}
-        onCancelar={() => {
-          setExcluir(null);
-          setErroAcao(null);
-        }}
       />
     </div>
   );

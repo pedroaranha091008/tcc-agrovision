@@ -12,6 +12,7 @@
 # Arquivos gerados em runtime
 /uploads
 /relatorios
+/emails-enviados
 
 # Saida de testes/cobertura
 /coverage

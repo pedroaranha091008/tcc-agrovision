@@ -10,10 +10,22 @@ export async function listar(idUsuario, consulta) {
   if (consulta.estado) where.estado = consulta.estado;
   if (consulta.busca) where.nome_fazenda = { contains: consulta.busca };
 
-  const [itens, total] = await Promise.all([
-    prisma.propriedade.findMany({ where, skip, take, orderBy }),
+  const [linhas, total] = await Promise.all([
+    prisma.propriedade.findMany({
+      where,
+      skip,
+      take,
+      orderBy,
+      include: { talhoes: { select: { area_hectares: true } } },
+    }),
     prisma.propriedade.count({ where }),
   ]);
+  // Resumo para os cartoes da lista: quantos talhoes e quanta area ja dividida neles.
+  const itens = linhas.map(({ talhoes, ...p }) => ({
+    ...p,
+    total_talhoes: talhoes.length,
+    area_talhoes_hectares: talhoes.reduce((s, t) => s + (t.area_hectares ? Number(t.area_hectares) : 0), 0),
+  }));
   return { itens, meta: meta(total, { pagina, porPagina }) };
 }
 

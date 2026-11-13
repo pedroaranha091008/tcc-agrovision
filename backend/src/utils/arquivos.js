@@ -47,6 +47,12 @@ export function criarArmazenamento(dir, prefixo) {
   }
 
   return {
+    /** Referencia (a mesma que salvar devolve) de um arquivo salvo com esse nome. */
+    referencia(nome) {
+      if (env.storage.provider === "supabase") return `${marcador()}${nome}`;
+      return path.relative(process.cwd(), path.join(raiz, nome));
+    },
+
     async salvar(buffer, nome, contentType, sobrescrever = false) {
       if (!/^[a-zA-Z0-9_.-]+$/.test(nome) || nome === "." || nome === "..") {
         throw erros.requisicaoInvalida("Nome de arquivo invalido");

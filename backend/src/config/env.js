@@ -34,19 +34,41 @@ function lista(nome, padrao = "") {
     .filter(Boolean);
 }
 
+// Hospedagens (Railway, Render...) entregam o banco so como uma URL
+// mysql://usuario:senha@host:porta/banco. As variaveis DATABASE_HOST etc.
+// continuam valendo e tem prioridade; sem elas, saem da URL.
+const databaseUrl = obrigatoria("DATABASE_URL");
+let daUrl = {};
+try {
+  const u = new URL(databaseUrl);
+  daUrl = {
+    host: u.hostname,
+    user: decodeURIComponent(u.username),
+    password: decodeURIComponent(u.password),
+    name: u.pathname.replace(/^\//, ""),
+    port: u.port || "3306",
+  };
+} catch {
+  // URL invalida: as variaveis separadas passam a ser obrigatorias.
+}
+const doBanco = (nome, chave) => opcional(nome, daUrl[chave]) ?? obrigatoria(nome);
+
 const env = {
   nodeEnv: opcional("NODE_ENV", "development"),
   port: inteiro("PORT", 3000),
   corsOrigins: lista("CORS_ORIGINS", process.env.NODE_ENV === "production" ? "" : "http://localhost:5173,http://localhost:4173"),
 
-  databaseUrl: obrigatoria("DATABASE_URL"),
+  // Pasta do site compilado (frontend/dist). Definida, o servidor entrega o
+  // site e a API no mesmo endereco (usado na hospedagem).
+  frontendDist: opcional("FRONTEND_DIST", ""),
+
+  databaseUrl,
   db: {
-    host: obrigatoria("DATABASE_HOST"),
-    user: obrigatoria("DATABASE_USER"),
-    // XAMPP local pode usar senha vazia; a variavel ainda deve estar definida.
-    password: obrigatoria("DATABASE_PASSWORD", { permitirVazio: true }),
-    name: obrigatoria("DATABASE_NAME"),
-    port: inteiro("DATABASE_PORT", 3306),
+    host: doBanco("DATABASE_HOST", "host"),
+    user: doBanco("DATABASE_USER", "user"),
+    password: opcional("DATABASE_PASSWORD", daUrl.password ?? ""),
+    name: doBanco("DATABASE_NAME", "name"),
+    port: inteiro("DATABASE_PORT", daUrl.port ?? 3306),
     ssl: opcional("DATABASE_SSL", "false") === "true",
     sslCa: opcional("DATABASE_SSL_CA", "").replace(/\\n/g, "\n"),
   },
@@ -58,6 +80,9 @@ const env = {
     refreshTtlDays: inteiro("REFRESH_TTL_DAYS", 30),
   },
 
+  // Tentativas de login/registro por IP a cada 15 min (aumente so em ambiente de testes).
+  limiteTentativasAuth: inteiro("LIMITE_TENTATIVAS_AUTH", 20),
+
   google: {
     clientId: opcional("GOOGLE_CLIENT_ID", ""),
   },
@@ -67,6 +92,21 @@ const env = {
     url: opcional("SUPABASE_URL", ""),
     secretKey: opcional("SUPABASE_SECRET_KEY", ""),
     bucket: opcional("SUPABASE_STORAGE_BUCKET", "agrovision-arquivos"),
+  },
+
+  // Endereco do site, usado nos links enviados por email (ex.: redefinir senha).
+  get frontendUrl() {
+    return opcional("FRONTEND_URL", this.corsOrigins[0] ?? "http://localhost:5173").replace(/\/$/, "");
+  },
+
+  // Envio de email. Sem SMTP_HOST, em desenvolvimento o email vai para o log
+  // e para a pasta emails-enviados/ (ver src/utils/email.js).
+  email: {
+    host: opcional("SMTP_HOST", ""),
+    porta: inteiro("SMTP_PORT", 587),
+    usuario: opcional("SMTP_USER", ""),
+    senha: opcional("SMTP_PASS", ""),
+    remetente: opcional("SMTP_FROM", "AgroVision <nao-responda@agrovision.com.br>"),
   },
 
   upload: {

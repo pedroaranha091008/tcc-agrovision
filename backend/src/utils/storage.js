@@ -13,4 +13,14 @@ export const storage = {
     return { nome_armazenado: nome, caminho };
   },
   remover: arquivos.remover,
+  ler: arquivos.ler,
+};
+
+// Mapas coloridos da analise automatica (por nome, guardado em detalhes.por_imagem[].mapa).
+const arquivosMapas = criarArmazenamento(path.join(env.upload.dir, "mapas"), "mapas");
+
+export const mapas = {
+  salvar: (buffer, nome) => arquivosMapas.salvar(buffer, nome, "image/png", true),
+  ler: (nome) => arquivosMapas.ler(arquivosMapas.referencia(nome)),
+  remover: (nome) => arquivosMapas.remover(arquivosMapas.referencia(nome)),
 };

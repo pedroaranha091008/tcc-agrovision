@@ -101,6 +101,8 @@ export const http = {
 export interface OpcoesUpload {
   onProgresso?: (percentual: number) => void;
   signal?: AbortSignal;
+  /** downloads: recebe o nome do arquivo informado pelo servidor (Content-Disposition) */
+  aoNomeArquivo?: (nome: string) => void;
 }
 
 /**
@@ -169,7 +171,7 @@ export function baixarArquivo(
   caminho: string,
   opts: OpcoesUpload = {},
 ): Promise<Blob> {
-  const { onProgresso, signal } = opts;
+  const { onProgresso, signal, aoNomeArquivo } = opts;
 
   if (USAR_MOCK) {
     return mockDownload(caminho);
@@ -191,6 +193,8 @@ export function baixarArquivo(
 
       xhr.onload = async () => {
         if (xhr.status >= 200 && xhr.status < 300) {
+          const nome = /filename="?([^";]+)"?/.exec(xhr.getResponseHeader("Content-Disposition") ?? "")?.[1];
+          if (nome) aoNomeArquivo?.(decodeURIComponent(nome));
           resolve(xhr.response as Blob);
           return;
         }

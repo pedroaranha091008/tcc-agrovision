@@ -46,11 +46,20 @@ router.post(
   receberImagens,
   ctrl.enviarImagens,
 );
+router.get(
+  "/:id/imagens/:idImagem/arquivo",
+  validate({ params: imagemParam }),
+  carregarVoo(),
+  ctrl.arquivoImagem,
+);
 router.delete(
   "/:id/imagens/:idImagem",
   validate({ params: imagemParam }),
   carregarVoo(),
   ctrl.removerImagem,
 );
+
+// Analise automatica (indice de verde) sobre as imagens do voo
+router.post("/:id/analisar", validate({ params: idParam }), carregarVoo(), ctrl.analisar);
 
 export default router;

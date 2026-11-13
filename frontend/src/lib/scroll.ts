@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+import { useLocation, useNavigate } from "react-router";
 import { getLenis } from "./smoothScroll";
 
 /**
@@ -14,4 +16,18 @@ export function scrollToId(id: string): void {
   const lenis = getLenis();
   if (lenis) lenis.scrollTo(el);
   else el.scrollIntoView({ behavior: "smooth" });
+}
+
+/** Rola ate uma secao da home; se estiver em outra pagina, navega para "/#secao". */
+export function useIrParaSecao() {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  return useCallback(
+    (id: string) => {
+      if (pathname === "/") scrollToId(id);
+      else navigate(id === "hero" ? "/" : `/#${id}`);
+    },
+    [navigate, pathname],
+  );
 }

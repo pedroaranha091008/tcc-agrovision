@@ -10,6 +10,7 @@ export const historicoQuery = paginacaoQuery
     id_propriedade: z.string().uuid().optional(),
     id_talhao: z.string().uuid().optional(),
     tipo_analise: z.enum(TIPOS).optional(),
+    nivel_risco: z.enum(["baixo", "medio", "alto", "critico"]).optional(),
   })
   .refine(
     (q) => !(q.data_inicio && q.data_fim) || q.data_inicio <= q.data_fim,
@@ -26,3 +27,8 @@ export const dashboardQuery = z
     (q) => !(q.data_inicio && q.data_fim) || q.data_inicio <= q.data_fim,
     { message: "data_inicio deve ser anterior ou igual a data_fim", path: ["data_inicio"] },
   );
+
+export const painelQuery = z.object({
+  id_propriedade: z.string().uuid().optional(),
+  dias: z.coerce.number().int().min(7).max(3650).default(90),
+});

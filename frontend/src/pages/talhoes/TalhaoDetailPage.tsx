@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { Pencil, Plane, Plus, Trash2 } from "lucide-react";
+import { ChevronRight, Plane, Plus } from "lucide-react";
 import { PageHeader } from "@/components/comum/PageHeader";
 import { Carregando, EstadoErro, EstadoVazio } from "@/components/comum/Estados";
 import { ConfirmarExclusao } from "@/components/comum/Modal";
-import { BotaoPrimario, BotaoSecundario } from "@/components/comum/Form";
+import { BotaoPrimario } from "@/components/comum/Form";
+import { BotoesEditarExcluir, Detalhes, TituloSecao } from "@/components/comum/Detalhes";
 import { StatusProcessamentoBadge, StatusTalhaoBadge } from "@/components/comum/StatusBadge";
 import { TalhaoFormModal } from "@/features/dominio/TalhaoFormModal";
 import { VooFormModal } from "@/features/dominio/VooFormModal";
@@ -14,7 +15,6 @@ import * as propService from "@/services/propriedades";
 import * as vooService from "@/services/voos";
 import { area, coordenadas, data } from "@/lib/formatar";
 import { mensagemDoErro } from "@/services/erros";
-import type { Voo } from "@/types/dominio";
 
 export function TalhaoDetailPage() {
   const { id = "" } = useParams();
@@ -29,8 +29,7 @@ export function TalhaoDetailPage() {
   const [excluir, setExcluir] = useState(false);
   const [processando, setProcessando] = useState(false);
   const [erroAcao, setErroAcao] = useState<string | null>(null);
-  const [modalVoo, setModalVoo] = useState<{ aberto: boolean; alvo: Voo | null }>({ aberto: false, alvo: null });
-  const [excluirVoo, setExcluirVoo] = useState<Voo | null>(null);
+  const [novoVoo, setNovoVoo] = useState(false);
 
   async function removerTalhao() {
     setProcessando(true);
@@ -44,55 +43,34 @@ export function TalhaoDetailPage() {
     }
   }
 
-  async function removerVoo() {
-    if (!excluirVoo) return;
-    setProcessando(true);
-    setErroAcao(null);
-    try {
-      await vooService.remover(excluirVoo.id_voo);
-      setExcluirVoo(null);
-      voos.refetch();
-    } catch (err) {
-      setErroAcao(mensagemDoErro(err));
-    } finally {
-      setProcessando(false);
-    }
-  }
-
   if (talhao.loading) return <Carregando />;
   if (talhao.error || !talhao.data)
     return (
-      <div className="max-w-4xl mx-auto">
+      <div>
         <EstadoErro erro={talhao.error} onTentarNovamente={talhao.refetch} />
         <div className="mt-4 text-center">
           <Link to="/propriedades" className="text-sm text-[#1B5E20] hover:underline">
-            Voltar para propriedades
+            Voltar para Fazendas
           </Link>
         </div>
       </div>
     );
 
   const t = talhao.data;
+  const lista = voos.data?.itens ?? [];
+  const nomeFazenda = prop.data?.nome_fazenda ?? "Propriedade";
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div>
       <PageHeader
         titulo={t.nome_talhao}
+        descricao={`${nomeFazenda} · ${t.cultura ?? "cultura não informada"}`}
         breadcrumbs={[
-          { label: "Propriedades", to: "/propriedades" },
-          { label: prop.data?.nome_fazenda ?? "Propriedade", to: `/propriedades/${idProp}` },
+          { label: "Fazendas", to: "/propriedades" },
+          { label: nomeFazenda, to: `/propriedades/${idProp}` },
           { label: t.nome_talhao },
         ]}
-        acao={
-          <div className="flex gap-2">
-            <BotaoSecundario onClick={() => setEditar(true)}>
-              <Pencil className="w-4 h-4" /> Editar
-            </BotaoSecundario>
-            <BotaoSecundario onClick={() => setExcluir(true)}>
-              <Trash2 className="w-4 h-4" /> Excluir
-            </BotaoSecundario>
-          </div>
-        }
+        acao={<BotoesEditarExcluir nome={t.nome_talhao} aoEditar={() => setEditar(true)} aoExcluir={() => setExcluir(true)} />}
       />
 
       {erroAcao && (
@@ -101,103 +79,66 @@ export function TalhaoDetailPage() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg border border-border p-5 mb-6" style={{ fontFamily: "Inter, sans-serif" }}>
-        <dl className="grid sm:grid-cols-4 gap-4 text-sm">
-          <div>
-            <dt className="text-xs text-[#4a5568] uppercase tracking-wide">Cultura</dt>
-            <dd className="text-[#212121] font-medium mt-0.5">{t.cultura ?? "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-[#4a5568] uppercase tracking-wide">Área</dt>
-            <dd className="text-[#212121] font-medium mt-0.5">{area(t.area_hectares)}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-[#4a5568] uppercase tracking-wide">Coordenadas</dt>
-            <dd className="text-[#212121] font-medium mt-0.5">{coordenadas(t.latitude, t.longitude)}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-[#4a5568] uppercase tracking-wide">Status</dt>
-            <dd className="mt-1">
-              <StatusTalhaoBadge status={t.status} />
-            </dd>
-          </div>
-        </dl>
-      </div>
+      <Detalhes
+        itens={[
+          ["Área", area(t.area_hectares)],
+          ["Situação", <StatusTalhaoBadge status={t.status} />],
+          ["Coordenadas", coordenadas(t.latitude, t.longitude)],
+          ["Voos", voos.data ? lista.length : "—"],
+        ]}
+      />
 
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="font-bold text-[#212121] flex items-center gap-2" style={{ fontFamily: "Poppins, sans-serif" }}>
-          <Plane className="w-4 h-4" /> Voos
-        </h2>
-        <BotaoPrimario onClick={() => setModalVoo({ aberto: true, alvo: null })}>
-          <Plus className="w-4 h-4" /> Novo voo
-        </BotaoPrimario>
-      </div>
+      <TituloSecao
+        titulo="Voos"
+        acao={
+          lista.length > 0 ? (
+            <BotaoPrimario onClick={() => setNovoVoo(true)}>
+              <Plus className="w-4 h-4" /> Registrar voo
+            </BotaoPrimario>
+          ) : undefined
+        }
+      />
 
-      {voos.loading && <Carregando />}
+      {voos.loading && !voos.data && <Carregando />}
       {voos.error && <EstadoErro erro={voos.error} onTentarNovamente={voos.refetch} />}
-      {!voos.loading && !voos.error && voos.data && (
-        voos.data.itens.length === 0 ? (
+      {!voos.error && voos.data &&
+        (lista.length === 0 ? (
           <EstadoVazio
-            titulo="Nenhum voo neste talhão"
-            descricao="Registre um voo para depois enviar imagens e análises."
+            titulo="Nenhum voo registrado"
+            descricao="Registre cada sobrevoo de drone neste talhão. As imagens e análises ficam vinculadas ao voo."
             acao={
-              <BotaoPrimario onClick={() => setModalVoo({ aberto: true, alvo: null })}>
-                <Plus className="w-4 h-4" /> Novo voo
+              <BotaoPrimario onClick={() => setNovoVoo(true)}>
+                <Plus className="w-4 h-4" /> Registrar primeiro voo
               </BotaoPrimario>
             }
           />
         ) : (
-          <div className="bg-white rounded-lg border border-border overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm" style={{ fontFamily: "Inter, sans-serif" }}>
-                <thead>
-                  <tr className="bg-[#F8F9FA] text-left text-xs font-semibold text-[#4a5568] uppercase tracking-wider">
-                    <th className="px-5 py-3">Data</th>
-                    <th className="px-5 py-3">Drone</th>
-                    <th className="px-5 py-3">Operador</th>
-                    <th className="px-5 py-3">Processamento</th>
-                    <th className="px-5 py-3" />
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {voos.data.itens.map((v) => (
-                    <tr key={v.id_voo} className="hover:bg-[#F8F9FA] transition-colors">
-                      <td className="px-5 py-3.5">
-                        <Link to={`/voos/${v.id_voo}`} className="font-medium text-[#1B5E20] hover:underline">
-                          {data(v.data_voo)}
-                        </Link>
-                      </td>
-                      <td className="px-5 py-3.5 text-[#4a5568]">{v.modelo_drone ?? "—"}</td>
-                      <td className="px-5 py-3.5 text-[#4a5568]">{v.operador ?? "—"}</td>
-                      <td className="px-5 py-3.5">
-                        <StatusProcessamentoBadge status={v.status_processamento} />
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <div className="flex justify-end gap-1">
-                          <button
-                            onClick={() => setModalVoo({ aberto: true, alvo: v })}
-                            className="p-1.5 rounded-lg hover:bg-[#E8F5E9] text-[#4a5568] hover:text-[#1B5E20] transition-colors"
-                            aria-label="Editar voo"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => setExcluirVoo(v)}
-                            className="p-1.5 rounded-lg hover:bg-red-50 text-[#4a5568] hover:text-red-600 transition-colors"
-                            aria-label="Excluir voo"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )
-      )}
+          <ul className="bg-white rounded-2xl border border-border divide-y divide-border" style={{ fontFamily: "Inter, sans-serif" }}>
+            {lista.map((v) => (
+              <li key={v.id_voo}>
+                <Link to={`/voos/${v.id_voo}`} className="flex items-center gap-4 px-5 py-4 hover:bg-[#F8F9FA]">
+                  <div className="w-10 h-10 rounded-xl bg-[#E8F5E9] flex items-center justify-center flex-shrink-0">
+                    <Plane className="w-5 h-5 text-[#1B5E20]" aria-hidden />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-[#212121]">Voo de {data(v.data_voo)}</div>
+                    <div className="text-sm text-[#4a5568] truncate">
+                      {[v.modelo_drone, v.altitude_metros ? `${v.altitude_metros} m` : null, v.operador].filter(Boolean).join(" · ") ||
+                        "Sem detalhes"}
+                    </div>
+                  </div>
+                  <StatusProcessamentoBadge status={v.status_processamento} />
+                  <span className="hidden sm:block text-xs text-[#4a5568] whitespace-nowrap text-right">
+                    {v.total_imagens ?? 0} imagem(ns)
+                    <br />
+                    {v.total_analises ?? 0} análise(s)
+                  </span>
+                  <ChevronRight className="w-4 h-4 text-[#4a5568]" aria-hidden />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ))}
 
       <TalhaoFormModal
         key={`editar-${editar}`}
@@ -212,15 +153,14 @@ export function TalhaoDetailPage() {
       />
 
       <VooFormModal
-        key={`voo-${modalVoo.aberto}-${modalVoo.alvo?.id_voo ?? "novo"}`}
-        aberto={modalVoo.aberto}
+        key={`voo-${novoVoo}`}
+        aberto={novoVoo}
         idTalhao={id}
-        inicial={modalVoo.alvo}
-        onFechar={() => setModalVoo({ aberto: false, alvo: null })}
+        inicial={null}
+        onFechar={() => setNovoVoo(false)}
         onSalvar={async (dados) => {
-          if (modalVoo.alvo) await vooService.atualizar(modalVoo.alvo.id_voo, dados);
-          else await vooService.criar(dados);
-          voos.refetch();
+          const novo = await vooService.criar(dados);
+          navigate(`/voos/${novo.id_voo}`);
         }}
       />
 
@@ -230,14 +170,6 @@ export function TalhaoDetailPage() {
         processando={processando}
         onConfirmar={removerTalhao}
         onCancelar={() => setExcluir(false)}
-      />
-
-      <ConfirmarExclusao
-        aberto={Boolean(excluirVoo)}
-        mensagem={`Excluir o voo de ${data(excluirVoo?.data_voo)}?`}
-        processando={processando}
-        onConfirmar={removerVoo}
-        onCancelar={() => setExcluirVoo(null)}
       />
     </div>
   );

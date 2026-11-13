@@ -1,19 +1,11 @@
-import { useMemo } from "react";
 import { Link, useSearchParams } from "react-router";
 import {
-  Activity,
-  AlertTriangle,
-  FileText,
-  Layers,
-  Plus,
-  RefreshCw,
-  Tractor,
-} from "lucide-react";
-import {
-  Area,
-  AreaChart,
+  Bar,
   CartesianGrid,
   Cell,
+  ComposedChart,
+  Legend,
+  Line,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -21,346 +13,417 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { Activity, AlertTriangle, ArrowRight, Check, ChevronRight, ImageUp, Layers, Plane, Plus, RefreshCw, Tractor } from "lucide-react";
 import { PageHeader } from "@/components/comum/PageHeader";
-import { Carregando, EstadoErro, EstadoVazio } from "@/components/comum/Estados";
-import { BotaoSecundario, Select } from "@/components/comum/Form";
-import { StatusTalhaoBadge } from "@/components/comum/StatusBadge";
+import { EstadoErro } from "@/components/comum/Estados";
+import { NIVEL_RISCO_LABEL, RiscoBadge } from "@/components/comum/StatusBadge";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useQuery } from "@/hooks/useQuery";
 import * as dashboardService from "@/services/dashboard";
 import * as propriedadeService from "@/services/propriedades";
-import * as talhaoService from "@/services/talhoes";
-import { area } from "@/lib/formatar";
-import { RISCO_COR, RISCO_LABEL, TIPO_LABEL, type DistribuicaoRisco } from "@/types/dashboard";
+import { area, data } from "@/lib/formatar";
+import { TIPO_LABEL, type Painel } from "@/types/dashboard";
+import type { NivelRisco } from "@/types/dominio";
 
-const MESES_PT = [
-  "jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez",
+const PERIODOS = [
+  { dias: 30, label: "Últimos 30 dias" },
+  { dias: 90, label: "Últimos 90 dias" },
+  { dias: 180, label: "Últimos 6 meses" },
+  { dias: 365, label: "Último ano" },
 ];
 
-function rotuloMes(mes: string): string {
-  const [ano, m] = mes.split("-");
-  const idx = Number(m) - 1;
-  return `${MESES_PT[idx] ?? m}/${ano.slice(2)}`;
+type ChaveRisco = NivelRisco | "sem_analise";
+
+const COR_RISCO: Record<ChaveRisco, string> = {
+  baixo: "#43A047",
+  medio: "#FBC02D",
+  alto: "#FB8C00",
+  critico: "#E53935",
+  sem_analise: "#CFD8DC",
+};
+
+const rotuloRisco = (k: ChaveRisco) => (k === "sem_analise" ? "Sem análise" : NIVEL_RISCO_LABEL[k]);
+
+const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+const rotuloMes = (aaaamm: string) => `${MESES[Number(aaaamm.slice(5, 7)) - 1]}/${aaaamm.slice(2, 4)}`;
+
+const POPPINS = { fontFamily: "Poppins, sans-serif" };
+const classeFiltro =
+  "px-3 py-2.5 rounded-xl border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A]";
+
+function Esqueleto() {
+  return (
+    <div aria-hidden className="animate-pulse space-y-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="h-32 bg-white rounded-2xl border border-border" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 h-72 bg-white rounded-2xl border border-border" />
+        <div className="h-72 bg-white rounded-2xl border border-border" />
+      </div>
+    </div>
+  );
+}
+
+/** Primeiro acesso: guia passo a passo ate a primeira analise. */
+function PrimeirosPassos({ painel }: { painel: Painel }) {
+  const passos = [
+    { feito: painel.totais.propriedades > 0, titulo: "Cadastre sua fazenda", texto: "Nome, cidade e estado da propriedade.", icon: Tractor },
+    { feito: painel.totais.talhoes > 0, titulo: "Divida em talhões", texto: "As áreas de plantio, com cultura e tamanho.", icon: Layers },
+    { feito: painel.totais.voos > 0, titulo: "Registre um voo", texto: "A data do sobrevoo do drone em um talhão.", icon: Plane },
+    { feito: painel.totais.imagens > 0, titulo: "Envie as imagens e analise", texto: "As fotos do drone viram mapa de vegetação e nível de risco.", icon: ImageUp },
+  ];
+  return (
+    <div className="bg-white rounded-2xl border border-border p-6 sm:p-8">
+      <h2 className="text-xl font-bold text-[#212121] mb-1" style={POPPINS}>
+        Vamos começar?
+      </h2>
+      <p className="text-sm text-[#4a5568] mb-6">
+        Siga os passos abaixo. Assim que houver análises, este painel mostra a situação de cada talhão.
+      </p>
+      <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {passos.map(({ feito, titulo, texto, icon: Icon }, i) => (
+          <li key={titulo} className={`rounded-xl border p-4 ${feito ? "border-green-200 bg-green-50" : "border-border"}`}>
+            <div className="flex items-center gap-2 mb-2">
+              <span
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${feito ? "bg-green-600 text-white" : "bg-[#E8F5E9] text-[#1B5E20]"}`}
+              >
+                {feito ? <Check className="w-4 h-4" aria-label="Concluído" /> : i + 1}
+              </span>
+              <Icon className="w-4 h-4 text-[#1B5E20]" aria-hidden />
+            </div>
+            <h3 className="font-semibold text-sm text-[#212121]">{titulo}</h3>
+            <p className="text-xs text-[#4a5568]">{texto}</p>
+          </li>
+        ))}
+      </ol>
+      <Link
+        to="/propriedades"
+        className="inline-flex items-center gap-2 bg-[#1B5E20] text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#2E7D32]"
+      >
+        {painel.totais.propriedades === 0 ? (
+          <>
+            <Plus className="w-4 h-4" aria-hidden /> Cadastrar minha fazenda
+          </>
+        ) : (
+          <>
+            Continuar em Fazendas <ArrowRight className="w-4 h-4" aria-hidden />
+          </>
+        )}
+      </Link>
+    </div>
+  );
 }
 
 export function DashboardPage() {
   const { usuario } = useAuth();
-  const primeiroNome = usuario?.nome.split(" ")[0] ?? "produtor";
   const [params, setParams] = useSearchParams();
-
-  const idPropriedade = params.get("id_propriedade") ?? "";
-  const dataInicio = params.get("data_inicio") ?? "";
-  const dataFim = params.get("data_fim") ?? "";
-
-  function atualizarFiltro(chave: string, valor: string) {
-    const novo = new URLSearchParams(params);
-    if (valor) novo.set(chave, valor);
-    else novo.delete(chave);
-    setParams(novo, { replace: true });
-  }
+  const idPropriedade = params.get("propriedade") ?? "";
+  const dias = Number(params.get("dias")) || 90;
 
   const propriedades = useQuery((s) => propriedadeService.listar({ por_pagina: 100 }, s), []);
-
-  const resumo = useQuery(
-    (s) => dashboardService.obterResumo({ id_propriedade: idPropriedade || undefined, data_inicio: dataInicio || undefined, data_fim: dataFim || undefined }, s),
-    [idPropriedade, dataInicio, dataFim],
+  const painelQ = useQuery(
+    (s) => dashboardService.obterPainel({ dias, id_propriedade: idPropriedade || undefined }, s),
+    [dias, idPropriedade],
   );
+  const painel = painelQ.data;
 
-  const talhoes = useQuery(
-    (s) => talhaoService.listar({ id_propriedade: idPropriedade || undefined, por_pagina: 8 }, s),
-    [idPropriedade],
-  );
+  const mudarFiltro = (chave: string, valor: string) => {
+    // Le da URL atual (nao do ultimo render) para duas mudancas seguidas nao se sobrescreverem.
+    const novos = new URLSearchParams(window.location.search);
+    if (valor) novos.set(chave, valor);
+    else novos.delete(chave);
+    setParams(novos, { replace: true });
+  };
 
-  const nomePropriedade = useMemo(() => {
-    const mapa = new Map<string, string>();
-    for (const p of propriedades.data?.itens ?? []) mapa.set(p.id_propriedade, p.nome_fazenda);
-    return mapa;
-  }, [propriedades.data]);
-
-  const dadosRisco = useMemo(() => {
-    const d = resumo.data?.indicadores.distribuicao_risco;
-    if (!d) return [];
-    return (Object.keys(d) as Array<keyof DistribuicaoRisco>)
-      .filter((k) => d[k] > 0)
-      .map((k) => ({ chave: k, nome: RISCO_LABEL[k], valor: d[k], cor: RISCO_COR[k] }));
-  }, [resumo.data]);
-
-  const semDadosAinda =
-    !resumo.loading && !resumo.error && resumo.data && resumo.data.indicadores.total_propriedades === 0;
+  const primeiroNome = usuario?.nome.split(" ")[0] ?? "";
+  const periodo = PERIODOS.find((p) => p.dias === dias)?.label.toLowerCase() ?? `${dias} dias`;
+  const listaPropriedades = propriedades.data?.itens ?? [];
+  const semAnalises = painel && painel.talhoes.every((t) => !t.ultima_analise);
+  const riscosComDados = painel
+    ? (Object.entries(painel.risco_talhoes) as [ChaveRisco, number][]).filter(([, v]) => v > 0)
+    : [];
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div style={{ fontFamily: "Inter, sans-serif" }}>
       <PageHeader
         titulo="Visão Geral"
-        descricao={`Bem-vindo, ${primeiroNome}! Aqui está o resumo da sua propriedade.`}
+        descricao={`Olá, ${primeiroNome}! Aqui está o resumo das suas propriedades.`}
         acao={
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                resumo.refetch();
-                talhoes.refetch();
-              }}
-              className="p-2.5 rounded-md border border-border hover:bg-[#F8F9FA] text-[#4a5568] transition-colors"
-              aria-label="Atualizar dados"
-              title="Atualizar"
-            >
-              <RefreshCw className={`w-4 h-4 ${resumo.loading ? "animate-spin" : ""}`} />
-            </button>
-            <Link
-              to="/propriedades"
-              className="flex items-center gap-2 bg-[#1B5E20] text-white px-4 py-2.5 rounded-md text-sm font-semibold hover:bg-[#2E7D32] transition-all"
-            >
-              <Plus className="w-4 h-4" /> Nova propriedade
-            </Link>
-          </div>
+          listaPropriedades.length > 0 ? (
+            <div className="flex flex-col sm:flex-row gap-2">
+              <label className="sr-only" htmlFor="filtro-propriedade">
+                Propriedade
+              </label>
+              <select
+                id="filtro-propriedade"
+                value={idPropriedade}
+                onChange={(e) => mudarFiltro("propriedade", e.target.value)}
+                className={classeFiltro}
+              >
+                <option value="">Todas as propriedades</option>
+                {listaPropriedades.map((p) => (
+                  <option key={p.id_propriedade} value={p.id_propriedade}>
+                    {p.nome_fazenda}
+                  </option>
+                ))}
+              </select>
+              <label className="sr-only" htmlFor="filtro-periodo">
+                Período
+              </label>
+              <select
+                id="filtro-periodo"
+                value={dias}
+                onChange={(e) => mudarFiltro("dias", e.target.value === "90" ? "" : e.target.value)}
+                className={classeFiltro}
+              >
+                {PERIODOS.map((p) => (
+                  <option key={p.dias} value={p.dias}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={painelQ.refetch}
+                className="inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-border bg-white text-sm hover:bg-[#F8F9FA]"
+                aria-label="Atualizar dados"
+              >
+                <RefreshCw className={`w-4 h-4 ${painelQ.loading ? "animate-spin" : ""}`} aria-hidden />
+                <span className="sm:hidden">Atualizar</span>
+              </button>
+            </div>
+          ) : undefined
         }
       />
 
-      {/* Filtros, sincronizados com a URL */}
-      <div className="flex flex-wrap items-end gap-3 mb-6">
-        <div>
-          <label htmlFor="dash-filtro-propriedade" className="block text-xs font-medium text-[#4a5568] mb-1">
-            Propriedade
-          </label>
-          <Select
-            id="dash-filtro-propriedade"
-            value={idPropriedade}
-            onChange={(e) => atualizarFiltro("id_propriedade", e.target.value)}
-            className="!w-auto min-w-[180px]"
-          >
-            <option value="">Todas as propriedades</option>
-            {propriedades.data?.itens.map((p) => (
-              <option key={p.id_propriedade} value={p.id_propriedade}>
-                {p.nome_fazenda}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div>
-          <label htmlFor="dash-filtro-data-inicio" className="block text-xs font-medium text-[#4a5568] mb-1">
-            De
-          </label>
-          <input
-            id="dash-filtro-data-inicio"
-            type="date"
-            value={dataInicio}
-            onChange={(e) => atualizarFiltro("data_inicio", e.target.value)}
-            className="px-3 py-2.5 rounded-md border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A]"
-          />
-        </div>
-        <div>
-          <label htmlFor="dash-filtro-data-fim" className="block text-xs font-medium text-[#4a5568] mb-1">
-            Até
-          </label>
-          <input
-            id="dash-filtro-data-fim"
-            type="date"
-            value={dataFim}
-            onChange={(e) => atualizarFiltro("data_fim", e.target.value)}
-            className="px-3 py-2.5 rounded-md border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#66BB6A]"
-          />
-        </div>
-        {(idPropriedade || dataInicio || dataFim) && (
-          <BotaoSecundario onClick={() => setParams(new URLSearchParams(), { replace: true })}>
-            Limpar filtros
-          </BotaoSecundario>
-        )}
-      </div>
+      {painelQ.error ? (
+        <EstadoErro erro={painelQ.error} onTentarNovamente={painelQ.refetch} />
+      ) : !painel ? (
+        <Esqueleto />
+      ) : painel.totais.propriedades === 0 && !idPropriedade ? (
+        <PrimeirosPassos painel={painel} />
+      ) : (
+        <div className={painelQ.loading ? "opacity-60 transition-opacity" : "transition-opacity"} aria-busy={painelQ.loading}>
+          {semAnalises && !idPropriedade && (
+            <div className="mb-6">
+              <PrimeirosPassos painel={painel} />
+            </div>
+          )}
 
-      {resumo.loading && <Carregando texto="Carregando indicadores..." />}
-      {resumo.error && <EstadoErro erro={resumo.error} onTentarNovamente={resumo.refetch} />}
-
-      {semDadosAinda && (
-        <EstadoVazio
-          titulo="Nenhum dado para exibir ainda"
-          descricao="Cadastre sua primeira propriedade para começar a monitorar talhões, voos e análises."
-          acao={
-            <Link
-              to="/propriedades"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-md bg-[#1B5E20] text-white text-sm font-semibold hover:bg-[#2E7D32] transition-colors"
-              style={{ fontFamily: "Poppins, sans-serif" }}
-            >
-              <Plus className="w-4 h-4" /> Nova propriedade
-            </Link>
-          }
-        />
-      )}
-
-      {!resumo.loading && !resumo.error && resumo.data && !semDadosAinda && (
-        <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
             {[
               {
                 icon: Layers,
-                label: "Área Monitorada",
-                value: area(resumo.data.indicadores.area_monitorada_hectares),
+                label: "Área monitorada",
+                value: area(painel.totais.area_monitorada_hectares),
+                sub: `${painel.totais.talhoes} talhão(ões) em ${painel.totais.propriedades} propriedade(s)`,
                 color: "text-[#1B5E20]",
                 bg: "bg-[#E8F5E9]",
               },
               {
-                icon: Activity,
-                label: "Voos Registrados",
-                value: String(resumo.data.indicadores.total_voos),
-                color: "text-violet-600",
-                bg: "bg-violet-50",
-              },
-              {
-                icon: FileText,
-                label: "Análises Registradas",
-                value: String(resumo.data.indicadores.total_analises),
+                icon: Plane,
+                label: "Voos no período",
+                value: painel.totais.voos_periodo.toLocaleString("pt-BR"),
+                sub: `${painel.totais.voos} no total`,
                 color: "text-blue-600",
                 bg: "bg-blue-50",
               },
               {
+                icon: Activity,
+                label: "Análises no período",
+                value: painel.totais.analises_periodo.toLocaleString("pt-BR"),
+                sub: `${painel.totais.imagens} imagem(ns) enviada(s)`,
+                color: "text-violet-600",
+                bg: "bg-violet-50",
+              },
+              {
                 icon: AlertTriangle,
-                label: "Problemas Detectados",
-                value: String(resumo.data.indicadores.problemas_detectados),
+                label: "Talhões em alerta",
+                value: painel.totais.areas_criticas.toLocaleString("pt-BR"),
+                sub: "risco alto ou crítico na última análise",
                 color: "text-red-500",
                 bg: "bg-red-50",
               },
-            ].map(({ icon: Icon, label, value, color, bg }) => (
-              <div key={label} className="bg-white rounded-lg p-5 border border-border hover:border-[#A5D6A7] hover:shadow-md transition-all">
-                <div className={`w-10 h-10 rounded-md ${bg} flex items-center justify-center mb-3`}>
-                  <Icon className={`w-5 h-5 ${color}`} />
+            ].map(({ icon: Icon, label, value, sub, color, bg }) => (
+              <div key={label} className="bg-white rounded-2xl p-4 sm:p-5 border border-border">
+                <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center mb-3`}>
+                  <Icon className={`w-5 h-5 ${color}`} aria-hidden />
                 </div>
-                <div className="text-2xl font-bold text-[#212121] mb-0.5" style={{ fontFamily: "Poppins, sans-serif" }}>
+                <div className="text-2xl font-bold text-[#212121] mb-0.5" style={POPPINS}>
                   {value}
                 </div>
-                <div className="text-xs font-medium text-[#4a5568]">{label}</div>
+                <div className="text-xs font-medium text-[#212121] mb-0.5">{label}</div>
+                <div className="text-xs text-[#4a5568]">{sub}</div>
               </div>
             ))}
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-6 mb-6">
-            <div className="lg:col-span-2 bg-white rounded-lg border border-border p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-[#212121]" style={{ fontFamily: "Poppins, sans-serif" }}>
-                  Voos e análises por mês
-                </h3>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <section className="lg:col-span-2 bg-white rounded-2xl border border-border" aria-labelledby="titulo-talhoes">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                <h2 id="titulo-talhoes" className="font-bold text-[#212121]" style={POPPINS}>
+                  Situação dos talhões
+                </h2>
+                <span className="text-xs text-[#4a5568]">pela análise do voo mais recente</span>
               </div>
-              {resumo.data.series.length === 0 ? (
-                <p className="text-sm text-[#4a5568] py-10 text-center">Sem voos no período selecionado.</p>
+              {painel.talhoes.length === 0 ? (
+                <p className="p-6 text-sm text-[#4a5568]">
+                  Nenhum talhão cadastrado {idPropriedade ? "nesta propriedade" : ""}.{" "}
+                  <Link to={idPropriedade ? `/propriedades/${idPropriedade}` : "/propriedades"} className="text-[#1B5E20] underline">
+                    Cadastrar talhão
+                  </Link>
+                </p>
               ) : (
-                <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart data={resumo.data.series.map((s) => ({ ...s, rotulo: rotuloMes(s.mes) }))}>
-                    <defs>
-                      <linearGradient id="voosGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#1B5E20" stopOpacity={0.25} />
-                        <stop offset="95%" stopColor="#1B5E20" stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="analisesGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#66BB6A" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#66BB6A" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
-                    <XAxis dataKey="rotulo" tick={{ fontSize: 11, fill: "#4a5568" }} />
-                    <YAxis tick={{ fontSize: 11, fill: "#4a5568" }} allowDecimals={false} />
-                    <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid #E8F5E9", fontSize: "12px" }} />
-                    <Area type="monotone" dataKey="voos" name="Voos" stroke="#1B5E20" strokeWidth={2} fill="url(#voosGrad)" />
-                    <Area type="monotone" dataKey="analises" name="Análises" stroke="#66BB6A" strokeWidth={2} fill="url(#analisesGrad)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-
-            <div className="bg-white rounded-lg border border-border p-5">
-              <h3 className="font-bold text-[#212121] mb-3" style={{ fontFamily: "Poppins, sans-serif" }}>
-                Distribuição de risco
-              </h3>
-              {dadosRisco.length === 0 ? (
-                <p className="text-sm text-[#4a5568] py-8 text-center">Nenhuma análise classificada ainda.</p>
-              ) : (
-                <>
-                  <ResponsiveContainer width="100%" height={140}>
-                    <PieChart>
-                      <Pie data={dadosRisco} cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={3} dataKey="valor">
-                        {dadosRisco.map((d) => (
-                          <Cell key={d.chave} fill={d.cor} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
-                    {dadosRisco.map((d) => (
-                      <div key={d.chave} className="flex items-center gap-1.5 text-xs text-[#4a5568]">
-                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: d.cor }} />
-                        {d.nome} ({d.valor})
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-6 mb-6">
-            <div className="lg:col-span-2">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold text-[#212121] flex items-center gap-2" style={{ fontFamily: "Poppins, sans-serif" }}>
-                  <Tractor className="w-4 h-4" /> Talhões
-                </h3>
-                <Link to="/propriedades" className="text-xs text-[#1B5E20] font-semibold hover:underline">
-                  Ver propriedades
-                </Link>
-              </div>
-              {talhoes.loading && <Carregando texto="Carregando talhões..." />}
-              {talhoes.error && <EstadoErro erro={talhoes.error} onTentarNovamente={talhoes.refetch} />}
-              {!talhoes.loading && !talhoes.error && talhoes.data && (
-                talhoes.data.itens.length === 0 ? (
-                  <EstadoVazio
-                    titulo="Nenhum talhão cadastrado"
-                    descricao="Cadastre talhões dentro de uma propriedade para vê-los aqui."
-                  />
-                ) : (
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {talhoes.data.itens.map((t) => (
+                <ul className="divide-y divide-border max-h-[22rem] overflow-y-auto">
+                  {painel.talhoes.map((t) => (
+                    <li key={t.id_talhao}>
                       <Link
-                        key={t.id_talhao}
-                        to={`/talhoes/${t.id_talhao}`}
-                        className="bg-white rounded-lg border border-border p-4 hover:border-[#A5D6A7] hover:shadow-md transition-all"
+                        to={t.ultima_analise ? `/voos/${t.ultima_analise.id_voo}` : `/talhoes/${t.id_talhao}`}
+                        className="flex items-center gap-3 px-5 py-3 hover:bg-[#F8F9FA]"
                       >
-                        <div className="flex items-start justify-between">
-                          <span className="font-semibold text-[#212121]" style={{ fontFamily: "Poppins, sans-serif" }}>
-                            {t.nome_talhao}
-                          </span>
-                          <StatusTalhaoBadge status={t.status} />
+                        <span
+                          className="w-2 self-stretch rounded-full flex-shrink-0"
+                          style={{ background: COR_RISCO[t.ultima_analise?.nivel_risco ?? "sem_analise"] }}
+                          aria-hidden
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm text-[#212121] truncate">
+                            {t.nome_talhao} <span className="font-normal text-[#4a5568]">· {t.propriedade.nome_fazenda}</span>
+                          </div>
+                          <div className="text-xs text-[#4a5568] truncate">
+                            {[t.cultura, t.area_hectares != null ? area(t.area_hectares) : null].filter(Boolean).join(" · ")}
+                            {t.ultima_analise
+                              ? ` · voo de ${data(t.ultima_analise.data_voo)}`
+                              : ` · ${t.total_voos ? "voo sem análise" : "sem voos"}`}
+                          </div>
                         </div>
-                        <p className="text-sm text-[#4a5568] mt-1">
-                          {t.cultura ?? "Sem cultura"} · {area(t.area_hectares)}
-                        </p>
-                        {!idPropriedade && (
-                          <p className="text-xs text-[#4a5568] mt-1">
-                            {nomePropriedade.get(t.id_propriedade) ?? "Propriedade"}
-                          </p>
+                        {t.ultima_analise ? (
+                          <RiscoBadge nivel={t.ultima_analise.nivel_risco} />
+                        ) : (
+                          <span className="text-xs text-[#4a5568] whitespace-nowrap">Sem análise</span>
                         )}
+                        <ChevronRight className="w-4 h-4 text-[#4a5568] flex-shrink-0" aria-hidden />
                       </Link>
-                    ))}
-                  </div>
-                )
-              )}
-            </div>
-
-            <div className="bg-white rounded-lg border border-border p-5">
-              <h3 className="font-bold text-[#212121] mb-3" style={{ fontFamily: "Poppins, sans-serif" }}>
-                Análises por tipo
-              </h3>
-              {resumo.data.indicadores.distribuicao_tipo.length === 0 ? (
-                <p className="text-sm text-[#4a5568] py-6 text-center">Nenhuma análise registrada ainda.</p>
-              ) : (
-                <ul className="space-y-2">
-                  {resumo.data.indicadores.distribuicao_tipo.map((t) => (
-                    <li key={t.tipo_analise} className="flex items-center justify-between text-sm">
-                      <span className="text-[#4a5568]">{TIPO_LABEL[t.tipo_analise] ?? t.tipo_analise}</span>
-                      <span className="font-semibold text-[#212121]">{t.total}</span>
                     </li>
                   ))}
                 </ul>
               )}
-            </div>
+            </section>
+
+            <section className="bg-white rounded-2xl border border-border p-5" aria-labelledby="titulo-risco">
+              <h2 id="titulo-risco" className="font-bold text-[#212121] mb-3" style={POPPINS}>
+                Talhões por risco
+              </h2>
+              {painel.talhoes.length === 0 ? (
+                <p className="text-sm text-[#4a5568]">Sem talhões.</p>
+              ) : (
+                <>
+                  <ResponsiveContainer width="100%" height={160}>
+                    <PieChart>
+                      <Pie
+                        data={riscosComDados.map(([k, v]) => ({ k, name: rotuloRisco(k), value: v }))}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={42}
+                        outerRadius={70}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {riscosComDados.map(([k]) => (
+                          <Cell key={k} fill={COR_RISCO[k]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(v: number) => `${v} talhão(ões)`} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <ul className="mt-2 space-y-1.5 text-sm">
+                    {(Object.keys(COR_RISCO) as ChaveRisco[]).map((k) => (
+                      <li key={k} className="flex items-center justify-between">
+                        <span className="flex items-center gap-2 text-[#4a5568]">
+                          <span className="w-2.5 h-2.5 rounded-full" style={{ background: COR_RISCO[k] }} /> {rotuloRisco(k)}
+                        </span>
+                        <span className="font-semibold text-[#212121]">{painel.risco_talhoes[k]}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </section>
           </div>
-        </>
+
+          <section className="bg-white rounded-2xl border border-border p-5 mb-6" aria-labelledby="titulo-evolucao">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <h2 id="titulo-evolucao" className="font-bold text-[#212121]" style={POPPINS}>
+                Voos e área afetada por mês
+              </h2>
+              <span className="text-xs text-[#4a5568] bg-[#F8F9FA] px-3 py-1 rounded-full">
+                {painel.serie_mensal.length} meses
+              </span>
+            </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <ComposedChart data={painel.serie_mensal.map((m) => ({ ...m, rotulo: rotuloMes(m.mes) }))}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
+                <XAxis dataKey="rotulo" tick={{ fontSize: 11, fill: "#4a5568" }} />
+                <YAxis yAxisId="voos" allowDecimals={false} tick={{ fontSize: 11, fill: "#4a5568" }} width={28} />
+                <YAxis yAxisId="pct" orientation="right" domain={[0, 100]} unit="%" tick={{ fontSize: 11, fill: "#4a5568" }} width={40} />
+                <Tooltip
+                  contentStyle={{ borderRadius: "12px", border: "1px solid #E8F5E9", fontSize: "12px" }}
+                  formatter={(v: number, nome: string) =>
+                    nome === "Área afetada média" ? [`${v.toLocaleString("pt-BR")}%`, nome] : [v, nome]
+                  }
+                />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Bar yAxisId="voos" dataKey="voos" name="Voos" fill="#A5D6A7" radius={[6, 6, 0, 0]} />
+                <Line
+                  yAxisId="pct"
+                  type="monotone"
+                  dataKey="area_afetada_media"
+                  name="Área afetada média"
+                  stroke="#E53935"
+                  strokeWidth={2}
+                  connectNulls
+                  dot={{ r: 3 }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </section>
+
+          <section className="bg-white rounded-2xl border border-border" aria-labelledby="titulo-ultimas">
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-border">
+              <h2 id="titulo-ultimas" className="font-bold text-[#212121]" style={POPPINS}>
+                Últimas análises <span className="text-sm font-normal text-[#4a5568]">({periodo})</span>
+              </h2>
+              <Link to="/analises" className="text-xs text-[#1B5E20] font-semibold px-3 py-1.5 rounded-lg hover:bg-[#E8F5E9]">
+                Ver histórico
+              </Link>
+            </div>
+            {painel.ultimas_analises.length === 0 ? (
+              <p className="p-6 text-sm text-[#4a5568]">Nenhuma análise neste período.</p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {painel.ultimas_analises.map((a) => (
+                  <li key={a.id_analise}>
+                    <Link
+                      to={`/analises/${a.id_analise}`}
+                      className="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 sm:px-6 py-3 hover:bg-[#F8F9FA]"
+                    >
+                      <span className="text-sm text-[#4a5568] w-20">{data(a.data_voo)}</span>
+                      <span className="text-sm font-medium text-[#212121] flex-1 min-w-[10rem]">
+                        {a.talhao} <span className="font-normal text-[#4a5568]">· {a.propriedade}</span>
+                      </span>
+                      <span className="text-xs bg-[#E8F5E9] text-[#1B5E20] px-2.5 py-1 rounded-full font-medium">
+                        {TIPO_LABEL[a.tipo_analise]}
+                      </span>
+                      <RiscoBadge nivel={a.nivel_risco} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
       )}
     </div>
   );

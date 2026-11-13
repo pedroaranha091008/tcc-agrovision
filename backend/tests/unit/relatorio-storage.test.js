@@ -32,7 +32,8 @@ it("preserva o download PDF e desabilita cache compartilhado", async () => {
   const res = await request(app()).get("/r1");
   expect(res.status).toBe(200);
   expect(res.headers["content-type"]).toContain("application/pdf");
-  expect(res.headers["content-disposition"]).toContain('filename="relatorio-a1.pdf"');
+  // Sem voo carregado, o nome legivel usa "talhao" e o inicio do id da analise.
+  expect(res.headers["content-disposition"]).toContain('filename="relatorio-talhao-a1.pdf"');
   expect(res.headers["cache-control"]).toBe("private, no-store");
   expect(res.body.toString()).toBe("%PDF-teste");
 });

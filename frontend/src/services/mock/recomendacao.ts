@@ -3,46 +3,73 @@ import type { RecomendacaoGerada } from "@/types/relatorio";
 
 /**
  * Espelho, no mock, do motor de recomendacoes por regras do backend
- * (src/utils/recomendacao.js) — mesma versao, mesmo tom de texto.
- * Determinístico: so depende de (tipo_analise, nivel_risco, percentual_area_afetada).
+ * (src/utils/recomendacao.js) — mesma versao, mesmo texto.
+ * Deterministico: so depende de (tipo_analise, nivel_risco, percentual_area_afetada).
  */
-export const VERSAO_REGRAS = "1.0.0";
+export const VERSAO_REGRAS = "2.0.0";
 
-const BASE_POR_TIPO: Record<string, string> = {
-  NDVI: "Indice de vegetacao indica variacao de vigor na cultura.",
-  RGB: "Inspecao visual aponta variacao de cobertura/coloracao na area.",
-  termico: "Mapa termico indica variacao de temperatura foliar, possivel estresse hidrico.",
-  multispectral: "Resposta espectral indica variacao de sanidade da cultura.",
-  outro: "Analise registrada sem categoria espectral especifica.",
+const AVISO =
+  "Recomendações geradas por regras simples a partir do tipo de análise, do nível de risco e da área afetada. " +
+  "Não são diagnóstico automático e não substituem a avaliação de um engenheiro agrônomo.";
+
+const POR_RISCO: Record<string, { titulo: string; prazo: string; acoes: string[] }> = {
+  baixo: {
+    titulo: "Situação sob controle",
+    prazo: "Próximo monitoramento no ciclo normal (15 a 30 dias).",
+    acoes: ["Manter o manejo atual.", "Repetir o voo no próximo estágio da cultura para acompanhar a evolução."],
+  },
+  medio: {
+    titulo: "Atenção a pontos isolados",
+    prazo: "Inspecionar em campo nos próximos 7 dias.",
+    acoes: [
+      "Visitar as manchas indicadas no mapa para identificar a causa.",
+      "Registrar o que foi encontrado como nova análise para acompanhar a evolução.",
+    ],
+  },
+  alto: {
+    titulo: "Intervenção recomendada",
+    prazo: "Inspecionar em campo em até 3 dias.",
+    acoes: [
+      "Inspecionar as áreas afetadas com o agrônomo responsável.",
+      "Avaliar correção localizada (replantio, adubação ou controle) apenas nas zonas indicadas.",
+      "Programar novo voo após a intervenção para medir o resultado.",
+    ],
+  },
+  critico: {
+    titulo: "Ação imediata",
+    prazo: "Inspecionar em campo com urgência (até 24 horas).",
+    acoes: [
+      "Confirmar em campo a extensão do problema com o agrônomo responsável.",
+      "Definir o plano de correção antes que o dano se espalhe para áreas vizinhas.",
+      "Se a imagem não corresponde à lavoura no estágio esperado, refazer o voo.",
+    ],
+  },
 };
 
-const ACAO_POR_RISCO: Record<string, string> = {
-  baixo: "Manter o monitoramento na proxima janela de voo. Nenhuma acao corretiva imediata.",
-  medio: "Programar vistoria de campo nas zonas destacadas em ate 7 dias e revisar manejo de irrigacao e nutricao.",
-  alto: "Vistoria de campo prioritaria em ate 48h. Avaliar amostragem de solo/folha e possivel intervencao localizada.",
-  critico:
-    "Acao imediata: inspecao em campo em ate 24h, isolamento das zonas afetadas e consulta a um engenheiro agronomo responsavel.",
+const POR_TIPO: Record<string, string> = {
+  RGB: "Verificar falhas de plantio e solo exposto nas faixas sem vegetação; avaliar replantio onde a falha for contínua.",
+  NDVI: "Investigar deficiência nutricional ou estresse nas zonas de NDVI baixo; considerar análise de solo e foliar.",
+  termico: "Verificar a irrigação e sinais de estresse hídrico nas zonas mais quentes.",
+  multispectral: "Cruzar as bandas com o histórico do talhão para separar estresse hídrico, nutricional ou fitossanitário.",
 };
-
-function faixaPercentual(p: number | null): string {
-  if (p == null) return "";
-  if (p >= 40) return " A area afetada e extensa (>= 40%); priorize a logistica de intervencao.";
-  if (p >= 15) return " A area afetada e moderada (15-40%); delimite os focos antes de agir.";
-  if (p > 0) return " A area afetada e pequena (< 15%); trate os focos pontualmente.";
-  return "";
-}
 
 export function gerarRecomendacao(
   analise: Pick<Analise, "tipo_analise" | "nivel_risco" | "percentual_area_afetada">,
 ): RecomendacaoGerada {
-  const base = BASE_POR_TIPO[analise.tipo_analise] ?? BASE_POR_TIPO.outro;
-  const risco = analise.nivel_risco ?? "baixo";
-  const acao = ACAO_POR_RISCO[risco] ?? ACAO_POR_RISCO.baixo;
-  const percent = faixaPercentual(analise.percentual_area_afetada);
-
+  const risco = analise.nivel_risco && POR_RISCO[analise.nivel_risco] ? analise.nivel_risco : "baixo";
+  const base = POR_RISCO[risco];
+  const acoes = [...base.acoes];
+  if (risco !== "baixo" && POR_TIPO[analise.tipo_analise]) acoes.splice(1, 0, POR_TIPO[analise.tipo_analise]);
+  if (analise.percentual_area_afetada != null && analise.percentual_area_afetada >= 40) {
+    acoes.push("A área afetada é extensa (40% ou mais): considere tratar o talhão inteiro, e não só as manchas.");
+  }
   return {
     versao: VERSAO_REGRAS,
     baseada_em_regras: true,
-    texto: `${base} ${acao}${percent} Recomendacao gerada por regras (versao ${VERSAO_REGRAS}); nao substitui a avaliacao de um profissional agricola.`,
+    titulo: base.titulo,
+    prazo: base.prazo,
+    acoes,
+    aviso: AVISO,
+    texto: `${base.titulo}. ${base.prazo} ${acoes.join(" ")} ${AVISO}`,
   };
 }

@@ -1,6 +1,7 @@
+import loginImg from "@/assets/login.jpg";
 import { useCallback, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
-import { AlertCircle, Leaf, LogIn } from "lucide-react";
+import { AlertCircle, CheckCircle2, Leaf, LogIn } from "lucide-react";
 import { useAuth } from "@/features/auth/AuthContext";
 import { GoogleLoginButton } from "@/features/auth/GoogleLoginButton";
 import { mensagemDoErro } from "@/services/erros";
@@ -15,7 +16,10 @@ export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, loginGoogle } = useAuth();
-  const destino = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/dashboard";
+  const estado = location.state as { from?: { pathname?: string }; aviso?: string } | null;
+  const destino = estado?.from?.pathname ?? "/dashboard";
+  // Mensagem de sucesso vinda de outra tela (ex.: depois de redefinir a senha).
+  const aviso = estado?.aviso ?? null;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -55,7 +59,7 @@ export function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=900&h=1200&fit=crop&auto=format"
+            src={loginImg}
             alt="Drone sobre lavoura de soja"
             className="w-full h-full object-cover"
           />
@@ -133,6 +137,17 @@ export function LoginPage() {
             </p>
           </div>
 
+          {aviso && !erro && (
+            <div
+              role="status"
+              className="mb-5 flex items-start gap-2 rounded-md border border-[#A5D6A7] bg-[#E8F5E9] px-4 py-3 text-sm text-[#1B5E20]"
+              style={{ fontFamily: "Inter, sans-serif" }}
+            >
+              <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <span>{aviso}</span>
+            </div>
+          )}
+
           {erro && (
             <div
               role="alert"
@@ -189,13 +204,13 @@ export function LoginPage() {
                 >
                   Senha
                 </label>
-                <button
-                  type="button"
+                <Link
+                  to="/esqueci-senha"
                   className="text-xs text-[#1B5E20] hover:underline"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Esqueci a senha
-                </button>
+                </Link>
               </div>
               <input
                 id="login-senha"

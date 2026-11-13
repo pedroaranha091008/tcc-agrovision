@@ -5,6 +5,7 @@ import { mockDb, paraUsuarioPublico } from "./db";
 import { abrirSessao, idDoToken, usuarioAutenticado, type Ctx } from "./base";
 import { rotasDominio, acharVoo, acharAnalise } from "./rotasDominio";
 import { agora, dominio } from "./dominioStore";
+import { semearDemo } from "./demo";
 import {
   UPLOAD_ALLOWED_MIME,
   UPLOAD_MAX_FILE_MB,
@@ -17,12 +18,33 @@ import {
  * delega o dominio agricola para rotasDominio.
  */
 
+if (import.meta.env.VITE_DEMO_SEED === "true") semearDemo();
+
 const LATENCIA_MS = 300;
 const espera = () => new Promise((r) => setTimeout(r, LATENCIA_MS));
 
 type Handler = (ctx: Ctx, params: Record<string, string>, query: URLSearchParams) => unknown;
 
 const rotasAuth: Array<{ metodo: string; regex: RegExp; handler: Handler }> = [
+  {
+    // Modo mock nao envia email: o pedido so e aceito, como no backend (resposta igual sempre).
+    metodo: "POST",
+    regex: /^\/auth\/esqueci-senha$/,
+    handler: () => ({ data: { mensagem: "Se houver uma conta com esse email, enviamos um link para redefinir a senha." } }),
+  },
+  {
+    metodo: "POST",
+    regex: /^\/auth\/redefinir-senha$/,
+    handler: () => {
+      throw new ApiError("REQUISICAO_INVALIDA", "Este link é inválido ou expirou. Peça um novo link de redefinição.", 400);
+    },
+  },
+  {
+    // Formulario de orcamento da pagina inicial (rota publica, nao exige login).
+    metodo: "POST",
+    regex: /^\/orcamentos$/,
+    handler: () => ({ data: { id_solicitacao: crypto.randomUUID(), status: "novo", criado_em: agora() } }),
+  },
   {
     metodo: "POST",
     regex: /^\/auth\/registro$/,

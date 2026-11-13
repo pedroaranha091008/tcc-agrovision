@@ -9,3 +9,7 @@ export const resumo = handler(async (req, res) => {
   ]);
   ok(res, { indicadores, series });
 });
+
+export const painel = handler(async (req, res) => {
+  ok(res, await service.painel(req.usuario.id_usuario, req.consulta));
+});

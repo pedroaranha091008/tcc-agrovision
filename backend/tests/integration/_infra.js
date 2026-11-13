@@ -32,4 +32,5 @@ export async function limpar() {
   await prisma.propriedade.deleteMany();
   await prisma.sessao.deleteMany();
   await prisma.usuario.deleteMany();
+  await prisma.solicitacaoOrcamento.deleteMany();
 }

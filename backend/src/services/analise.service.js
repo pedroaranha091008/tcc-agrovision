@@ -1,5 +1,9 @@
+import crypto from "node:crypto";
+import logger from "../config/logger.js";
 import { prisma } from "../config/prisma.js";
 import { erros } from "../utils/AppError.js";
+import { analisarImagem, LIMIARES, resumir, textoResultado, VERSAO_METODO } from "../utils/indiceVerde.js";
+import { mapas, storage } from "../utils/storage.js";
 import { lerPaginacao, meta } from "../utils/paginacao.js";
 
 const ORDENAVEIS = ["data_analise", "atualizado_em", "nivel_risco", "tipo_analise"];
@@ -70,4 +74,87 @@ export async function remover(analise) {
     throw erros.conflito("Analise possui relatorios gerados", { relatorios });
   }
   await prisma.analise.delete({ where: { id_analise: analise.id_analise } });
+  await removerMapas(analise);
+}
+
+const nomesDosMapas = (analise) =>
+  (analise.detalhes?.por_imagem ?? []).map((i) => i.mapa).filter(Boolean);
+
+async function removerMapas(analise) {
+  await Promise.allSettled(nomesDosMapas(analise).map((nome) => mapas.remover(nome)));
+}
+
+/**
+ * Roda o indice de verde (ExG) em todas as imagens do voo e grava uma analise
+ * automatica com o mapa colorido de cada imagem. O status do voo acompanha:
+ * em_processamento -> concluido, ou falhou se alguma imagem nao puder ser lida.
+ */
+export async function analisarVoo(voo) {
+  const imagens = await prisma.imagemVoo.findMany({
+    where: { id_voo: voo.id_voo },
+    orderBy: { criado_em: "asc" },
+  });
+  if (imagens.length === 0) {
+    throw erros.validacao(
+      [{ campo: "imagens", mensagem: "o voo nao tem imagens" }],
+      "Envie ao menos uma imagem do voo antes de analisar.",
+    );
+  }
+
+  await prisma.voo.update({ where: { id_voo: voo.id_voo }, data: { status_processamento: "em_processamento" } });
+  const id = crypto.randomUUID();
+  const gravados = [];
+
+  try {
+    const porImagem = [];
+    for (const [i, imagem] of imagens.entries()) {
+      const r = await analisarImagem(await storage.ler(imagem.caminho));
+      const nomeMapa = `${id}-${i}.png`;
+      await mapas.salvar(r.mapaPng, nomeMapa);
+      gravados.push(nomeMapa);
+      porImagem.push({
+        id_imagem: imagem.id_imagem,
+        nome: imagem.nome_original,
+        saudavel: r.saudavel,
+        atencao: r.atencao,
+        critico: r.critico,
+        exg_medio: r.exg_medio,
+        mapa: nomeMapa,
+      });
+    }
+
+    const resumo = resumir(porImagem);
+    const [analise] = await prisma.$transaction([
+      prisma.analise.create({
+        data: {
+          id_analise: id,
+          id_voo: voo.id_voo,
+          tipo_analise: "RGB",
+          origem: "automatica",
+          status: "concluido",
+          nivel_risco: resumo.nivel,
+          percentual_area_afetada: resumo.afetada,
+          resultado: textoResultado(resumo, imagens.length),
+          detalhes: { metodo: "ExG", versao: VERSAO_METODO, limiares: LIMIARES, resumo, por_imagem: porImagem },
+        },
+      }),
+      prisma.voo.update({ where: { id_voo: voo.id_voo }, data: { status_processamento: "concluido" } }),
+    ]);
+    return analise;
+  } catch (e) {
+    await Promise.allSettled(gravados.map((nome) => mapas.remover(nome)));
+    await prisma.voo.update({ where: { id_voo: voo.id_voo }, data: { status_processamento: "falhou" } });
+    logger.error({ err: e, id_voo: voo.id_voo }, "falha na analise automatica");
+    throw erros.validacao(
+      [{ campo: "imagens", mensagem: "nao foi possivel processar as imagens" }],
+      "Não foi possível processar as imagens deste voo.",
+    );
+  }
+}
+
+/** PNG do mapa colorido de uma imagem (pela posicao) de uma analise automatica. */
+export async function lerMapa(analise, indice) {
+  const nome = nomesDosMapas(analise)[indice];
+  if (!nome) throw erros.naoEncontrado("Mapa nao encontrado");
+  return mapas.ler(nome);
 }

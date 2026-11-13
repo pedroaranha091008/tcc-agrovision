@@ -35,10 +35,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       const ok = await authService.renovarSessao();
+      if (controller.signal.aborted) return;
       if (ok) {
         try {
           setUsuario(await authService.obterPerfil(controller.signal));
         } catch {
+          // Cancelamento por desmontagem (ex.: StrictMode monta o efeito duas
+          // vezes) nao e falha de sessao: apagar a sessao aqui derrubava o
+          // login que a montagem seguinte acabara de restaurar.
+          if (controller.signal.aborted) return;
           session.limpar();
         }
       }

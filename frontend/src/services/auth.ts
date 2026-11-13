@@ -42,6 +42,16 @@ export async function atualizarPerfil(payload: AtualizarPerfilPayload): Promise<
   return data;
 }
 
+/** Pede o link de redefinição. A resposta é sempre a mesma, exista ou não a conta. */
+export async function esqueciSenha(email: string): Promise<void> {
+  await http.post("/auth/esqueci-senha", { email }, { auth: false });
+}
+
+/** Troca a senha usando o token do link recebido por email. */
+export async function redefinirSenha(token: string, senha: string): Promise<void> {
+  await http.post("/auth/redefinir-senha", { token, senha }, { auth: false });
+}
+
 export async function logout(): Promise<void> {
   const refresh = session.getRefreshToken();
   try {
@@ -51,11 +61,25 @@ export async function logout(): Promise<void> {
   }
 }
 
+let renovacaoEmAndamento: Promise<boolean> | null = null;
+
 /**
  * Troca o refresh token persistido por um novo par de tokens.
  * Retorna true se a sessao foi renovada.
+ *
+ * Chamadas simultaneas (StrictMode ao abrir a pagina, ou varias requisicoes
+ * recebendo 401 quando o access token vence) compartilham a mesma renovacao.
+ * Sem isso, todas mandavam o mesmo refresh token: o backend rotacionava na
+ * primeira e as outras recebiam 401, derrubando a sessao do usuario.
  */
-export async function renovarSessao(): Promise<boolean> {
+export function renovarSessao(): Promise<boolean> {
+  renovacaoEmAndamento ??= executarRenovacao().finally(() => {
+    renovacaoEmAndamento = null;
+  });
+  return renovacaoEmAndamento;
+}
+
+async function executarRenovacao(): Promise<boolean> {
   const refresh = session.getRefreshToken();
   if (!refresh) return false;
   try {

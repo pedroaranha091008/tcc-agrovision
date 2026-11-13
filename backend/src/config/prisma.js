@@ -10,6 +10,9 @@ const adapter = new PrismaMariaDb({
   database: env.db.name,
   connectionLimit: 5,
   ...(env.db.ssl ? { ssl: { rejectUnauthorized: true, ...(env.db.sslCa ? { ca: env.db.sslCa } : {}) } } : {}),
+  // MySQL 8 (o banco das hospedagens) usa caching_sha2_password; sem SSL, o
+  // driver precisa buscar a chave publica do servidor para fazer o login.
+  allowPublicKeyRetrieval: true,
 });
 
 const prisma = new PrismaClient({ adapter });
