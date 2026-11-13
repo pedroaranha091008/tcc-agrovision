@@ -27,6 +27,21 @@ E cada camada tem seu próprio README com instruções de instalação, variáve
 - [`backend/README.md`](backend/README.md)
 - [`frontend/README.md`](frontend/README.md)
 
+## Apresentação em qualquer computador (sem banco)
+
+Precisa só do [Node.js](https://nodejs.org) 20 ou mais novo e do Git:
+
+```bash
+git clone -b finalizacao https://github.com/pedroaranha091008/tcc-agrovision.git
+cd tcc-agrovision/frontend
+npm install
+npm run demo
+```
+
+O navegador abre na tela de login. Entre com **demo@agrovision.dev** / **agrovision2026**: a conta já vem
+com a Fazenda Boa Vista e três talhões. Dá para registrar voos, enviar fotos, gerar a análise automática e o
+relatório. Os dados ficam guardados no próprio navegador.
+
 ## Início rápido
 
 O frontend roda sozinho, sem o backend, em **modo mock** (`VITE_API_MOCK=true` no `.env` já vem assim): um

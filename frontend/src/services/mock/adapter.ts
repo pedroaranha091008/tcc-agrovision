@@ -5,6 +5,7 @@ import { mockDb, paraUsuarioPublico } from "./db";
 import { abrirSessao, idDoToken, usuarioAutenticado, type Ctx } from "./base";
 import { rotasDominio, acharVoo, acharAnalise } from "./rotasDominio";
 import { agora, dominio } from "./dominioStore";
+import { semearDemo } from "./demo";
 import {
   UPLOAD_ALLOWED_MIME,
   UPLOAD_MAX_FILE_MB,
@@ -16,6 +17,8 @@ import {
  * Adaptador do modo mock (VITE_API_MOCK=true). Implementa auth/perfil aqui e
  * delega o dominio agricola para rotasDominio.
  */
+
+if (import.meta.env.VITE_DEMO_SEED === "true") semearDemo();
 
 const LATENCIA_MS = 300;
 const espera = () => new Promise((r) => setTimeout(r, LATENCIA_MS));
